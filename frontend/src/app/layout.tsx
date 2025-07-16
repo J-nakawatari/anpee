@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { M_PLUS_Rounded_1c } from 'next/font/google'
 import '../styles/globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const mPlusRounded1c = M_PLUS_Rounded_1c({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap'
+})
 
 export const metadata: Metadata = {
   title: 'あんぴーちゃん - 高齢者見守りサービス',
@@ -19,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>{children}</body>
+      <body className={mPlusRounded1c.className}>{children}</body>
     </html>
   )
 }
