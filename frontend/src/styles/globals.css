@@ -49,6 +49,10 @@
     @apply bg-white rounded-cute shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-peach-200;
   }
   
+  .bg-white {
+    background-color: #ffffff;
+  }
+  
   .gentle-shadow {
     box-shadow: 0 4px 15px rgba(249, 115, 22, 0.1);
   }

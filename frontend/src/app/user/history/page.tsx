@@ -80,7 +80,7 @@ export default function HistoryPage() {
   const [historyData, setHistoryData] = useState(dummyHistoryData)
   const [filterElderly, setFilterElderly] = useState<string>('all')
   const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<any>({
     from: undefined,
     to: undefined
   })

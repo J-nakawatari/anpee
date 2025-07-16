@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { setup } from './lib/csrf'
 
-const csrfProtection = setup()
+const csrfProtection = setup
 
 export async function middleware(request: NextRequest) {
   // CSRFトークンのチェックをスキップするパス

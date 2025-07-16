@@ -18,7 +18,7 @@ const dummyElderlyData = [
     lastResponseTime: "07:30",
     lastResponseDate: "2024年7月14日",
     genKiButtonTime: "07:30",
-    avatar: null
+    avatar: undefined
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const dummyElderlyData = [
     lastResponseTime: "08:00",
     lastResponseDate: "2024年7月13日",
     callDuration: "未応答",
-    avatar: null
+    avatar: undefined
   },
   {
     id: 3,
@@ -35,7 +35,7 @@ const dummyElderlyData = [
     status: 'pending' as const,
     lastResponseTime: "18:00",
     lastResponseDate: "2024年7月13日",
-    avatar: null
+    avatar: undefined
   }
 ]
 
