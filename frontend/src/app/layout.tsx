@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={`${mPlusRounded1c.variable} font-sans`}>{children}</body>
+      <body className={`${mPlusRounded1c.variable} ${mPlusRounded1c.className}`}>{children}</body>
     </html>
   )
 }
