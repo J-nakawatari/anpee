@@ -27,7 +27,7 @@ export default {
         'heart-pink-light': '#fce7f3',
       },
       fontFamily: {
-        sans: ['var(--font-noto-sans)', 'sans-serif'],
+        sans: ['var(--font-m-plus-rounded-1c)', 'M PLUS Rounded 1c', 'Hiragino Maru Gothic Pro', 'BIZ UDPGothic', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic Medium', 'Meiryo', 'sans-serif'],
       },
       borderRadius: {
         'cute': '1rem',

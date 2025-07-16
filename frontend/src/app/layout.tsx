@@ -5,7 +5,8 @@ import '../styles/globals.css'
 const mPlusRounded1c = M_PLUS_Rounded_1c({ 
   weight: ['400', '500', '700'],
   subsets: ['latin'],
-  display: 'swap'
+  display: 'swap',
+  variable: '--font-m-plus-rounded-1c',
 })
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={mPlusRounded1c.className}>{children}</body>
+      <body className={`${mPlusRounded1c.variable} font-sans`}>{children}</body>
     </html>
   )
 }
