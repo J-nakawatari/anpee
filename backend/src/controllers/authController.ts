@@ -91,8 +91,12 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // トークンの生成
-    const accessToken = generateAccessToken(user)
-    const refreshToken = generateRefreshToken(user._id)
+    const accessToken = generateAccessToken({
+      _id: user._id as any,
+      email: user.email,
+      role: user.role
+    })
+    const refreshToken = generateRefreshToken(user._id as any)
 
     // リフレッシュトークンの保存
     const expiresAt = new Date()
@@ -172,7 +176,11 @@ export const refresh = async (req: Request, res: Response) => {
     }
 
     // 新しいアクセストークンの生成
-    const accessToken = generateAccessToken(user)
+    const accessToken = generateAccessToken({
+      _id: user._id as any,
+      email: user.email,
+      role: user.role
+    })
 
     res.json({
       success: true,

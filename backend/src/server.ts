@@ -65,14 +65,13 @@ const startServer = async () => {
 }
 
 // グレースフルシャットダウン
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   logger.info('SIGTERM signal received: closing HTTP server')
-  httpServer.close(() => {
+  httpServer.close(async () => {
     logger.info('HTTP server closed')
-    mongoose.connection.close(false, () => {
-      logger.info('MongoDB connection closed')
-      process.exit(0)
-    })
+    await mongoose.connection.close()
+    logger.info('MongoDB connection closed')
+    process.exit(0)
   })
 })
 
