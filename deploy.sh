@@ -21,7 +21,9 @@ git pull
 
 echo "📦 バックエンドの依存関係をインストール中..."
 cd backend
+# 本番用と開発用の両方をインストール（ビルドに必要）
 npm ci
+npm install --save-dev @types/express @types/cors @types/jsonwebtoken @types/cookie-parser @types/csurf
 
 echo "🔨 バックエンドをビルド中..."
 npm run build
