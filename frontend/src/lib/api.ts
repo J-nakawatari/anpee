@@ -12,6 +12,21 @@ export const api = axios.create({
   },
 })
 
+// CSRFトークンを初期化
+let csrfToken: string | null = null
+
+// CSRFトークンを取得
+export const fetchCSRFToken = async () => {
+  try {
+    const response = await api.get('/csrf-token')
+    csrfToken = response.data.csrfToken
+    return csrfToken
+  } catch (error) {
+    console.error('Failed to fetch CSRF token:', error)
+    return null
+  }
+}
+
 // リクエストインターセプター
 api.interceptors.request.use(
   (config) => {
@@ -22,9 +37,14 @@ api.interceptors.request.use(
     }
 
     // CSRFトークンの取得
-    const csrfToken = Cookies.get('csrf-token')
     if (csrfToken) {
       config.headers['X-CSRF-Token'] = csrfToken
+    } else {
+      // Cookieからも取得を試みる
+      const cookieToken = Cookies.get('_csrf')
+      if (cookieToken) {
+        config.headers['X-CSRF-Token'] = cookieToken
+      }
     }
 
     return config

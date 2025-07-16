@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser'
 import { createServer } from 'http'
 import logger from './utils/logger.js'
 import authRoutes from './routes/auth.js'
+import csrf from 'csurf'
 
 // 環境変数の読み込み
 dotenv.config()
@@ -27,6 +28,20 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
+// CSRF保護
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  } 
+})
+
+// CSRF保護を適用（開発環境では無効化可能）
+if (process.env.NODE_ENV !== 'development' || process.env.ENABLE_CSRF === 'true') {
+  app.use(csrfProtection)
+}
+
 // ルート設定
 app.use('/api/v1/auth', authRoutes)
 
@@ -36,6 +51,14 @@ app.get('/api/v1/health', (_req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     service: 'anpee-backend'
+  })
+})
+
+// CSRFトークン取得エンドポイント
+app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
+  res.json({ 
+    success: true,
+    csrfToken: req.csrfToken()
   })
 })
 
