@@ -40,8 +40,12 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any
 
-    // 401エラーでリトライしていない場合
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 401エラーでリトライしていない場合（リフレッシュエンドポイント自体は除外）
+    if (
+      error.response?.status === 401 && 
+      !originalRequest._retry && 
+      !originalRequest.url?.includes('/auth/refresh')
+    ) {
       originalRequest._retry = true
 
       try {

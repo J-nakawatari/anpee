@@ -10,12 +10,12 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 4003
       },
-      error_file: '/var/log/anpee/backend-error.log',
-      out_file: '/var/log/anpee/backend-out.log',
-      log_file: '/var/log/anpee/backend-combined.log',
+      error_file: './logs/backend-error.log',
+      out_file: './logs/backend-out.log',
+      log_file: './logs/backend-combined.log',
       time: true
     },
     {
@@ -28,12 +28,12 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 3003
       },
-      error_file: '/var/log/anpee/frontend-error.log',
-      out_file: '/var/log/anpee/frontend-out.log',
-      log_file: '/var/log/anpee/frontend-combined.log',
+      error_file: './logs/frontend-error.log',
+      out_file: './logs/frontend-out.log',
+      log_file: './logs/frontend-combined.log',
       time: true
     }
   ]

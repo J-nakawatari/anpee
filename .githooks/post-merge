@@ -25,6 +25,10 @@ cd "$PROJECT_ROOT/frontend"
 echo "📦 フロントエンドの依存関係をインストール中..."
 npm ci --production=false
 
+# Next.jsのビルドキャッシュをクリア（middleware変更対応）
+echo "🧹 ビルドキャッシュをクリア中..."
+rm -rf .next node_modules/.cache
+
 # ビルド
 echo "🔨 フロントエンドをビルド中..."
 npm run build
@@ -55,12 +59,18 @@ echo "🔄 サービスを再起動中..."
 # PM2が実行中か確認
 if pm2 list | grep -q "anpee"; then
     echo "♻️  既存のAnpeeプロセスを再起動..."
-    # フロントエンドのみの場合
-    if [ ! -d "$PROJECT_ROOT/backend" ]; then
-        pm2 restart anpee-frontend || pm2 restart anpee
-    else
-        pm2 restart anpee-backend anpee-frontend || pm2 restart anpee
+    # キャッシュエラー対策：削除してから再作成
+    echo "🔄 PM2プロセスを削除して再作成中..."
+    pm2 delete anpee anpee-frontend anpee-backend 2>/dev/null || true
+    
+    # 新規に起動
+    if [ -d "$PROJECT_ROOT/backend" ]; then
+        cd "$PROJECT_ROOT/backend"
+        pm2 start npm --name "anpee-backend" -- start
     fi
+    
+    cd "$PROJECT_ROOT/frontend"
+    pm2 start npm --name "anpee" -- start
 else
     echo "🆕 新規にAnpeeプロセスを開始..."
     # ecosystem.config.jsが存在する場合はそれを使用

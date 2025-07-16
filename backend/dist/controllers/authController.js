@@ -64,8 +64,8 @@ export const login = async (req, res) => {
                 message: 'メールアドレスまたはパスワードが正しくありません',
             });
         }
-        // メール確認の確認
-        if (!user.emailVerified) {
+        // メール確認の確認（開発環境ではスキップ）
+        if (!user.emailVerified && process.env.NODE_ENV === 'production') {
             return res.status(401).json({
                 success: false,
                 message: 'メールアドレスの確認が必要です',
