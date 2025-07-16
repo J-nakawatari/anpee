@@ -128,18 +128,18 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* 見守り対象者リスト */}
+        {/* 家族リスト */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">見守り対象者</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">見守り家族</h2>
           {elderlyList.length === 0 ? (
             <Card className="p-12 text-center">
               <div className="max-w-sm mx-auto">
                 <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  まだ見守り対象者が登録されていません
+                  まだ家族が登録されていません
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  大切な家族を登録して、見守りを始めましょう
+                  大切なご家族を登録して、見守りを始めましょう
                 </p>
                 <Button 
                   className="cute-button"

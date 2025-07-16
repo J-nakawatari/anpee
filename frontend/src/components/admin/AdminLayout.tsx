@@ -7,36 +7,36 @@ import {
   Heart, 
   Home, 
   Users, 
-  History, 
-  Bell, 
-  CreditCard, 
+  AlertCircle,
+  BarChart3,
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Shield,
+  Activity
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-interface DashboardLayoutProps {
+interface AdminLayoutProps {
   children: React.ReactNode
   activeItem: string
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'ダッシュボード', icon: Home, href: '/user/dashboard' },
-  { id: 'elderly', label: '家族管理', icon: Users, href: '/user/elderly' },
-  { id: 'history', label: '履歴', icon: History, href: '/user/history' },
-  { id: 'notifications', label: '通知設定', icon: Bell, href: '/user/notifications' },
-  { id: 'billing', label: '課金管理', icon: CreditCard, href: '/user/billing' },
-  { id: 'account', label: 'アカウント設定', icon: Settings, href: '/user/account' },
+  { id: 'dashboard', label: 'ダッシュボード', icon: Home, href: '/admin/dashboard' },
+  { id: 'users', label: 'ユーザー管理', icon: Users, href: '/admin/users' },
+  { id: 'alerts', label: '未応答アラート', icon: AlertCircle, href: '/admin/alerts' },
+  { id: 'analytics', label: '統計分析', icon: BarChart3, href: '/admin/analytics' },
+  { id: 'system', label: 'システムログ', icon: Activity, href: '/admin/system' },
+  { id: 'settings', label: '管理設定', icon: Settings, href: '/admin/settings' },
 ]
 
-export function DashboardLayout({ children, activeItem }: DashboardLayoutProps) {
+export function AdminLayout({ children, activeItem }: AdminLayoutProps) {
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const handleLogout = () => {
-    // ログアウト処理
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
     router.push('/login')
@@ -48,8 +48,8 @@ export function DashboardLayout({ children, activeItem }: DashboardLayoutProps) 
       <div className="lg:hidden bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <Heart className="w-6 h-6 text-peach-500" />
-            <span className="font-semibold text-peach-700">あんぴーちゃん</span>
+            <Shield className="w-6 h-6 text-peach-500" />
+            <span className="font-semibold text-peach-700">管理者画面</span>
           </div>
           <Button
             variant="ghost"
@@ -64,20 +64,20 @@ export function DashboardLayout({ children, activeItem }: DashboardLayoutProps) 
       <div className="flex">
         {/* サイドバー */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white
           transform transition-transform duration-200 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="h-full flex flex-col">
             {/* ロゴ */}
-            <div className="p-6 border-b border-gray-200">
-              <Link href="/user/dashboard" className="flex items-center gap-3">
+            <div className="p-6 border-b border-gray-800">
+              <Link href="/admin/dashboard" className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-peach-100 rounded-full flex items-center justify-center">
                   <Heart className="w-6 h-6 text-peach-500" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-peach-700">あんぴーちゃん</h1>
-                  <p className="text-xs text-gray-600">見守りサービス</p>
+                  <h1 className="font-bold text-white">あんぴーちゃん</h1>
+                  <p className="text-xs text-gray-400">管理者コンソール</p>
                 </div>
               </Link>
             </div>
@@ -96,8 +96,8 @@ export function DashboardLayout({ children, activeItem }: DashboardLayoutProps) 
                         className={`
                           flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                           ${isActive 
-                            ? 'bg-peach-50 text-peach-700 font-medium' 
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-peach-500 text-white' 
+                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                           }
                         `}
                         onClick={() => setIsSidebarOpen(false)}
@@ -112,10 +112,10 @@ export function DashboardLayout({ children, activeItem }: DashboardLayoutProps) 
             </nav>
 
             {/* ログアウト */}
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-800">
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
               >
                 <LogOut className="w-5 h-5" />
                 <span>ログアウト</span>
