@@ -1,0 +1,113 @@
+import mongoose, { Document, Schema, Types } from 'mongoose'
+
+export interface IElderly extends Document {
+  userId: Types.ObjectId
+  name: string
+  age: number
+  phone: string
+  address: string
+  emergencyContact: string
+  emergencyPhone: string
+  hasGenKiButton: boolean
+  lineUserId?: string
+  callTime: string
+  callEnabled: boolean
+  retryCount: number
+  retryInterval: number
+  status: 'active' | 'inactive' | 'suspended'
+  notes: string
+  lastResponseAt?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+const elderlySchema = new Schema<IElderly>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 150,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    emergencyContact: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    emergencyPhone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    hasGenKiButton: {
+      type: Boolean,
+      default: false,
+    },
+    lineUserId: {
+      type: String,
+    },
+    callTime: {
+      type: String,
+      required: true,
+      match: /^([01]\d|2[0-3]):([0-5]\d)$/,
+    },
+    callEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    retryCount: {
+      type: Number,
+      default: 2,
+      min: 0,
+      max: 5,
+    },
+    retryInterval: {
+      type: Number,
+      default: 30,
+      min: 5,
+      max: 120,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'suspended'],
+      default: 'active',
+    },
+    notes: {
+      type: String,
+      default: '',
+    },
+    lastResponseAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  }
+)
+
+// インデックス
+elderlySchema.index({ userId: 1 })
+elderlySchema.index({ status: 1 })
+elderlySchema.index({ callTime: 1 })
+
+export default mongoose.model<IElderly>('Elderly', elderlySchema)

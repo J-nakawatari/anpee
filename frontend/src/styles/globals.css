@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* あんぴーちゃん専用カラー */
+    --peach-50: #fff7ed;
+    --peach-100: #ffedd5;
+    --peach-200: #fed7aa;
+    --peach-300: #fdba74;
+    --peach-400: #fb923c;
+    --peach-500: #f97316;
+    --peach-600: #ea580c;
+    --peach-700: #c2410c;
+    --peach-800: #9a3412;
+    --peach-900: #7c2d12;
+    
+    --heart-pink: #f472b6;
+    --heart-pink-light: #fce7f3;
+    
+    /* デフォルトカラー */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 16 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 342 90% 76%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 16 91% 90%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 16 30% 89%;
+    --input: 16 30% 89%;
+    --ring: 16 91% 50%;
+    --radius: 1rem;
+  }
+}
+
+@layer components {
+  /* あんぴーちゃん専用クラス */
+  .cute-card {
+    @apply bg-white rounded-cute shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-peach-200;
+  }
+  
+  .gentle-shadow {
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.1);
+  }
+  
+  .heart-accent {
+    @apply text-heart-pink;
+  }
+  
+  .cute-button {
+    @apply bg-peach-500 text-white font-medium py-2 px-4 rounded-cute hover:bg-peach-600 transition-colors duration-200;
+  }
+  
+  .watching-icon {
+    @apply text-peach-500;
+  }
+  
+  .warm-gradient {
+    background: linear-gradient(135deg, var(--peach-50) 0%, var(--heart-pink-light) 100%);
+  }
+}
