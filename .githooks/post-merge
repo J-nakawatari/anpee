@@ -32,15 +32,21 @@ npm run build
 # 2. バックエンドの処理
 echo ""
 echo "⚙️  バックエンドの処理を開始..."
-cd "$PROJECT_ROOT/backend"
+
+# バックエンドディレクトリが存在するか確認
+if [ -d "$PROJECT_ROOT/backend" ]; then
+    cd "$PROJECT_ROOT/backend"
 
 # 依存関係のインストール
 echo "📦 バックエンドの依存関係をインストール中..."
 npm ci --production
 
-# TypeScriptのビルド
-echo "🔨 バックエンドをビルド中..."
-npm run build
+    # TypeScriptのビルド
+    echo "🔨 バックエンドをビルド中..."
+    npm run build
+else
+    echo "⚠️  バックエンドディレクトリが見つかりません。スキップします。"
+fi
 
 # 3. PM2でサービスを再起動
 echo ""
@@ -49,7 +55,12 @@ echo "🔄 サービスを再起動中..."
 # PM2が実行中か確認
 if pm2 list | grep -q "anpee"; then
     echo "♻️  既存のAnpeeプロセスを再起動..."
-    pm2 restart anpee
+    # フロントエンドのみの場合
+    if [ ! -d "$PROJECT_ROOT/backend" ]; then
+        pm2 restart anpee-frontend || pm2 restart anpee
+    else
+        pm2 restart anpee-backend anpee-frontend || pm2 restart anpee
+    fi
 else
     echo "🆕 新規にAnpeeプロセスを開始..."
     # ecosystem.config.jsが存在する場合はそれを使用
@@ -57,8 +68,10 @@ else
         pm2 start "$PROJECT_ROOT/ecosystem.config.js"
     else
         # 存在しない場合は個別に起動
-        cd "$PROJECT_ROOT/backend"
-        pm2 start npm --name "anpee-backend" -- start
+        if [ -d "$PROJECT_ROOT/backend" ]; then
+            cd "$PROJECT_ROOT/backend"
+            pm2 start npm --name "anpee-backend" -- start
+        fi
         
         cd "$PROJECT_ROOT/frontend"
         pm2 start npm --name "anpee-frontend" -- start
