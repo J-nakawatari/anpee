@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Anpee - Git post-merge hook
+# このスクリプトは git pull 実行後に自動的に実行されます
+
+echo "================================================"
+echo "🚀 Anpee デプロイメント開始"
+echo "================================================"
+
+# エラーが発生したら即座に終了
+set -e
+
+# プロジェクトのルートディレクトリを取得
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+cd "$PROJECT_ROOT"
+
+echo "📍 作業ディレクトリ: $PROJECT_ROOT"
+
+# 1. フロントエンドの処理
+echo ""
+echo "🎨 フロントエンドの処理を開始..."
+cd "$PROJECT_ROOT/frontend"
+
+# 依存関係のインストール
+echo "📦 フロントエンドの依存関係をインストール中..."
+npm ci --production=false
+
+# ビルド
+echo "🔨 フロントエンドをビルド中..."
+npm run build
+
+# 2. バックエンドの処理
+echo ""
+echo "⚙️  バックエンドの処理を開始..."
+cd "$PROJECT_ROOT/backend"
+
+# 依存関係のインストール
+echo "📦 バックエンドの依存関係をインストール中..."
+npm ci --production
+
+# TypeScriptのビルド
+echo "🔨 バックエンドをビルド中..."
+npm run build
+
+# 3. PM2でサービスを再起動
+echo ""
+echo "🔄 サービスを再起動中..."
+
+# PM2が実行中か確認
+if pm2 list | grep -q "anpee"; then
+    echo "♻️  既存のAnpeeプロセスを再起動..."
+    pm2 restart anpee
+else
+    echo "🆕 新規にAnpeeプロセスを開始..."
+    # ecosystem.config.jsが存在する場合はそれを使用
+    if [ -f "$PROJECT_ROOT/ecosystem.config.js" ]; then
+        pm2 start "$PROJECT_ROOT/ecosystem.config.js"
+    else
+        # 存在しない場合は個別に起動
+        cd "$PROJECT_ROOT/backend"
+        pm2 start npm --name "anpee-backend" -- start
+        
+        cd "$PROJECT_ROOT/frontend"
+        pm2 start npm --name "anpee-frontend" -- start
+    fi
+fi
+
+# PM2の設定を保存
+echo "💾 PM2設定を保存中..."
+pm2 save
+
+# 4. Nginxの設定をリロード（必要な場合）
+echo ""
+echo "🌐 Nginx設定をチェック中..."
+if sudo nginx -t 2>/dev/null; then
+    echo "✅ Nginx設定は正常です"
+    echo "♻️  Nginxをリロード中..."
+    sudo nginx -s reload
+else
+    echo "⚠️  Nginx設定にエラーがあります。手動で確認してください。"
+fi
+
+# 5. 完了メッセージ
+echo ""
+echo "================================================"
+echo "✅ デプロイメントが完了しました！"
+echo "================================================"
+echo ""
+echo "📊 PM2プロセス状態:"
+pm2 list | grep anpee || true
+echo ""
+echo "🔍 ログを確認する場合:"
+echo "  - バックエンド: pm2 logs anpee-backend"
+echo "  - フロントエンド: pm2 logs anpee-frontend"
+echo "  - 全体: pm2 logs"
+echo ""
+echo "🌟 Anpeeサービスが正常に更新されました！"
+echo "================================================"
