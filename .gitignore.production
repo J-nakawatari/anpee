@@ -1,0 +1,24 @@
+# 本番サーバー用 .gitignore
+# 本番サーバーで以下を実行:
+# cp .gitignore.production .git/info/exclude
+
+# ビルド成果物
+frontend/.next/
+backend/dist/
+backend/build/
+
+# ログファイル
+*.log
+logs/
+
+# PM2
+.pm2/
+
+# 環境変数（本番用は別管理）
+.env
+.env.local
+.env.production
+
+# node_modules（package-lock.jsonの競合を防ぐ）
+backend/package-lock.json
+frontend/package-lock.json
