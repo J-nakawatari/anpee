@@ -27,6 +27,14 @@ const dummyElderlyData = [
     lastResponseDate: "2024年7月13日",
     callDuration: "未応答",
     avatar: null
+  },
+  {
+    id: 3,
+    name: "山田 梅子",
+    status: 'pending' as const,
+    lastResponseTime: "18:00",
+    lastResponseDate: "2024年7月13日",
+    avatar: null
   }
 ]
 
