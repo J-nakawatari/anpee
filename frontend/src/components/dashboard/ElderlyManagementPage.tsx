@@ -1,4 +1,3 @@
-'use client'
 
 import { useState } from "react";
 import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List } from "lucide-react";
@@ -9,14 +8,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../ui/dialog";
 import {
   Pagination,
   PaginationContent,
@@ -25,20 +24,20 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+} from "../ui/pagination";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { elderlyData as initialElderlyData, type ElderlyPerson } from "@/data/elderlyData";
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { elderlyData as initialElderlyData, type ElderlyPerson } from "../../data/elderlyData";
 
 const ITEMS_PER_PAGE = 20;
 

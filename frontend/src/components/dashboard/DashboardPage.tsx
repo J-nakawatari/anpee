@@ -1,13 +1,9 @@
-'use client'
-
 import { useState } from "react";
 import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-// import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-// あんぴーちゃんの画像は一時的にハートアイコンで代替
-// import anpeechanImage from "figma:asset/8044dd3c50661d1e6746e0bc3e98566187669130.png";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
@@ -155,9 +151,8 @@ export function DashboardPage() {
       {/* ウェルカムメッセージ */}
       <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow">
         <div className="flex items-center gap-4">
-          {/* あんぴーちゃん画像の代替 */}
-          <div className="w-16 h-16 rounded-full bg-peach-100 flex items-center justify-center">
-            <Heart className="w-8 h-8 text-peach-500" />
+          <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+            <span className="text-3xl">🧡</span>
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
@@ -283,10 +278,23 @@ export function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* グラフは一時的にプレースホルダー */}
-          <div className="h-[300px] flex items-center justify-center bg-orange-50 rounded-lg">
-            <p className="text-orange-600">グラフエリア</p>
-          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={weeklyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#fed7aa" />
+              <XAxis dataKey="day" stroke="#c2410c" />
+              <YAxis stroke="#c2410c" />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: '#fff7ed',
+                  border: '1px solid #fed7aa',
+                  borderRadius: '8px'
+                }}
+                formatter={(value, name) => [value, name === 'line' ? 'LINE応答' : '電話応答']}
+              />
+              <Bar dataKey="line" fill="#22c55e" radius={[2, 2, 0, 0]} name="LINE応答" />
+              <Bar dataKey="phone" fill="#3b82f6" radius={[2, 2, 0, 0]} name="電話応答" />
+            </BarChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
