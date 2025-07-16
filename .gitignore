@@ -1,0 +1,89 @@
+# 依存関係
+node_modules/
+/.pnp
+.pnp.js
+
+# テスト関連
+/coverage
+/.nyc_output
+
+# Next.js
+/.next/
+/out/
+/build
+
+# 本番環境
+/dist
+
+# その他
+.DS_Store
+*.pem
+
+# デバッグ
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# 環境変数 - .envで始まるファイルはすべて除外
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ドキュメント - docsフォルダごと除外
+docs/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# ログファイル
+logs/
+*.log
+
+# 一時ファイル
+tmp/
+temp/
+
+# ビルドキャッシュ
+.turbo
+
+# Vercel
+.vercel
+
+# PWA
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# データベース
+*.sqlite
+*.sqlite3
+*.db
+
+# バックアップファイル
+*.backup
+*.bak
+
+# セキュリティ
+*.key
+*.cert
+*.crt
+*.pem
+
+# その他のキャッシュ
+.cache/
+.parcel-cache/
