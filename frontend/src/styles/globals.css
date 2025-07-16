@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -46,11 +44,7 @@
 @layer components {
   /* あんぴーちゃん専用クラス */
   .cute-card {
-    @apply bg-white rounded-cute shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-peach-200;
-  }
-  
-  .bg-white {
-    background-color: #ffffff;
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 border border-orange-200;
   }
   
   .gentle-shadow {
@@ -58,15 +52,15 @@
   }
   
   .heart-accent {
-    @apply text-heart-pink;
+    @apply text-pink-500;
   }
   
   .cute-button {
-    @apply bg-peach-500 text-white font-medium py-2 px-4 rounded-cute hover:bg-peach-600 transition-colors duration-200;
+    @apply bg-orange-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-200;
   }
   
   .watching-icon {
-    @apply text-peach-500;
+    @apply text-orange-500;
   }
   
   .warm-gradient {
