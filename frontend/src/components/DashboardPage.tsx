@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -7,11 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 // import anpeechanImage from "figma:asset/8044dd3c50661d1e6746e0bc3e98566187669130.png";
 
 export function DashboardPage() {
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  
-  useEffect(() => {
-    setCurrentTime(new Date());
-  }, []);
+  const [currentTime] = useState(new Date());
 
   // 見守り対象者データ（1-2人想定）
   const elderlyPeople = [
@@ -162,7 +158,7 @@ export function DashboardPage() {
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
             <p className="text-orange-600 mt-1">
-              {currentTime ? `${formatDate(currentTime)} ${formatTime(currentTime)}` : 'Loading...'}
+              {formatDate(currentTime)} {formatTime(currentTime)}
             </p>
             <p className="text-orange-700 mt-2">
               大切なご家族の安否確認を続けています。LINEと電話で毎日の元気をチェックしています。
