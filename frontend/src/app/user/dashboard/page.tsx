@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Layout } from '@/components/dashboard/Layout'
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
-import { ElderlyManagementPage } from '@/components/dashboard/ElderlyManagementPage'
-// 他のページコンポーネントは必要に応じて追加
+import { Layout } from '@/components/Layout'
+import { DashboardPage } from '@/components/DashboardPage'
+import { ElderlyManagementPage } from '@/components/ElderlyManagementPage'
 
 export default function UserDashboardPage() {
   const [currentPage, setCurrentPage] = useState('dashboard')
@@ -24,7 +23,7 @@ export default function UserDashboardPage() {
         return {
           title: "高齢者の管理",
           subtitle: "登録対象者の編集・削除",
-          showAddButton: false, // ページ内で管理
+          showAddButton: false,
           content: <ElderlyManagementPage />
         };
       
@@ -75,7 +74,6 @@ export default function UserDashboardPage() {
 
   const handleAddClick = () => {
     if (currentPage === "dashboard") {
-      // ダッシュボードから新規登録をクリックした場合は高齢者管理ページに遷移
       setCurrentPage("elderly-management");
     }
   };
