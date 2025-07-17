@@ -50,25 +50,31 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // TODO: 実際の登録API呼び出しを実装
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     email: formData.email,
-      //     password: formData.password
-      //   })
-      // });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: '' // 電話番号は任意
+        })
+      });
 
-      // 仮実装：登録成功としてログインページへ
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || '登録に失敗しました');
+      }
+
       showToast('アカウントを作成しました！', 'success');
       setTimeout(() => {
         router.push('/login?registered=true');
       }, 1500);
-    } catch (err) {
-      showToast('登録に失敗しました。時間をおいて再度お試しください。', 'error');
-      setError('登録に失敗しました。時間をおいて再度お試しください。');
+    } catch (err: any) {
+      const errorMessage = err.message || '登録に失敗しました。時間をおいて再度お試しください。';
+      showToast(errorMessage, 'error');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

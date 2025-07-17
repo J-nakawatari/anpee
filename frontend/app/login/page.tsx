@@ -20,22 +20,32 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // TODO: 実際のログインAPI呼び出しを実装
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Cookie を含める
+        body: JSON.stringify({ email, password })
+      });
 
-      // 仮実装：どんな入力でもログイン成功とする
-      localStorage.setItem('token', 'dummy-token');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'ログインに失敗しました');
+      }
+
+      // アクセストークンを保存
+      if (data.data?.accessToken) {
+        localStorage.setItem('token', data.data.accessToken);
+      }
+
       showToast('ログインしました！', 'success');
       setTimeout(() => {
         router.push('/user/dashboard');
       }, 1000);
-    } catch (err) {
-      showToast('ログインに失敗しました。', 'error');
-      setError('ログインに失敗しました。');
+    } catch (err: any) {
+      const errorMessage = err.message || 'ログインに失敗しました。';
+      showToast(errorMessage, 'error');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

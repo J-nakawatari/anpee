@@ -20,19 +20,24 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      // TODO: 実際のパスワードリセットAPI呼び出しを実装
-      // const response = await fetch('/api/auth/forgot-password', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email })
-      // });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
 
-      // 仮実装：メール送信成功
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'エラーが発生しました');
+      }
+
       showToast('パスワード再設定メールを送信しました！', 'success');
       setSubmitted(true);
-    } catch (err) {
-      showToast('エラーが発生しました。時間をおいて再度お試しください。', 'error');
-      setError('エラーが発生しました。時間をおいて再度お試しください。');
+    } catch (err: any) {
+      const errorMessage = err.message || 'エラーが発生しました。時間をおいて再度お試しください。';
+      showToast(errorMessage, 'error');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
