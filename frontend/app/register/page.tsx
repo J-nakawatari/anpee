@@ -57,9 +57,19 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // CSRFトークンを取得
+      const csrfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/csrf-token`, {
+        credentials: 'include'
+      });
+      const csrfData = await csrfResponse.json();
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfData.csrfToken
+        },
+        credentials: 'include',
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,

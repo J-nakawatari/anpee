@@ -20,9 +20,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // CSRFトークンを取得
+      const csrfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/csrf-token`, {
+        credentials: 'include'
+      });
+      const csrfData = await csrfResponse.json();
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfData.csrfToken
+        },
         credentials: 'include', // Cookie を含める
         body: JSON.stringify({ email, password })
       });
