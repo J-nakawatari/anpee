@@ -21,9 +21,11 @@ const PORT = process.env.PORT || 4003
 app.use(helmet())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
+    ? ['https://anpee.jp', process.env.FRONTEND_URL].filter(Boolean)
     : ['http://localhost:3003', 'http://localhost:3000'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -38,10 +40,30 @@ const csrfProtection = csrf({
   } 
 })
 
+// CSRFトークン取得エンドポイント（CSRF保護の前に定義）
+app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
+  res.json({ 
+    success: true,
+    csrfToken: req.csrfToken()
+  })
+})
+
 // CSRF保護を適用（開発環境では無効化可能）
-if (process.env.NODE_ENV !== 'development' || process.env.ENABLE_CSRF === 'true') {
-  app.use(csrfProtection)
+const enableCsrf = process.env.ENABLE_CSRF === 'true';
+if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
+  // CSRFトークンエンドポイント以外に適用
+  app.use((req, res, next) => {
+    if (req.path === '/api/v1/csrf-token') {
+      return next();
+    }
+    csrfProtection(req, res, next);
+  });
 }
+
+// CSRF設定のログ出力
+logger.info(`CSRF protection: ${enableCsrf ? 'enabled' : 'disabled'}`);
+logger.info(`Environment: ${process.env.NODE_ENV}`);
+logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anpee.jp' : 'localhost'}`)
 
 // ルート設定
 app.use('/api/v1/auth', authRoutes)
@@ -53,14 +75,6 @@ app.get('/api/v1/health', (_req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     service: 'anpee-backend'
-  })
-})
-
-// CSRFトークン取得エンドポイント
-app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
-  res.json({ 
-    success: true,
-    csrfToken: req.csrfToken()
   })
 })
 
