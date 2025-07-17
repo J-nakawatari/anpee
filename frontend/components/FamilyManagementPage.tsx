@@ -449,8 +449,18 @@ export function FamilyManagementPage() {
                 >
                   <div className="flex items-center gap-1">
                     年齢
-                    {sortField === 'age' && (
-                      sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                    {sortField === 'age' ? (
+                      <img 
+                        src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
+                        alt={sortOrder === 'asc' ? '昇順' : '降順'}
+                        className="w-4 h-4"
+                      />
+                    ) : (
+                      <img 
+                        src="/sort-amount-asc.svg" 
+                        alt="ソート可能"
+                        className="w-4 h-4 opacity-30"
+                      />
                     )}
                   </div>
                 </TableHead>
@@ -462,8 +472,18 @@ export function FamilyManagementPage() {
                 >
                   <div className="flex items-center gap-1">
                     最終連絡
-                    {sortField === 'lastContact' && (
-                      sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                    {sortField === 'lastContact' ? (
+                      <img 
+                        src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
+                        alt={sortOrder === 'asc' ? '昇順' : '降順'}
+                        className="w-4 h-4"
+                      />
+                    ) : (
+                      <img 
+                        src="/sort-amount-asc.svg" 
+                        alt="ソート可能"
+                        className="w-4 h-4 opacity-30"
+                      />
                     )}
                   </div>
                 </TableHead>
