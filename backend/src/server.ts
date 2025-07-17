@@ -36,7 +36,8 @@ const csrfProtection = csrf({
   cookie: {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: 'lax',
+    path: '/'
   } 
 })
 

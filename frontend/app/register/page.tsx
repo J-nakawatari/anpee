@@ -61,13 +61,20 @@ export default function RegisterPage() {
       const csrfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/csrf-token`, {
         credentials: 'include'
       });
+      
+      if (!csrfResponse.ok) {
+        console.error('CSRF token fetch failed:', csrfResponse.status);
+        throw new Error('CSRFトークンの取得に失敗しました');
+      }
+      
       const csrfData = await csrfResponse.json();
+      console.log('CSRF token received:', csrfData.csrfToken ? 'Yes' : 'No');
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'CSRF-Token': csrfData.csrfToken
+          'X-CSRF-Token': csrfData.csrfToken
         },
         credentials: 'include',
         body: JSON.stringify({

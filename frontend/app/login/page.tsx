@@ -30,7 +30,7 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'CSRF-Token': csrfData.csrfToken
+          'X-CSRF-Token': csrfData.csrfToken
         },
         credentials: 'include', // Cookie を含める
         body: JSON.stringify({ email, password })

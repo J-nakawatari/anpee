@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'CSRF-Token': csrfData.csrfToken
+          'X-CSRF-Token': csrfData.csrfToken
         },
         credentials: 'include',
         body: JSON.stringify({ email })
