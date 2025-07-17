@@ -190,46 +190,52 @@ export function DashboardPage() {
                 </Badge>
               </div>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* LINE応答状況 */}
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2">
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
                     <MessageSquare className="w-4 h-4 text-green-600" />
                     <span className="text-sm font-medium text-green-700">LINE</span>
                   </div>
-                  <div className="text-right">
+                  <div className="text-center">
                     {person.todayLineResponse ? (
                       <>
-                        <CheckCircle className="w-4 h-4 text-green-600 inline mr-1" />
-                        <span className="text-sm text-green-700">応答済み</span>
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm text-green-700">応答済み</span>
+                        </div>
                         <p className="text-xs text-green-600">{person.lastLineResponse}</p>
                       </>
                     ) : (
-                      <>
-                        <AlertTriangle className="w-4 h-4 text-orange-600 inline mr-1" />
+                      <div className="flex items-center justify-center gap-1">
+                        <AlertTriangle className="w-4 h-4 text-orange-600" />
                         <span className="text-sm text-orange-700">未応答</span>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* 電話応答状況 */}
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-2">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
                     <Phone className="w-4 h-4 text-blue-600" />
                     <span className="text-sm font-medium text-blue-700">電話</span>
                   </div>
-                  <div className="text-right">
+                  <div className="text-center">
                     {person.todayPhoneResponse ? (
                       <>
-                        <CheckCircle className="w-4 h-4 text-green-600 inline mr-1" />
-                        <span className="text-sm text-green-700">応答済み</span>
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm text-green-700">応答済み</span>
+                        </div>
                         <p className="text-xs text-green-600">{person.lastPhoneResponse}</p>
                       </>
                     ) : (
                       <>
-                        <Clock className="w-4 h-4 text-gray-600 inline mr-1" />
-                        <span className="text-sm text-gray-700">今日はまだ</span>
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Clock className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm text-gray-700">今日はまだ</span>
+                        </div>
                         <p className="text-xs text-gray-600">最後: {person.lastPhoneResponse}</p>
                       </>
                     )}
@@ -314,27 +320,25 @@ export function DashboardPage() {
             {recentResponses.map((response) => {
               const Icon = response.icon;
               return (
-                <div key={response.id} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-100">
-                  <div className="flex items-center gap-3">
+                <div key={response.id} className="p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  <div className="flex items-center gap-3 mb-2">
                     <Icon className={`w-5 h-5 ${response.color}`} />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-orange-800">{response.person}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {response.type}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-orange-600">{response.action}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-orange-800">{response.person}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {response.type}
+                      </Badge>
                     </div>
-                  </div>
-                  <div className="text-right">
                     <Badge 
                       variant={response.status === "応答" ? "default" : "secondary"}
                       className={response.status === "応答" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}
                     >
                       {response.status}
                     </Badge>
-                    <p className="text-sm text-orange-500 mt-1">{response.time}</p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-orange-600">
+                    <span>{response.action}</span>
+                    <span className="text-orange-500">{response.time}</span>
                   </div>
                 </div>
               );
