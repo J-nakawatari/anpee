@@ -42,6 +42,13 @@ export default function RegisterPage() {
       return;
     }
 
+    // パスワードの複雑さチェック
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+    if (!passwordRegex.test(formData.password)) {
+      setError('パスワードは大文字・小文字・数字を含む必要があります。');
+      return;
+    }
+
     if (!formData.agreeTerms) {
       setError('利用規約に同意してください。');
       return;
@@ -57,7 +64,7 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          phone: '' // 電話番号は任意
+          phone: '000-0000-0000' // 電話番号は後で設定可能（仮の番号）
         })
       });
 
@@ -140,7 +147,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               className="w-full px-4 py-3 border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-orange-50/30"
-              placeholder="8文字以上"
+              placeholder="8文字以上（大文字・小文字・数字を含む）"
             />
           </div>
 
