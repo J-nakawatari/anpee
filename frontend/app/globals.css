@@ -53,6 +53,16 @@
 
 /* 入力フィールドのフォーカススタイルをカスタマイズ */
 @layer base {
+  /* 最小フォントサイズを14pxに設定 */
+  html {
+    font-size: 16px;
+  }
+  
+  /* text-xsクラスを14px相当に変更 */
+  .text-xs {
+    font-size: 0.875rem !important; /* 14px */
+    line-height: 1.5rem !important;
+  }
   /* フォーム要素のフォント設定を明示的に指定 */
   button,
   input,
