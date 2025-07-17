@@ -29,6 +29,7 @@ interface EmailVariables {
   userEmail?: string;
   loginUrl?: string;
   resetUrl?: string;
+  verifyUrl?: string;
   baseUrl?: string;
   termsUrl?: string;
   privacyUrl?: string;
@@ -145,17 +146,24 @@ class EmailService {
   /**
    * ウェルカムメールを送信
    */
-  async sendWelcomeEmail(to: string, userName: string): Promise<boolean> {
+  async sendWelcomeEmail(to: string, userName: string, verificationToken?: string): Promise<boolean> {
     logger.info(`ウェルカムメール送信開始: ${to}, userName: ${userName}`);
+    
+    const variables: EmailVariables = {
+      userName,
+      userEmail: to
+    };
+
+    // 確認リンクがある場合は追加
+    if (verificationToken) {
+      variables.verifyUrl = `${this.baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
+    }
     
     const result = await this.sendEmail({
       to,
       subject: 'あんぴーちゃんへようこそ！',
       template: 'welcome',
-      variables: {
-        userName,
-        userEmail: to
-      }
+      variables
     });
     
     logger.info(`ウェルカムメール送信結果: ${result ? '成功' : '失敗'} - ${to}`);

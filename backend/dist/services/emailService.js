@@ -108,16 +108,21 @@ class EmailService {
     /**
      * ウェルカムメールを送信
      */
-    async sendWelcomeEmail(to, userName) {
+    async sendWelcomeEmail(to, userName, verificationToken) {
         logger.info(`ウェルカムメール送信開始: ${to}, userName: ${userName}`);
+        const variables = {
+            userName,
+            userEmail: to
+        };
+        // 確認リンクがある場合は追加
+        if (verificationToken) {
+            variables.verifyUrl = `${this.baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
+        }
         const result = await this.sendEmail({
             to,
             subject: 'あんぴーちゃんへようこそ！',
             template: 'welcome',
-            variables: {
-                userName,
-                userEmail: to
-            }
+            variables
         });
         logger.info(`ウェルカムメール送信結果: ${result ? '成功' : '失敗'} - ${to}`);
         return result;

@@ -7,6 +7,7 @@ import {
   logout,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 } from '../controllers/authController.js'
 import { validateRequest } from '../middleware/validateRequest.js'
 import { authenticate } from '../middleware/auth.js'
@@ -70,5 +71,8 @@ router.post(
   validateRequest,
   resetPassword
 )
+
+// メールアドレス確認
+router.get('/verify-email/:token', verifyEmail)
 
 export default router

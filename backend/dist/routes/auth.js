@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login, refresh, logout, forgotPassword, resetPassword, } from '../controllers/authController.js';
+import { register, login, refresh, logout, forgotPassword, resetPassword, verifyEmail, } from '../controllers/authController.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 const router = Router();
 // 新規登録
@@ -35,4 +35,6 @@ router.post('/reset-password', [
         .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
         .withMessage('パスワードは8文字以上で、大文字・小文字・数字を含む必要があります'),
 ], validateRequest, resetPassword);
+// メールアドレス確認
+router.get('/verify-email/:token', verifyEmail);
 export default router;

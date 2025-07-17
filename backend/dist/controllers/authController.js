@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import RefreshToken from '../models/RefreshToken.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, generateEmailVerificationToken, generatePasswordResetToken, } from '../utils/jwt.js';
@@ -27,9 +28,9 @@ export const register = async (req, res) => {
             phone,
             emailVerificationToken,
         });
-        // ウェルカムメールを送信
+        // ウェルカムメールを送信（確認リンク付き）
         try {
-            await emailService.sendWelcomeEmail(user.email, user.name);
+            await emailService.sendWelcomeEmail(user.email, user.name, emailVerificationToken);
         }
         catch (emailError) {
             logger.error('ウェルカムメール送信エラー:', emailError);
@@ -72,16 +73,13 @@ export const login = async (req, res) => {
                 message: 'メールアドレスまたはパスワードが正しくありません',
             });
         }
-        // メール確認の確認（一時的に無効化）
-        // TODO: メール確認機能を実装後、このチェックを有効化
-        /*
+        // メール確認の確認（開発環境ではスキップ）
         if (!user.emailVerified && process.env.NODE_ENV === 'production') {
-          return res.status(401).json({
-            success: false,
-            message: 'メールアドレスの確認が必要です',
-          })
+            return res.status(401).json({
+                success: false,
+                message: 'メールアドレスの確認が必要です',
+            });
         }
-        */
         // トークンの生成
         const accessToken = generateAccessToken({
             _id: user._id,
@@ -270,5 +268,45 @@ export const resetPassword = async (req, res) => {
             success: false,
             message: 'パスワードリセット中にエラーが発生しました',
         });
+    }
+};
+export const verifyEmail = async (req, res) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://anpee.jp';
+    try {
+        const { token } = req.params;
+        // トークンをデコード
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        }
+        catch (error) {
+            return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効または期限切れのトークンです`);
+        }
+        // トークンタイプの確認
+        if (decoded.type !== 'email_verification') {
+            return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効なトークンタイプです`);
+        }
+        // ユーザーの検索とトークンの照合
+        const user = await User.findOne({
+            _id: decoded.userId,
+            emailVerificationToken: token,
+        });
+        if (!user) {
+            return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効なトークンです`);
+        }
+        // すでに確認済みの場合
+        if (user.emailVerified) {
+            return res.redirect(`${frontendUrl}/email-verified?success=false&message=メールアドレスは既に確認済みです`);
+        }
+        // メールアドレスを確認済みに更新
+        user.emailVerified = true;
+        user.emailVerificationToken = undefined;
+        await user.save();
+        // フロントエンドにリダイレクト
+        res.redirect(`${frontendUrl}/email-verified?success=true&message=メールアドレスが確認されました`);
+    }
+    catch (error) {
+        logger.error('Email verification error:', error);
+        res.redirect(`${frontendUrl}/email-verified?success=false&message=メール確認中にエラーが発生しました`);
     }
 };
