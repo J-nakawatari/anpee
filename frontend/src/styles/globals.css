@@ -94,6 +94,7 @@ h1, h2, h3, h4, h5, h6 {
 /* 暖かい背景グラデーション */
 .warm-gradient {
   background: linear-gradient(135deg, var(--peach-50) 0%, var(--yellow-50) 100%);
+  background: linear-gradient(135deg, #fff7ed 0%, #fefce8 100%);
 }
 
 /* カード用の優しいスタイル */
@@ -142,4 +143,33 @@ h1, h2, h3, h4, h5, h6 {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--peach-400);
+}
+
+/* Flexレイアウトのフォールバック */
+.flex {
+  display: flex !important;
+}
+
+.flex-col {
+  flex-direction: column !important;
+}
+
+.flex-1 {
+  flex: 1 1 0% !important;
+}
+
+.w-64 {
+  width: 16rem !important;
+}
+
+.min-h-screen {
+  min-height: 100vh !important;
+}
+
+.overflow-auto {
+  overflow: auto !important;
+}
+
+.overflow-y-auto {
+  overflow-y: auto !important;
 }
