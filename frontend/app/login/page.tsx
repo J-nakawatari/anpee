@@ -44,7 +44,7 @@ export default function LoginPage() {
             alt="あんぴーちゃんロゴ"
             width={80}
             height={80}
-            className="mb-4"
+            className="mb-4 mx-auto"
           />
           <h1 className="text-2xl font-bold text-orange-800">あんぴーちゃん</h1>
           <p className="text-orange-600 mt-2">家族見守りサービス</p>
@@ -52,7 +52,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-2">
               メールアドレス
             </label>
             <input
@@ -67,7 +67,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-2">
               パスワード
             </label>
             <input

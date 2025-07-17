@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
               alt="あんぴーちゃんロゴ"
               width={80}
               height={80}
-              className="mb-4"
+              className="mb-4 mx-auto"
             />
             <h1 className="text-2xl font-bold text-orange-800 mb-2">パスワードをお忘れですか？</h1>
             <p className="text-gray-600">メールアドレスを入力してください。</p>
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-2">
               登録メールアドレス
             </label>
             <input

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   keywords: ['見守り', '高齢者', '安否確認', 'LINE', '電話確認'],
   authors: [{ name: 'あんぴーちゃん' }],
   viewport: 'width=device-width, initial-scale=1',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

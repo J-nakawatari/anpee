@@ -77,7 +77,7 @@ export default function RegisterPage() {
             alt="あんぴーちゃんロゴ"
             width={80}
             height={80}
-            className="mb-4"
+            className="mb-4 mx-auto"
           />
           <h1 className="text-2xl font-bold text-orange-800">新規会員登録</h1>
           <p className="text-orange-600 mt-2">あんぴーちゃんで家族を見守りましょう</p>
@@ -85,7 +85,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="name" className="block text-base font-medium text-gray-700 mb-2">
               お名前
             </label>
             <input
@@ -101,7 +101,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-2">
               メールアドレス
             </label>
             <input
@@ -117,7 +117,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-2">
               パスワード
             </label>
             <input
@@ -133,7 +133,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirmPassword" className="block text-base font-medium text-gray-700 mb-2">
               パスワード（確認）
             </label>
             <input
