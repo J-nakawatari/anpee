@@ -424,6 +424,10 @@ export default function RootLayout({
             font-weight: 500 !important;
           }
           
+          .font-bold {
+            font-weight: 700 !important;
+          }
+          
           /* 色 */
           .text-orange-800 {
             color: #9a3412 !important;
@@ -543,6 +547,43 @@ export default function RootLayout({
             color: #a16207 !important;
           }
           
+          /* 統計カード内のスタイル調整 */
+          [data-slot="card"] [data-slot="card-content"] {
+            padding: 1.5rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0 !important;
+          }
+          
+          [data-slot="card"] [data-slot="card-content"] > div {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+          }
+          
+          [data-slot="card"] [data-slot="card-content"] > div > div:first-child {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.25rem !important;
+          }
+          
+          [data-slot="card"] [data-slot="card-content"] > div > div:last-child {
+            flex-shrink: 0 !important;
+          }
+          
+          /* カードホバー時のスタイル */
+          .cute-card {
+            transition: all 0.2s ease !important;
+            cursor: default !important;
+          }
+          
+          .cute-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.12) !important;
+            border-color: #fdba74 !important;
+          }
+          
           /* グリッドレイアウト */
           .grid {
             display: grid !important;
@@ -658,6 +699,10 @@ export default function RootLayout({
             border-radius: 1rem !important;
           }
           
+          .rounded-full {
+            border-radius: 9999px !important;
+          }
+          
           /* シャドウ */
           .hover\:shadow-lg:hover {
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
@@ -722,10 +767,6 @@ export default function RootLayout({
           
           .opacity-75 {
             opacity: 0.75 !important;
-          }
-          
-          .rounded-full {
-            border-radius: 9999px !important;
           }
           
           .w-3 {
@@ -980,9 +1021,10 @@ export default function RootLayout({
             color: #7c2d12 !important;
             display: flex !important;
             flex-direction: column !important;
-            gap: 1.5rem !important;
-            border-radius: 0.75rem !important;
+            gap: 0 !important;
+            border-radius: 1rem !important;
             border: 1px solid #fde8d6 !important;
+            overflow: hidden !important;
           }
           
           [data-slot="card-header"] {
@@ -1008,17 +1050,39 @@ export default function RootLayout({
           }
           
           [data-slot="card-content"] {
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
+            padding: 1.5rem !important;
           }
           
           [data-slot="card-content"]:last-child {
-            padding-bottom: 1.5rem !important;
+            padding: 1.5rem !important;
+          }
+          
+          /* 統計カード専用のレイアウト */
+          .cute-card [data-slot="card-content"] .flex.items-center.justify-between {
+            gap: 1rem !important;
+          }
+          
+          .cute-card [data-slot="card-content"] p {
+            margin: 0 !important;
+          }
+          
+          .cute-card [data-slot="card-content"] .text-2xl {
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
           }
           
           /* クラスの組み合わせ */
           .cute-card.hover\:shadow-lg:hover {
             box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15), 0 4px 6px -4px rgba(249, 115, 22, 0.1) !important;
+          }
+          
+          /* アイコンコンテナのスタイル */
+          .p-3.rounded-full {
+            padding: 0.75rem !important;
+            border-radius: 9999px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
           
           /* ボタンの詳細スタイル */
@@ -1084,15 +1148,6 @@ export default function RootLayout({
             }
           }
           
-          /* カードのホバー効果 */
-          .cute-card {
-            transition: all 0.2s ease !important;
-          }
-          
-          .cute-card:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 16px rgba(249, 115, 22, 0.15) !important;
-          }
           
           /* アイコンのサイズ調整 */
           .w-5.h-5 {
