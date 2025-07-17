@@ -603,28 +603,28 @@ export default function RootLayout({
           
           /* メディアクエリの強化 */
           @media screen and (min-width: 768px) {
-            .md\:grid-cols-2 {
+            .md\\:grid-cols-2 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
             
             /* 2列表示時のグリッド */
-            .grid.md\:grid-cols-2 {
+            .grid.md\\:grid-cols-2 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
           }
           
           @media screen and (min-width: 1024px) {
-            .lg\:grid-cols-4 {
+            .lg\\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
             
             /* 4列表示時のグリッド */
-            .grid.lg\:grid-cols-4 {
+            .grid.lg\\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
             
             /* 2列表示を上書き */
-            .grid.md\:grid-cols-2.lg\:grid-cols-4 {
+            .grid.md\\:grid-cols-2.lg\\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
           }
@@ -636,17 +636,17 @@ export default function RootLayout({
           
           /* 統計カード用のグリッド */
           @media screen and (min-width: 768px) {
-            div.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+            div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
             
-            div.grid.grid-cols-1.md\:grid-cols-2 {
+            div.grid.grid-cols-1.md\\:grid-cols-2 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
           }
           
           @media screen and (min-width: 1024px) {
-            div.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+            div.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
           }
@@ -1049,9 +1049,9 @@ export default function RootLayout({
             border: 1px solid transparent !important;
           }
           
-          /* 継纍的なグリッドレスポンシブ対応 */
+          /* 継続的なグリッドレスポンシブ対応 */
           @media screen and (min-width: 640px) {
-            .sm\:grid-cols-2 {
+            .sm\\:grid-cols-2 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
           }
@@ -1064,7 +1064,7 @@ export default function RootLayout({
           }
           
           @media screen and (min-width: 1280px) {
-            .xl\:grid-cols-4 {
+            .xl\\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
           }
@@ -1147,7 +1147,7 @@ export default function RootLayout({
           }
           
           /* クラスの組み合わせ */
-          .cute-card.hover\:shadow-lg:hover {
+          .cute-card.hover\\:shadow-lg:hover {
             box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15), 0 4px 6px -4px rgba(249, 115, 22, 0.1) !important;
           }
           
@@ -1161,7 +1161,7 @@ export default function RootLayout({
           }
           
           /* ボタンの詳細スタイル */
-          .bg-orange-500.hover\:bg-orange-600:hover {
+          .bg-orange-500.hover\\:bg-orange-600:hover {
             background-color: #ea580c !important;
           }
           
