@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -80,7 +80,10 @@ body {
   color: var(--foreground);
   line-height: 1.6;
   letter-spacing: 0.02em;
-  font-weight: 400;
+  font-weight: 500;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -89,7 +92,19 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.025em;
 }
 
-/* M PLUS Rounded 1c フォントクラス */
+/* M PLUS Rounded 1c フォントウェイトクラス */
+.m-plus-rounded-1c-thin {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.m-plus-rounded-1c-light {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
 .m-plus-rounded-1c-regular {
   font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: 400;
@@ -105,6 +120,18 @@ h1, h2, h3, h4, h5, h6 {
 .m-plus-rounded-1c-bold {
   font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: 700;
+  font-style: normal;
+}
+
+.m-plus-rounded-1c-extrabold {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.m-plus-rounded-1c-black {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 900;
   font-style: normal;
 }
 
