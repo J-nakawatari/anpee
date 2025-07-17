@@ -186,7 +186,7 @@ export function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <img 
-                    src={person.avatar === "👴" ? "/Grandpas_face.svg" : "/Grandmas_face.svg"}
+                    src={person.avatar === "👴" ? "/grandpas_face_2.png" : "/grandmas_face_v2.png"}
                     alt={person.name}
                     width="48"
                     height="48"
