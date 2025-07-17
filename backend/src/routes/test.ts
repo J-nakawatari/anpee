@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import emailService from '../services/emailService.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
 
 const router = Router();
@@ -9,7 +9,7 @@ const router = Router();
  * テストメール送信
  * 開発・検証用のエンドポイント
  */
-router.post('/send-test-email', authenticateToken, async (req: Request, res: Response) => {
+router.post('/send-test-email', authenticate, async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     
