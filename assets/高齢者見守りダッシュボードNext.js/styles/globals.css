@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fef7f0;
+  --foreground: #7c2d12;
+  --card: #ffffff;
+  --card-foreground: #7c2d12;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #fed7aa;
+  --secondary-foreground: #7c2d12;
+  --muted: #fff7ed;
+  --muted-foreground: #a16207;
+  --accent: #ffedd5;
+  --accent-foreground: #7c2d12;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #fde8d6;
+  --input: #ffffff;
+  --ring: #f97316;
+  --radius: 1rem;
+  
+  /* あんぴーちゃん専用カラー */
+  --peach-50: #fff7ed;
+  --peach-100: #ffedd5;
+  --peach-200: #fed7aa;
+  --peach-300: #fdba74;
+  --peach-400: #fb923c;
+  --peach-500: #f97316;
+  --peach-600: #ea580c;
+  --peach-700: #c2410c;
+  --peach-800: #9a3412;
+  --peach-900: #7c2d12;
+  
+  --yellow-50: #fefce8;
+  --yellow-100: #fef3c7;
+  --yellow-200: #fed7aa;
+  --yellow-300: #fcd34d;
+  --yellow-400: #fbbf24;
+  --yellow-500: #f59e0b;
+  
+  --heart-pink: #f472b6;
+  --heart-pink-light: #fce7f3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Hiragino Maru Gothic Pro", "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Meiryo", sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* 優しい影 */
+.gentle-shadow {
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+}
+
+/* ハートアクセント */
+.heart-accent {
+  position: relative;
+}
+
+.heart-accent::before {
+  content: "♡";
+  color: var(--heart-pink);
+  margin-right: 0.25rem;
+  font-size: 0.875em;
+}
+
+/* 可愛いボタンスタイル */
+.cute-button {
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.cute-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+/* 暖かい背景グラデーション */
+.warm-gradient {
+  background: linear-gradient(135deg, var(--peach-50) 0%, var(--yellow-50) 100%);
+}
+
+/* カード用の優しいスタイル */
+.cute-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);
+}
+
+/* ステータス表示用の色 */
+.status-safe {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* 見守り専用アイコン */
+.watching-icon {
+  color: var(--peach-500);
+  filter: drop-shadow(0 1px 2px rgba(249, 115, 22, 0.3));
+}
+
+/* スクロールバーのカスタマイズ */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--peach-50);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--peach-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--peach-400);
+}
