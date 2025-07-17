@@ -1,12 +1,15 @@
-'use client'
-
-import { useState } from 'react'
-import { Layout } from '@/components/Layout'
-import { DashboardPage } from '@/components/DashboardPage'
-import { ElderlyManagementPage } from '@/components/ElderlyManagementPage'
+"use client";
+import { useState } from "react";
+import { Layout } from "@/components/Layout";
+import { DashboardPage } from "@/components/DashboardPage";
+import { ElderlyManagementPage } from "@/components/ElderlyManagementPage";
+import { HistoryPage } from "@/components/HistoryPage";
+import { NotificationSettingsPage } from "@/components/NotificationSettingsPage";
+import { BillingPage } from "@/components/BillingPage";
+import { AccountSettingsPage } from "@/components/AccountSettingsPage";
 
 export default function UserDashboardPage() {
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [currentPage, setCurrentPage] = useState("dashboard");
 
   const getPageConfig = () => {
     switch (currentPage) {
@@ -23,7 +26,7 @@ export default function UserDashboardPage() {
         return {
           title: "高齢者の管理",
           subtitle: "登録対象者の編集・削除",
-          showAddButton: false,
+          showAddButton: false, // ページ内で管理
           content: <ElderlyManagementPage />
         };
       
@@ -32,7 +35,7 @@ export default function UserDashboardPage() {
           title: "通話＆ボタン応答履歴",
           subtitle: "過去の記録確認",
           showAddButton: false,
-          content: <div className="text-center py-12 text-gray-500">履歴ページ（実装予定）</div>
+          content: <HistoryPage />
         };
       
       case "notifications":
@@ -40,7 +43,7 @@ export default function UserDashboardPage() {
           title: "通知設定",
           subtitle: "LINE/メール・再通知の設定",
           showAddButton: false,
-          content: <div className="text-center py-12 text-gray-500">通知設定ページ（実装予定）</div>
+          content: <NotificationSettingsPage />
         };
       
       case "billing":
@@ -48,7 +51,7 @@ export default function UserDashboardPage() {
           title: "プラン・支払い管理",
           subtitle: "契約情報の管理",
           showAddButton: false,
-          content: <div className="text-center py-12 text-gray-500">プラン・支払い管理ページ（実装予定）</div>
+          content: <BillingPage />
         };
       
       case "account":
@@ -56,7 +59,7 @@ export default function UserDashboardPage() {
           title: "アカウント設定",
           subtitle: "ユーザー自身の管理",
           showAddButton: false,
-          content: <div className="text-center py-12 text-gray-500">アカウント設定ページ（実装予定）</div>
+          content: <AccountSettingsPage />
         };
       
       default:
@@ -74,6 +77,7 @@ export default function UserDashboardPage() {
 
   const handleAddClick = () => {
     if (currentPage === "dashboard") {
+      // ダッシュボードから新規登録をクリックした場合は高齢者管理ページに遷移
       setCurrentPage("elderly-management");
     }
   };
@@ -90,5 +94,5 @@ export default function UserDashboardPage() {
     >
       {pageConfig.content}
     </Layout>
-  )
+  );
 }
