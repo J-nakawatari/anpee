@@ -11,7 +11,21 @@ import testRoutes from './routes/test.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み
-dotenv.config()
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const result = dotenv.config({ 
+  path: path.resolve(__dirname, '../.env') 
+})
+
+if (result.error) {
+  logger.error('Error loading .env file:', result.error)
+} else {
+  logger.info(`Loaded ${Object.keys(result.parsed || {}).length} environment variables`)
+}
 
 const app = express()
 const httpServer = createServer(app)
