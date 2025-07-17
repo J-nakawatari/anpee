@@ -317,7 +317,9 @@ export const resetPassword = async (req: Request, res: Response) => {
 }
 
 export const verifyEmail = async (req: Request, res: Response) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'https://anpee.jp'
+  const frontendUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://anpee.jp' 
+    : (process.env.FRONTEND_URL || 'http://localhost:3003')
   
   try {
     const { token } = req.params
@@ -327,12 +329,12 @@ export const verifyEmail = async (req: Request, res: Response) => {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET!)
     } catch (error) {
-      return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効または期限切れのトークンです`)
+      return res.redirect(`${frontendUrl}/email-verified?success=false&message=${encodeURIComponent('無効または期限切れのトークンです')}`)
     }
 
     // トークンタイプの確認
     if (decoded.type !== 'email_verification') {
-      return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効なトークンタイプです`)
+      return res.redirect(`${frontendUrl}/email-verified?success=false&message=${encodeURIComponent('無効なトークンタイプです')}`)
     }
 
     // ユーザーの検索とトークンの照合
@@ -342,12 +344,12 @@ export const verifyEmail = async (req: Request, res: Response) => {
     })
 
     if (!user) {
-      return res.redirect(`${frontendUrl}/email-verified?success=false&message=無効なトークンです`)
+      return res.redirect(`${frontendUrl}/email-verified?success=false&message=${encodeURIComponent('無効なトークンです')}`)
     }
 
     // すでに確認済みの場合
     if (user.emailVerified) {
-      return res.redirect(`${frontendUrl}/email-verified?success=false&message=メールアドレスは既に確認済みです`)
+      return res.redirect(`${frontendUrl}/email-verified?success=false&message=${encodeURIComponent('メールアドレスは既に確認済みです')}`)
     }
 
     // メールアドレスを確認済みに更新
@@ -356,9 +358,9 @@ export const verifyEmail = async (req: Request, res: Response) => {
     await user.save()
 
     // フロントエンドにリダイレクト
-    res.redirect(`${frontendUrl}/email-verified?success=true&message=メールアドレスが確認されました`)
+    res.redirect(`${frontendUrl}/email-verified?success=true&message=${encodeURIComponent('メールアドレスが確認されました')}`)
   } catch (error) {
     logger.error('Email verification error:', error)
-    res.redirect(`${frontendUrl}/email-verified?success=false&message=メール確認中にエラーが発生しました`)
+    res.redirect(`${frontendUrl}/email-verified?success=false&message=${encodeURIComponent('メール確認中にエラーが発生しました')}`)
   }
 }
