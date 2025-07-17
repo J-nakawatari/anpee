@@ -102,7 +102,7 @@ export function ClientLayout({
   return (
     <div className="min-h-screen warm-gradient flex">
       {/* サイドバー */}
-      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow">
+      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow fixed h-screen overflow-y-auto">
         {/* ロゴ部分 */}
         <div className="p-6 border-b border-orange-200">
           <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ export function ClientLayout({
       </div>
 
       {/* メインコンテンツ */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64">
         {/* トップヘッダー */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 px-6 py-4 gentle-shadow">
           <div className="flex items-center justify-between">
