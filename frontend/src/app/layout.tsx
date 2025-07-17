@@ -50,6 +50,39 @@ export default function RootLayout({
           .w-64 { width: 16rem !important; }
           .min-h-screen { min-height: 100vh !important; }
         ` }} />
+        <script dangerouslySetInnerHTML={{ __html: `
+          // CSS適用チェック
+          window.addEventListener('load', function() {
+            const mainContainer = document.querySelector('.min-h-screen.warm-gradient.flex');
+            const sidebar = document.querySelector('.w-64.bg-white.border-r.border-orange-200.flex.flex-col');
+            
+            if (mainContainer) {
+              const styles = window.getComputedStyle(mainContainer);
+              console.log('=== CSS適用チェック ===');
+              console.log('メインコンテナ display:', styles.display);
+              console.log('メインコンテナ flex-direction:', styles.flexDirection);
+              console.log('メインコンテナ min-height:', styles.minHeight);
+            }
+            
+            if (sidebar) {
+              const styles = window.getComputedStyle(sidebar);
+              console.log('サイドバー display:', styles.display);
+              console.log('サイドバー width:', styles.width);
+              console.log('サイドバー flex-direction:', styles.flexDirection);
+            }
+            
+            // Tailwind CSSファイルの確認
+            const styleSheets = Array.from(document.styleSheets);
+            console.log('読み込まれたCSSファイル数:', styleSheets.length);
+            styleSheets.forEach((sheet, index) => {
+              try {
+                console.log(\`CSS[\${index}]: \${sheet.href || 'インライン'}\`);
+              } catch (e) {
+                console.log(\`CSS[\${index}]: アクセス不可\`);
+              }
+            });
+          });
+        ` }} />
       </head>
       <body className={`${mPlusRounded1c.variable} ${mPlusRounded1c.className}`}>{children}</body>
     </html>
