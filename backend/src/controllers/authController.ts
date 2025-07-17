@@ -11,6 +11,7 @@ import {
   generatePasswordResetToken,
 } from '../utils/jwt.js'
 import logger from '../utils/logger.js'
+import emailService from '../services/emailService.js'
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -40,7 +41,13 @@ export const register = async (req: Request, res: Response) => {
       emailVerificationToken,
     })
 
-    // TODO: SendGridでメール確認メールを送信
+    // ウェルカムメールを送信
+    try {
+      await emailService.sendWelcomeEmail(user.email, user.name)
+    } catch (emailError) {
+      logger.error('ウェルカムメール送信エラー:', emailError)
+      // メール送信エラーがあっても登録は成功とする
+    }
 
     res.status(201).json({
       success: true,
@@ -244,7 +251,19 @@ export const forgotPassword = async (req: Request, res: Response) => {
     user.passwordResetExpires = resetExpires
     await user.save()
 
-    // TODO: SendGridでパスワードリセットメールを送信
+    // パスワードリセットメールを送信
+    try {
+      const requestIp = req.ip || req.headers['x-forwarded-for'] as string || '不明'
+      await emailService.sendPasswordResetEmail(
+        user.email,
+        user.name,
+        resetToken,
+        requestIp
+      )
+    } catch (emailError) {
+      logger.error('パスワードリセットメール送信エラー:', emailError)
+      // メール送信エラーがあってもトークンは生成されているので、成功レスポンスを返す
+    }
 
     res.json({
       success: true,

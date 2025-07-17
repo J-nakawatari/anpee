@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser'
 import { createServer } from 'http'
 import logger from './utils/logger.js'
 import authRoutes from './routes/auth.js'
+import testRoutes from './routes/test.js'
 import csrf from 'csurf'
 
 // 環境変数の読み込み
@@ -44,6 +45,7 @@ if (process.env.NODE_ENV !== 'development' || process.env.ENABLE_CSRF === 'true'
 
 // ルート設定
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/test', testRoutes)
 
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {
