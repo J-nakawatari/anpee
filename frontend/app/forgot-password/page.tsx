@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Mail, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
@@ -77,9 +78,13 @@ export default function ForgotPasswordPage() {
           </button>
           
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-100 to-pink-100 rounded-full mb-4">
-              <span className="text-4xl">💝</span>
-            </div>
+            <Image 
+              src="/logo.svg" 
+              alt="あんぴーちゃんロゴ"
+              width={80}
+              height={80}
+              className="mb-4"
+            />
             <h1 className="text-2xl font-bold text-orange-800 mb-2">パスワードをお忘れですか？</h1>
             <p className="text-gray-600">メールアドレスを入力してください。</p>
             <p className="text-gray-600">パスワードリセットのご案内をお送りします。</p>

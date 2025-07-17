@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Heart, Check } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -71,9 +72,13 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50 flex items-center justify-center p-4">
       <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl p-8 max-w-md w-full border border-orange-100">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-100 to-pink-100 rounded-full mb-4">
-            <span className="text-4xl">💕</span>
-          </div>
+          <Image 
+            src="/logo.svg" 
+            alt="あんぴーちゃんロゴ"
+            width={80}
+            height={80}
+            className="mb-4"
+          />
           <h1 className="text-2xl font-bold text-orange-800">新規会員登録</h1>
           <p className="text-orange-600 mt-2">あんぴーちゃんで家族を見守りましょう</p>
         </div>
