@@ -403,6 +403,198 @@ export default function RootLayout({
             background: #fb923c !important;
           }
           
+          /* カードコンポーネントのスタイル */
+          .bg-card {
+            background-color: #ffffff !important;
+          }
+          
+          .text-card-foreground {
+            color: #7c2d12 !important;
+          }
+          
+          .rounded-xl {
+            border-radius: 0.75rem !important;
+          }
+          
+          .border {
+            border-width: 1px !important;
+            border-style: solid !important;
+            border-color: #fde8d6 !important;
+          }
+          
+          .gap-6 {
+            gap: 1.5rem !important;
+          }
+          
+          .px-6 {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+          }
+          
+          .pt-6 {
+            padding-top: 1.5rem !important;
+          }
+          
+          .pb-6 {
+            padding-bottom: 1.5rem !important;
+          }
+          
+          .text-muted-foreground {
+            color: #a16207 !important;
+          }
+          
+          /* グリッドレイアウト */
+          .grid {
+            display: grid !important;
+          }
+          
+          .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+          }
+          
+          .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+          
+          .grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          }
+          
+          @media (min-width: 768px) {
+            .md\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          @media (min-width: 1024px) {
+            .lg\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          /* バッジコンポーネント */
+          .bg-green-100 {
+            background-color: #dcfce7 !important;
+          }
+          
+          .text-green-700 {
+            color: #15803d !important;
+          }
+          
+          .text-green-600 {
+            color: #16a34a !important;
+          }
+          
+          .bg-green-50 {
+            background-color: #f0fdf4 !important;
+          }
+          
+          .bg-blue-50 {
+            background-color: #eff6ff !important;
+          }
+          
+          .bg-blue-100 {
+            background-color: #dbeafe !important;
+          }
+          
+          .text-blue-700 {
+            color: #1d4ed8 !important;
+          }
+          
+          .text-blue-600 {
+            color: #2563eb !important;
+          }
+          
+          .bg-pink-100 {
+            background-color: #fce7f3 !important;
+          }
+          
+          .text-pink-700 {
+            color: #be185d !important;
+          }
+          
+          .bg-purple-100 {
+            background-color: #f3e8ff !important;
+          }
+          
+          .text-purple-700 {
+            color: #6b21a8 !important;
+          }
+          
+          .text-purple-600 {
+            color: #9333ea !important;
+          }
+          
+          .text-gray-600 {
+            color: #4b5563 !important;
+          }
+          
+          .text-gray-700 {
+            color: #374151 !important;
+          }
+          
+          .bg-orange-100 {
+            background-color: #ffedd5 !important;
+          }
+          
+          .text-orange-700 {
+            color: #c2410c !important;
+          }
+          
+          .border-orange-100 {
+            border-color: #ffedd5 !important;
+          }
+          
+          .border-blue-200 {
+            border-color: #bfdbfe !important;
+          }
+          
+          /* ラウンドコーナー */
+          .rounded-lg {
+            border-radius: 0.5rem !important;
+          }
+          
+          .rounded-2xl {
+            border-radius: 1rem !important;
+          }
+          
+          /* シャドウ */
+          .hover\:shadow-lg:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+          }
+          
+          .transition-shadow {
+            transition-property: box-shadow !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 150ms !important;
+          }
+          
+          /* フォントサイズ追加 */
+          .text-3xl {
+            font-size: 1.875rem !important;
+            line-height: 2.25rem !important;
+          }
+          
+          /* インライン要素 */
+          .inline {
+            display: inline !important;
+          }
+          
+          .mr-1 {
+            margin-right: 0.25rem !important;
+          }
+          
+          /* Variantスタイル */
+          .variant-outline {
+            background-color: transparent !important;
+            border: 1px solid currentColor !important;
+          }
+          
+          .variant-secondary {
+            background-color: #fed7aa !important;
+            color: #7c2d12 !important;
+          }
+          
           /* その他のユーティリティクラス */
           .relative {
             position: relative !important;
@@ -637,6 +829,114 @@ export default function RootLayout({
             transition-property: opacity !important;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
             transition-duration: 150ms !important;
+          }
+          
+          /* レスポンシブコンテナ */
+          .w-full {
+            width: 100% !important;
+          }
+          
+          .h-full {
+            height: 100% !important;
+          }
+          
+          /* グラフ用スタイル */
+          .recharts-wrapper {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          
+          /* Badge用スタイル */
+          [role="status"], .badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            border-radius: 0.375rem !important;
+            padding: 0.125rem 0.625rem !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            line-height: 1rem !important;
+            border: 1px solid transparent !important;
+          }
+          
+          /* Button用スタイル */
+          button {
+            cursor: pointer !important;
+          }
+          
+          /* アニメーション追加 */
+          .transition-all {
+            transition-property: all !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 150ms !important;
+          }
+          
+          .duration-200 {
+            transition-duration: 200ms !important;
+          }
+          
+          /* 特定のセレクタ修正 */
+          [data-slot="card"] {
+            background-color: #ffffff !important;
+            color: #7c2d12 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1.5rem !important;
+            border-radius: 0.75rem !important;
+            border: 1px solid #fde8d6 !important;
+          }
+          
+          [data-slot="card-header"] {
+            display: grid !important;
+            grid-auto-rows: min-content !important;
+            grid-template-rows: auto auto !important;
+            align-items: start !important;
+            gap: 0.375rem !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            padding-top: 1.5rem !important;
+          }
+          
+          [data-slot="card-title"] {
+            line-height: 1 !important;
+            font-size: 1.125rem !important;
+            font-weight: 600 !important;
+          }
+          
+          [data-slot="card-description"] {
+            color: #a16207 !important;
+            font-size: 0.875rem !important;
+          }
+          
+          [data-slot="card-content"] {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+          }
+          
+          [data-slot="card-content"]:last-child {
+            padding-bottom: 1.5rem !important;
+          }
+          
+          /* クラスの組み合わせ */
+          .cute-card.hover\:shadow-lg:hover {
+            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15), 0 4px 6px -4px rgba(249, 115, 22, 0.1) !important;
+          }
+          
+          /* ボタンの詳細スタイル */
+          .bg-orange-500.hover\:bg-orange-600:hover {
+            background-color: #ea580c !important;
+          }
+          
+          /* サイドナビゲーションの修正 */
+          .w-64.bg-white.border-r.border-orange-200.flex.flex-col.gentle-shadow.flex-shrink-0 {
+            width: 16rem !important;
+            min-width: 16rem !important;
+            max-width: 16rem !important;
+            background-color: #ffffff !important;
+            border-right: 1px solid #fed7aa !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15) !important;
           }
         ` }} />
         <script dangerouslySetInnerHTML={{ __html: `
