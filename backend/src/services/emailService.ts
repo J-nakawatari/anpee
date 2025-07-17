@@ -7,13 +7,21 @@ import logger from '../utils/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SendGrid APIキーを設定
-const apiKey = process.env.SENDGRID_API_KEY;
-if (!apiKey) {
-  logger.error('SENDGRID_API_KEY が設定されていません');
-} else {
-  sgMail.setApiKey(apiKey);
-  logger.info('SendGrid API key loaded successfully');
+// SendGrid APIキーを設定（遅延初期化）
+let isApiKeySet = false;
+
+function ensureApiKey() {
+  if (!isApiKeySet) {
+    const apiKey = process.env.SENDGRID_API_KEY;
+    if (!apiKey) {
+      logger.error('SENDGRID_API_KEY が設定されていません');
+      return false;
+    }
+    sgMail.setApiKey(apiKey);
+    logger.info('SendGrid API key loaded successfully');
+    isApiKeySet = true;
+  }
+  return true;
 }
 
 interface EmailVariables {
@@ -93,6 +101,12 @@ class EmailService {
    * メールを送信する
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    // APIキーを確認
+    if (!ensureApiKey()) {
+      logger.error('メール送信エラー: SendGrid APIキーが設定されていません');
+      return false;
+    }
+
     const { to, subject, template, variables } = options;
 
     try {
@@ -132,7 +146,9 @@ class EmailService {
    * ウェルカムメールを送信
    */
   async sendWelcomeEmail(to: string, userName: string): Promise<boolean> {
-    return this.sendEmail({
+    logger.info(`ウェルカムメール送信開始: ${to}, userName: ${userName}`);
+    
+    const result = await this.sendEmail({
       to,
       subject: 'あんぴーちゃんへようこそ！',
       template: 'welcome',
@@ -141,6 +157,9 @@ class EmailService {
         userEmail: to
       }
     });
+    
+    logger.info(`ウェルカムメール送信結果: ${result ? '成功' : '失敗'} - ${to}`);
+    return result;
   }
 
   /**
