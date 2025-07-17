@@ -12,12 +12,12 @@ set -e
 cd /var/www/anpee
 
 echo "📥 最新のコードを取得中..."
-# ローカルの変更を破棄（ビルドファイルなど）
-git reset --hard HEAD
-git clean -fd
+# リモートの最新情報を取得
+git fetch origin
 
-# 最新のコードを取得
-git pull
+# ローカルの変更を破棄してリモートの最新に更新
+git reset --hard origin/main
+git clean -fd
 
 echo "📦 バックエンドの依存関係をインストール中..."
 cd backend
