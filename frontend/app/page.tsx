@@ -1,15 +1,5 @@
-import { ClientLayout } from "@/components/ClientLayout";
-import { DashboardPage } from "@/components/DashboardPage";
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <ClientLayout
-      title="ダッシュボード"
-      subtitle="本日の見守り状況"
-      showAddButton={true}
-      addButtonText="新規登録"
-    >
-      <DashboardPage />
-    </ClientLayout>
-  );
+  redirect('/user/dashboard');
 }

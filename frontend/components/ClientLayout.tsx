@@ -27,37 +27,37 @@ export function ClientLayout({
 
   const menuItems = [
     {
-      id: "/",
+      id: "/user/dashboard",
       label: "ダッシュボード",
       icon: Home,
       description: "見守り状況の概要"
     },
     {
-      id: "/family-management",
+      id: "/user/family",
       label: "家族管理",
       icon: Users,
       description: "登録対象者の編集・削除"
     },
     {
-      id: "/history",
+      id: "/user/history",
       label: "通話＆ボタン応答履歴",
       icon: History,
       description: "過去の記録確認"
     },
     {
-      id: "/notifications",
+      id: "/user/notifications",
       label: "通知設定",
       icon: Bell,
       description: "LINE/メール・再通知の設定"
     },
     {
-      id: "/billing",
+      id: "/user/billing",
       label: "プラン・支払い管理",
       icon: CreditCard,
       description: "契約情報の管理"
     },
     {
-      id: "/account",
+      id: "/user/account",
       label: "アカウント設定",
       icon: User,
       description: "ユーザー自身の管理"
@@ -91,9 +91,9 @@ export function ClientLayout({
   };
 
   const handleAddClick = () => {
-    if (pathname === "/") {
+    if (pathname === "/user/dashboard") {
       // ダッシュボードから新規登録をクリックした場合は家族管理ページに遷移
-      router.push("/family-management");
+      router.push("/user/family");
     } else if (onAddClick) {
       onAddClick();
     }
