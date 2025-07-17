@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import { Home, Users, History, Bell, CreditCard, User, LogOut, Plus, ExternalLink, Heart } from "lucide-react";
 // import anpeechanImage from "figma:asset/8044dd3c50661d1e6746e0bc3e98566187669130.png";
 
@@ -107,9 +108,12 @@ export function ClientLayout({
         <div className="p-6 border-b border-orange-200">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-2xl">
-                🧡
-              </div>
+              <Image 
+                src="/logo.svg" 
+                alt="あんぴーちゃんロゴ"
+                width={48}
+                height={48}
+              />
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
             </div>
             <div>

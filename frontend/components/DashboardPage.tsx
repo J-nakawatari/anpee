@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -153,9 +154,12 @@ export function DashboardPage() {
       {/* ウェルカムメッセージ */}
       <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center text-3xl">
-            🧡
-          </div>
+          <Image 
+            src="/logo.svg" 
+            alt="あんぴーちゃんロゴ"
+            width={64}
+            height={64}
+          />
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
             <p className="text-orange-600 mt-1">
@@ -181,7 +185,12 @@ export function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="text-3xl">{person.avatar}</div>
+                  <Image 
+                    src={person.avatar === "👴" ? "/Grandpas_face.svg" : "/Grandmas_face.svg"}
+                    alt={person.name}
+                    width={48}
+                    height={48}
+                  />
                   <div>
                     <h3 className="font-semibold text-orange-800">{person.name}</h3>
                     <p className="text-sm text-orange-600">{person.realName} ({person.age}歳)</p>
