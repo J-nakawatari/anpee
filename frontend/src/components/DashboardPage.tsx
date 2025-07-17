@@ -149,11 +149,11 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* ウェルカムメッセージ - DEBUG */}
-      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow" style={{backgroundColor: '#fff7ed', border: '2px solid #fed7aa'}}>
+      {/* ウェルカムメッセージ */}
+      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-orange-200 flex items-center justify-center text-2xl">
-            🍊
+          <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center text-2xl">
+            🤖
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
@@ -176,7 +176,7 @@ export function DashboardPage() {
       {/* 見守り対象者カード */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {elderlyPeople.map((person) => (
-          <Card key={person.id} className="cute-card hover:shadow-lg transition-all duration-200" style={{backgroundColor: '#ffffff', border: '1px solid #fde8d6', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(249, 115, 22, 0.1)'}}>
+          <Card key={person.id} className="cute-card hover:shadow-lg transition-all duration-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
