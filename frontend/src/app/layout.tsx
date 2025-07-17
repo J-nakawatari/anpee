@@ -26,11 +26,29 @@ export default function RootLayout({
     <html lang="ja">
       <head>
         <style dangerouslySetInnerHTML={{ __html: `
-          :root {
-            --spacing: 0.25rem;
+          /* 重要なレイアウトスタイルを強制的に適用 */
+          .min-h-screen.warm-gradient.flex {
+            display: flex !important;
+            min-height: 100vh !important;
+            flex-direction: row !important;
           }
+          .w-64.bg-white.border-r.border-orange-200.flex.flex-col {
+            width: 16rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex-shrink: 0 !important;
+          }
+          .flex-1.flex.flex-col {
+            flex: 1 1 0% !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          /* 基本的なflexクラス */
+          .flex { display: flex !important; }
+          .flex-col { flex-direction: column !important; }
+          .flex-1 { flex: 1 1 0% !important; }
           .w-64 { width: 16rem !important; }
-          .flex-shrink-0 { flex-shrink: 0 !important; }
+          .min-h-screen { min-height: 100vh !important; }
         ` }} />
       </head>
       <body className={`${mPlusRounded1c.variable} ${mPlusRounded1c.className}`}>{children}</body>
