@@ -8,7 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // SendGrid APIキーを設定
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+const apiKey = process.env.SENDGRID_API_KEY;
+if (!apiKey) {
+  logger.error('SENDGRID_API_KEY が設定されていません');
+} else {
+  sgMail.setApiKey(apiKey);
+  logger.info('SendGrid API key loaded successfully');
+}
 
 interface EmailVariables {
   userName?: string;
@@ -37,7 +43,7 @@ class EmailService {
 
   constructor() {
     this.baseUrl = process.env.BASE_URL || 'https://anpee.jp';
-    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@anpee.jp';
+    this.fromEmail = process.env.EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL || 'no-reply@anpee.jp';
     this.fromName = process.env.SENDGRID_FROM_NAME || 'あんぴーちゃん';
   }
 
