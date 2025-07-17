@@ -85,9 +85,9 @@ export function Layout({
   };
 
   return (
-    <div className="min-h-screen warm-gradient flex">
+    <div className="min-h-screen warm-gradient flex" style={{ display: 'flex', minHeight: '100vh' }}>
       {/* サイドバー */}
-      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow">
+      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow" style={{ width: '256px', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         {/* ロゴ部分 */}
         <div className="p-6 border-b border-orange-200">
           <div className="flex items-center gap-3">
@@ -105,7 +105,7 @@ export function Layout({
         </div>
 
         {/* ナビゲーション */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4" style={{ flex: 1, padding: '16px' }}>
           <div className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -181,7 +181,7 @@ export function Layout({
       </div>
 
       {/* メインコンテンツ */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* トップヘッダー */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 px-6 py-4 gentle-shadow">
           <div className="flex items-center justify-between">
@@ -214,8 +214,8 @@ export function Layout({
         </header>
 
         {/* メインコンテンツエリア */}
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 p-6 overflow-auto" style={{ flex: 1, padding: '24px', overflow: 'auto' }}>
+          <div className="max-w-7xl mx-auto space-y-6" style={{ maxWidth: '1280px', margin: '0 auto' }}>
             {children}
           </div>
         </main>
