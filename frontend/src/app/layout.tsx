@@ -28,9 +28,70 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: `
           /* CSS変数定義 */
           :root {
+            --background: #fef7f0;
+            --foreground: #7c2d12;
+            --card: #ffffff;
+            --card-foreground: #7c2d12;
+            --primary: #f97316;
+            --primary-foreground: #ffffff;
+            --secondary: #fed7aa;
+            --secondary-foreground: #7c2d12;
+            --muted: #fff7ed;
+            --muted-foreground: #a16207;
+            --accent: #ffedd5;
+            --accent-foreground: #7c2d12;
+            --destructive: #dc2626;
+            --destructive-foreground: #ffffff;
+            --border: #fde8d6;
+            --input: #ffffff;
+            --ring: #f97316;
+            --radius: 1rem;
+            
+            /* あんぴーちゃん専用カラー */
+            --peach-50: #fff7ed;
+            --peach-100: #ffedd5;
+            --peach-200: #fed7aa;
+            --peach-300: #fdba74;
+            --peach-400: #fb923c;
+            --peach-500: #f97316;
+            --peach-600: #ea580c;
+            --peach-700: #c2410c;
+            --peach-800: #9a3412;
+            --peach-900: #7c2d12;
+            
+            --yellow-50: #fefce8;
+            --yellow-100: #fef3c7;
+            --yellow-200: #fed7aa;
+            --yellow-300: #fcd34d;
+            --yellow-400: #fbbf24;
+            --yellow-500: #f59e0b;
+            
+            --heart-pink: #f472b6;
+            --heart-pink-light: #fce7f3;
+            
             --color-white: #ffffff;
             --color-orange-200: #fed7aa;
             --spacing: 0.25rem;
+          }
+          
+          /* グローバルスタイル */
+          * {
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: var(--font-m-plus-rounded-1c), "Hiragino Maru Gothic Pro", "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Meiryo", sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+            margin: 0;
+            padding: 0;
+          }
+          
+          h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            letter-spacing: 0.025em;
           }
           
           /* 重要なレイアウトスタイルを強制的に適用 */
@@ -142,6 +203,60 @@ export default function RootLayout({
             box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15) !important;
           }
           
+          /* ハートアクセント */
+          .heart-accent {
+            position: relative !important;
+          }
+          
+          .heart-accent::before {
+            content: "♡" !important;
+            color: #f472b6 !important;
+            margin-right: 0.25rem !important;
+            font-size: 0.875em !important;
+          }
+          
+          /* 可愛いボタンスタイル */
+          .cute-button {
+            border-radius: 1rem !important;
+            transition: all 0.3s ease !important;
+            font-weight: 500 !important;
+          }
+          
+          .cute-button:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+          }
+          
+          /* カード用の優しいスタイル */
+          .cute-card {
+            background: #ffffff !important;
+            border: 1px solid #fde8d6 !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1) !important;
+          }
+          
+          /* 見守り専用アイコン */
+          .watching-icon {
+            color: #f97316 !important;
+            filter: drop-shadow(0 1px 2px rgba(249, 115, 22, 0.3)) !important;
+          }
+          
+          /* ステータス表示用の色 */
+          .status-safe {
+            background-color: #dcfce7 !important;
+            color: #166534 !important;
+          }
+          
+          .status-warning {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+          }
+          
+          .status-danger {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+          }
+          
           .border-b {
             border-bottom-width: 1px !important;
             border-bottom-style: solid !important;
@@ -242,6 +357,286 @@ export default function RootLayout({
             50% {
               opacity: .5;
             }
+          }
+          
+          .animate-bounce {
+            animation: bounce 1s infinite !important;
+          }
+          
+          @keyframes bounce {
+            0%, 100% {
+              transform: translateY(-25%);
+              animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+            }
+            50% {
+              transform: translateY(0);
+              animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+            }
+          }
+          
+          .animate-ping {
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite !important;
+          }
+          
+          @keyframes ping {
+            75%, 100% {
+              transform: scale(2);
+              opacity: 0;
+            }
+          }
+          
+          /* スクロールバーのカスタマイズ */
+          ::-webkit-scrollbar {
+            width: 8px !important;
+          }
+          
+          ::-webkit-scrollbar-track {
+            background: #fff7ed !important;
+          }
+          
+          ::-webkit-scrollbar-thumb {
+            background: #fdba74 !important;
+            border-radius: 4px !important;
+          }
+          
+          ::-webkit-scrollbar-thumb:hover {
+            background: #fb923c !important;
+          }
+          
+          /* その他のユーティリティクラス */
+          .relative {
+            position: relative !important;
+          }
+          
+          .absolute {
+            position: absolute !important;
+          }
+          
+          .inset-0 {
+            inset: 0px !important;
+          }
+          
+          .-top-1 {
+            top: -0.25rem !important;
+          }
+          
+          .-right-1 {
+            right: -0.25rem !important;
+          }
+          
+          .opacity-0 {
+            opacity: 0 !important;
+          }
+          
+          .opacity-75 {
+            opacity: 0.75 !important;
+          }
+          
+          .rounded-full {
+            border-radius: 9999px !important;
+          }
+          
+          .w-3 {
+            width: 0.75rem !important;
+          }
+          
+          .h-3 {
+            height: 0.75rem !important;
+          }
+          
+          .w-4 {
+            width: 1rem !important;
+          }
+          
+          .h-4 {
+            height: 1rem !important;
+          }
+          
+          .w-5 {
+            width: 1.25rem !important;
+          }
+          
+          .h-5 {
+            height: 1.25rem !important;
+          }
+          
+          .w-12 {
+            width: 3rem !important;
+          }
+          
+          .h-12 {
+            height: 3rem !important;
+          }
+          
+          .bg-green-400 {
+            background-color: #4ade80 !important;
+          }
+          
+          .bg-red-400 {
+            background-color: #f87171 !important;
+          }
+          
+          .text-white {
+            color: #ffffff !important;
+          }
+          
+          .border-2 {
+            border-width: 2px !important;
+          }
+          
+          .border-white {
+            border-color: #ffffff !important;
+          }
+          
+          .bg-gradient-to-r {
+            background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
+          }
+          
+          .from-orange-50 {
+            --tw-gradient-from: #fff7ed !important;
+            --tw-gradient-to: rgb(255 247 237 / 0) !important;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+          }
+          
+          .to-yellow-50 {
+            --tw-gradient-to: #fefce8 !important;
+          }
+          
+          .max-w-7xl {
+            max-width: 80rem !important;
+          }
+          
+          .mx-auto {
+            margin-left: auto !important;
+            margin-right: auto !important;
+          }
+          
+          .mt-1 {
+            margin-top: 0.25rem !important;
+          }
+          
+          .bg-white\/80 {
+            background-color: rgb(255 255 255 / 0.8) !important;
+          }
+          
+          .backdrop-blur-sm {
+            backdrop-filter: blur(4px) !important;
+          }
+          
+          .transition-colors {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 150ms !important;
+          }
+          
+          .transition-all {
+            transition-property: all !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 150ms !important;
+          }
+          
+          .duration-200 {
+            transition-duration: 200ms !important;
+          }
+          
+          .group:hover .group-hover\:opacity-100 {
+            opacity: 1 !important;
+          }
+          
+          .group:hover .group-hover\:text-orange-600 {
+            color: #ea580c !important;
+          }
+          
+          .group:hover .group-hover\:text-orange-700 {
+            color: #c2410c !important;
+          }
+          
+          .hover\:bg-orange-50:hover {
+            background-color: #fff7ed !important;
+          }
+          
+          .hover\:text-orange-800:hover {
+            color: #9a3412 !important;
+          }
+          
+          .hover\:bg-orange-600:hover {
+            background-color: #ea580c !important;
+          }
+          
+          .hover\:text-orange-700:hover {
+            color: #c2410c !important;
+          }
+          
+          .px-2 {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+          }
+          
+          .py-1 {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+          
+          .px-4 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+          
+          .py-2 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          
+          .py-3 {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+          }
+          
+          .p-3 {
+            padding: 0.75rem !important;
+          }
+          
+          .p-2 {
+            padding: 0.5rem !important;
+          }
+          
+          .pb-4 {
+            padding-bottom: 1rem !important;
+          }
+          
+          .space-y-1 > * + * {
+            margin-top: 0.25rem !important;
+          }
+          
+          .border {
+            border-width: 1px !important;
+          }
+          
+          .border-t {
+            border-top-width: 1px !important;
+          }
+          
+          .text-orange-500 {
+            color: #f97316 !important;
+          }
+          
+          .bg-orange-500 {
+            background-color: #f97316 !important;
+          }
+          
+          .text-xl {
+            font-size: 1.25rem !important;
+            line-height: 1.75rem !important;
+          }
+          
+          .gap-2 {
+            gap: 0.5rem !important;
+          }
+          
+          .transition-opacity {
+            transition-property: opacity !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 150ms !important;
           }
         ` }} />
         <script dangerouslySetInnerHTML={{ __html: `
