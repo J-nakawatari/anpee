@@ -249,8 +249,53 @@ export function FamilyManagementPage() {
     alert(`${person.name}さんの連絡一覧を表示します。\n（実装予定の機能です）`);
   };
 
+  // 電話番号フォーマット関数
+  const formatPhoneNumber = (value: string): string => {
+    // 数字以外を除去
+    const numbers = value.replace(/[^\d]/g, '');
+    
+    // 入力が空の場合
+    if (!numbers) return '';
+    
+    // 携帯電話番号のパターン（070, 080, 090）
+    const mobilePattern = /^0[789]0/;
+    
+    // 市外局番が3桁のパターン（東京03、大阪06など）
+    const threeCityCodePattern = /^0[346]/;
+    
+    // 市外局番が4桁のパターン（一部の地域）
+    const fourCityCodePattern = /^0[1-9][0-9]{2}/;
+    
+    if (mobilePattern.test(numbers)) {
+      // 携帯電話番号（11桁）: 090-1234-5678
+      if (numbers.length <= 3) return numbers;
+      if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    } else if (threeCityCodePattern.test(numbers)) {
+      // 市外局番2桁（10桁）: 03-1234-5678
+      if (numbers.length <= 2) return numbers;
+      if (numbers.length <= 6) return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 6)}-${numbers.slice(6, 10)}`;
+    } else if (fourCityCodePattern.test(numbers)) {
+      // 市外局番4桁（10桁）: 0422-12-3456
+      if (numbers.length <= 4) return numbers;
+      if (numbers.length <= 6) return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+      return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 10)}`;
+    } else {
+      // その他の場合（市外局番3桁として扱う）: 045-123-4567
+      if (numbers.length <= 3) return numbers;
+      if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+    }
+  };
+
   // フォームの入力ハンドラー
   const handleInputChange = (field: keyof Omit<FamilyPerson, 'id'>, value: any) => {
+    // 電話番号フィールドの場合は自動フォーマット
+    if (field === 'phone' || field === 'emergencyPhone') {
+      value = formatPhoneNumber(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [field]: value
