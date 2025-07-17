@@ -2,7 +2,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { CheckCircle, XCircle, Clock, Phone, Heart, User } from "lucide-react";
 
-interface ElderlyStatusCardProps {
+interface FamilyStatusCardProps {
   name: string;
   status: 'responded' | 'no_response' | 'pending';
   lastResponseTime?: string;
@@ -12,7 +12,7 @@ interface ElderlyStatusCardProps {
   avatar?: string;
 }
 
-export function ElderlyStatusCard({ 
+export function FamilyStatusCard({ 
   name, 
   status, 
   lastResponseTime, 
@@ -20,7 +20,7 @@ export function ElderlyStatusCard({
   genKiButtonTime, 
   callDuration,
   avatar
-}: ElderlyStatusCardProps) {
+}: FamilyStatusCardProps) {
   const getStatusInfo = () => {
     switch (status) {
       case 'responded':

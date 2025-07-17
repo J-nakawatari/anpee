@@ -33,8 +33,8 @@ export function ClientLayout({
       description: "見守り状況の概要"
     },
     {
-      id: "/elderly-management",
-      label: "高齢者の管理",
+      id: "/family-management",
+      label: "家族管理",
       icon: Users,
       description: "登録対象者の編集・削除"
     },
@@ -92,8 +92,8 @@ export function ClientLayout({
 
   const handleAddClick = () => {
     if (pathname === "/") {
-      // ダッシュボードから新規登録をクリックした場合は高齢者管理ページに遷移
-      router.push("/elderly-management");
+      // ダッシュボードから新規登録をクリックした場合は家族管理ページに遷移
+      router.push("/family-management");
     } else if (onAddClick) {
       onAddClick();
     }

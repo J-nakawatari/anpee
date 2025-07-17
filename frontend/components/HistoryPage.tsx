@@ -33,10 +33,10 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { elderlyData, generateHistoryData, updateHistoryNotes, type ElderlyPerson, type HistoryRecord } from "../data/elderlyData";
+import { familyData, generateHistoryData, updateHistoryNotes, type FamilyPerson, type HistoryRecord } from "../data/familyData";
 
 export function HistoryPage() {
-  const [selectedElderlyId, setSelectedElderlyId] = useState<number | null>(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -47,14 +47,14 @@ export function HistoryPage() {
   // 履歴データを生成（実際の実装では外部APIから取得）
   const [historyData, setHistoryData] = useState<HistoryRecord[]>(() => generateHistoryData());
   
-  // 選択された高齢者の情報
-  const selectedElderly = elderlyData.find(elderly => elderly.id === selectedElderlyId);
+  // 選択された家族の情報
+  const selectedFamily = familyData.find(family => family.id === selectedFamilyId);
   
-  // 選択された高齢者の履歴データをフィルタリング
+  // 選択された家族の履歴データをフィルタリング
   const filteredHistory = useMemo(() => {
-    if (!selectedElderlyId) return [];
+    if (!selectedFamilyId) return [];
     
-    let filtered = historyData.filter(record => record.elderlyId === selectedElderlyId);
+    let filtered = historyData.filter(record => record.familyId === selectedFamilyId);
     
     // 日付フィルタ
     if (dateFilter !== "all") {
@@ -82,7 +82,7 @@ export function HistoryPage() {
     }
     
     return filtered;
-  }, [selectedElderlyId, historyData, dateFilter, typeFilter]);
+  }, [selectedFamilyId, historyData, dateFilter, typeFilter]);
 
   // ステータスアイコンとスタイルを取得
   const getStatusInfo = (status: string, type: string) => {
@@ -155,11 +155,11 @@ export function HistoryPage() {
 
   // 統計データの計算
   const stats = useMemo(() => {
-    if (!selectedElderlyId) return null;
+    if (!selectedFamilyId) return null;
     
-    const elderlyHistory = historyData.filter(record => record.elderlyId === selectedElderlyId);
-    const callRecords = elderlyHistory.filter(record => record.type === 'call');
-    const buttonRecords = elderlyHistory.filter(record => record.type === 'button');
+    const familyHistory = historyData.filter(record => record.familyId === selectedFamilyId);
+    const callRecords = familyHistory.filter(record => record.type === 'call');
+    const buttonRecords = familyHistory.filter(record => record.type === 'button');
     
     // 元気ボタンの状態別カウント
     const buttonSuccess = buttonRecords.filter(record => record.status === 'success').length;
@@ -171,7 +171,7 @@ export function HistoryPage() {
       buttonSuccess,
       buttonErrors
     };
-  }, [selectedElderlyId, historyData]);
+  }, [selectedFamilyId, historyData]);
 
   // メモ編集開始
   const startEditingNote = (recordId: number, currentNotes: string) => {
@@ -229,13 +229,13 @@ export function HistoryPage() {
 
   return (
     <>
-      {/* 高齢者選択と統計セクション */}
+      {/* 家族選択と統計セクション */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 高齢者選択 */}
+          {/* 家族選択 */}
           <div className="lg:col-span-1">
-            <Label htmlFor="elderly-select" className="mb-2">
-              履歴を確認する高齢者を選択
+            <Label htmlFor="family-select" className="mb-2">
+              履歴を確認する家族を選択
             </Label>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
@@ -245,28 +245,28 @@ export function HistoryPage() {
                   aria-expanded={open}
                   className="w-full justify-between"
                 >
-                  {selectedElderly ? selectedElderly.name : "高齢者を選択..."}
+                  {selectedFamily ? selectedFamily.name : "家族を選択..."}
                   <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="名前で検索..." />
-                  <CommandEmpty>該当する高齢者が見つかりません。</CommandEmpty>
+                  <CommandEmpty>該当する家族が見つかりません。</CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
-                    {elderlyData.map((elderly) => (
+                    {familyData.map((family) => (
                       <CommandItem
-                        key={elderly.id}
-                        value={elderly.name}
+                        key={family.id}
+                        value={family.name}
                         onSelect={() => {
-                          setSelectedElderlyId(elderly.id);
+                          setSelectedFamilyId(family.id);
                           setOpen(false);
                         }}
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span>{elderly.name}</span>
+                          <span>{family.name}</span>
                           <span className="text-sm text-gray-500">
-                            {elderly.age}歳 - {elderly.phone}
+                            {family.age}歳 - {family.phone}
                           </span>
                         </div>
                       </CommandItem>
@@ -278,7 +278,7 @@ export function HistoryPage() {
           </div>
 
           {/* 統計カード */}
-          {selectedElderly && stats && (
+          {selectedFamily && stats && (
             <>
               <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
                 <div className="flex items-center justify-between">
@@ -312,16 +312,16 @@ export function HistoryPage() {
           )}
 
           {/* 選択されていない場合の表示 */}
-          {!selectedElderly && (
+          {!selectedFamily && (
             <div className="lg:col-span-2 flex items-center justify-center bg-gray-50 rounded-lg p-8">
-              <p className="text-gray-500">高齢者を選択すると統計が表示されます</p>
+              <p className="text-gray-500">家族を選択すると統計が表示されます</p>
             </div>
           )}
         </div>
       </div>
 
       {/* 履歴テーブル */}
-      {selectedElderly ? (
+      {selectedFamily ? (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           {/* フィルタ */}
           <div className="flex items-center gap-4 mb-6">
@@ -480,7 +480,7 @@ export function HistoryPage() {
           <div className="text-center py-12">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">履歴を表示するには</h3>
-            <p className="text-gray-600">上記のプルダウンから高齢者を選択してください。</p>
+            <p className="text-gray-600">上記のプルダウンから家族を選択してください。</p>
             <p className="text-sm text-gray-500 mt-2">通話履歴と元気ボタンの応答履歴を確認できます。</p>
           </div>
         </div>

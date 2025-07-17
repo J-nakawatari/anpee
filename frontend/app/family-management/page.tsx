@@ -1,14 +1,14 @@
 import { ClientLayout } from "@/components/ClientLayout";
-import { ElderlyManagementPage } from "@/components/ElderlyManagementPage";
+import { FamilyManagementPage } from "@/components/FamilyManagementPage";
 
-export default function ElderlyManagement() {
+export default function FamilyManagement() {
   return (
     <ClientLayout
-      title="高齢者の管理"
+      title="家族管理"
       subtitle="登録対象者の編集・削除"
       showAddButton={false}
     >
-      <ElderlyManagementPage />
+      <FamilyManagementPage />
     </ClientLayout>
   );
 }

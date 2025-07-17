@@ -38,21 +38,21 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { elderlyData as initialElderlyData, type ElderlyPerson } from "../data/elderlyData";
+import { familyData as initialFamilyData, type FamilyPerson } from "../data/familyData";
 
 const ITEMS_PER_PAGE = 20;
 
 
-export function ElderlyManagementPage() {
-  const [elderlyData, setElderlyData] = useState<ElderlyPerson[]>(initialElderlyData);
+export function FamilyManagementPage() {
+  const [familyData, setFamilyData] = useState<FamilyPerson[]>(initialFamilyData);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingPerson, setEditingPerson] = useState<ElderlyPerson | null>(null);
+  const [editingPerson, setEditingPerson] = useState<FamilyPerson | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   // 新規登録用の空のフォームデータ
-  const emptyFormData: Omit<ElderlyPerson, 'id'> = {
+  const emptyFormData: Omit<FamilyPerson, 'id'> = {
     name: "",
     age: 0,
     phone: "",
@@ -67,10 +67,10 @@ export function ElderlyManagementPage() {
     lastContact: ""
   };
 
-  const [formData, setFormData] = useState<Omit<ElderlyPerson, 'id'>>(emptyFormData);
+  const [formData, setFormData] = useState<Omit<FamilyPerson, 'id'>>(emptyFormData);
 
   // フィルタリング
-  const filteredData = elderlyData.filter(person => {
+  const filteredData = familyData.filter(person => {
     const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          person.phone.includes(searchTerm) ||
                          person.address.toLowerCase().includes(searchTerm.toLowerCase());
@@ -92,8 +92,8 @@ export function ElderlyManagementPage() {
 
   // 新規登録
   const handleAdd = () => {
-    const newId = Math.max(...elderlyData.map(p => p.id)) + 1;
-    const newPerson: ElderlyPerson = {
+    const newId = Math.max(...familyData.map(p => p.id)) + 1;
+    const newPerson: FamilyPerson = {
       ...formData,
       id: newId,
       hasGenKiButton: false,
@@ -101,13 +101,13 @@ export function ElderlyManagementPage() {
       status: 'active',
       lastContact: formData.lastContact || new Date().toISOString().split('T')[0]
     };
-    setElderlyData([...elderlyData, newPerson]);
+    setFamilyData([...familyData, newPerson]);
     setFormData(emptyFormData);
     setIsAddDialogOpen(false);
   };
 
   // 編集
-  const handleEdit = (person: ElderlyPerson) => {
+  const handleEdit = (person: FamilyPerson) => {
     setEditingPerson(person);
     setFormData({
       name: person.name,
@@ -129,12 +129,12 @@ export function ElderlyManagementPage() {
   // 更新
   const handleUpdate = () => {
     if (editingPerson) {
-      const updated = elderlyData.map(person => 
+      const updated = familyData.map(person => 
         person.id === editingPerson.id 
           ? { ...person, ...formData }
           : person
       );
-      setElderlyData(updated);
+      setFamilyData(updated);
       setIsEditDialogOpen(false);
       setEditingPerson(null);
       setFormData(emptyFormData);
@@ -144,9 +144,9 @@ export function ElderlyManagementPage() {
   // 削除
   const handleDelete = (id: number) => {
     if (confirm('本当に削除しますか？')) {
-      setElderlyData(elderlyData.filter(person => person.id !== id));
+      setFamilyData(familyData.filter(person => person.id !== id));
       // 削除後、現在のページにデータがない場合は前のページに移動
-      const newFilteredData = elderlyData.filter(person => person.id !== id).filter(person => {
+      const newFilteredData = familyData.filter(person => person.id !== id).filter(person => {
         const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              person.phone.includes(searchTerm) ||
                              person.address.toLowerCase().includes(searchTerm.toLowerCase());
@@ -160,12 +160,12 @@ export function ElderlyManagementPage() {
   };
 
   // 連絡一覧を見る
-  const handleViewHistory = (person: ElderlyPerson) => {
+  const handleViewHistory = (person: FamilyPerson) => {
     alert(`${person.name}さんの連絡一覧を表示します。\n（実装予定の機能です）`);
   };
 
   // フォームの入力ハンドラー
-  const handleInputChange = (field: keyof Omit<ElderlyPerson, 'id'>, value: any) => {
+  const handleInputChange = (field: keyof Omit<FamilyPerson, 'id'>, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -264,7 +264,7 @@ export function ElderlyManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">総登録者数</p>
-              <p className="text-2xl font-bold text-gray-900">{elderlyData.length}人</p>
+              <p className="text-2xl font-bold text-gray-900">{familyData.length}人</p>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg">
               <User className="w-6 h-6 text-blue-600" />
@@ -277,7 +277,7 @@ export function ElderlyManagementPage() {
             <div>
               <p className="text-sm text-gray-600">アクティブ</p>
               <p className="text-2xl font-bold text-green-600">
-                {elderlyData.filter(p => p.status === 'active').length}人
+                {familyData.filter(p => p.status === 'active').length}人
               </p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
@@ -291,7 +291,7 @@ export function ElderlyManagementPage() {
             <div>
               <p className="text-sm text-gray-600">非アクティブ</p>
               <p className="text-2xl font-bold text-gray-600">
-                {elderlyData.filter(p => p.status !== 'active').length}人
+                {familyData.filter(p => p.status !== 'active').length}人
               </p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">
@@ -344,7 +344,7 @@ export function ElderlyManagementPage() {
 
         <div className="flex justify-between items-center mb-4">
           <div className="text-sm text-gray-600">
-            {filteredData.length} / {elderlyData.length} 件表示 
+            {filteredData.length} / {familyData.length} 件表示 
             {totalPages > 1 && (
               <span className="ml-2">
                 （{currentPage} / {totalPages} ページ）

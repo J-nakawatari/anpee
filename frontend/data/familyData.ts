@@ -1,5 +1,5 @@
-// 高齢者データの型定義
-export interface ElderlyPerson {
+// 家族データの型定義
+export interface FamilyPerson {
   id: number;
   name: string;
   age: number;
@@ -18,7 +18,7 @@ export interface ElderlyPerson {
 // 履歴データの型定義
 export interface HistoryRecord {
   id: number;
-  elderlyId: number;
+  familyId: number;
   type: 'call' | 'button';
   date: string;
   time: string;
@@ -27,8 +27,8 @@ export interface HistoryRecord {
   notes?: string;
 }
 
-// 25人の高齢者データ
-export const elderlyData: ElderlyPerson[] = [
+// 25人の家族データ
+export const familyData: FamilyPerson[] = [
   {
     id: 1,
     name: "田中 一郎",
@@ -411,8 +411,8 @@ export const generateHistoryData = (): HistoryRecord[] => {
   const records: HistoryRecord[] = [];
   let id = 1;
 
-  // 各高齢者に対して過去30日分の履歴を生成
-  elderlyData.forEach((elderly) => {
+  // 各家族に対して過去30日分の履歴を生成
+  familyData.forEach((family) => {
     for (let day = 0; day < 30; day++) {
       const date = new Date();
       date.setDate(date.getDate() - day);
@@ -420,13 +420,13 @@ export const generateHistoryData = (): HistoryRecord[] => {
 
       // 通話記録（毎日1回）
       if (Math.random() > 0.1) { // 90%の確率で記録有り
-        const callTime = elderly.callTime.split(':');
+        const callTime = family.callTime.split(':');
         const hour = parseInt(callTime[0]);
         const minute = parseInt(callTime[1]);
         
         records.push({
           id: id++,
-          elderlyId: elderly.id,
+          familyId: family.id,
           type: 'call',
           date: dateString,
           time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
@@ -437,7 +437,7 @@ export const generateHistoryData = (): HistoryRecord[] => {
       }
 
       // 元気ボタン記録（元気ボタン利用者のみ、ランダム）
-      if (elderly.hasGenKiButton && Math.random() > 0.3) { // 70%の確率で記録有り
+      if (family.hasGenKiButton && Math.random() > 0.3) { // 70%の確率で記録有り
         const buttonHour = Math.floor(Math.random() * 12) + 8; // 8:00-19:59
         const buttonMinute = Math.floor(Math.random() * 60);
         
@@ -473,7 +473,7 @@ export const generateHistoryData = (): HistoryRecord[] => {
         
         records.push({
           id: id++,
-          elderlyId: elderly.id,
+          familyId: family.id,
           type: 'button',
           date: dateString,
           time: `${buttonHour.toString().padStart(2, '0')}:${buttonMinute.toString().padStart(2, '0')}`,
@@ -485,7 +485,7 @@ export const generateHistoryData = (): HistoryRecord[] => {
   });
 
   return records.sort((a, b) => {
-    if (a.elderlyId !== b.elderlyId) return a.elderlyId - b.elderlyId;
+    if (a.familyId !== b.familyId) return a.familyId - b.familyId;
     if (a.date !== b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
     return b.time.localeCompare(a.time);
   });

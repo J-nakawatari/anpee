@@ -32,8 +32,8 @@ export function Layout({
       description: "見守り状況の概要"
     },
     {
-      id: "elderly-management",
-      label: "高齢者の管理",
+      id: "family-management",
+      label: "家族の管理",
       icon: Users,
       description: "登録対象者の編集・削除"
     },

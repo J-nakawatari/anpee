@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Layout } from "./components/Layout";
 import { DashboardPage } from "./components/DashboardPage";
-import { ElderlyManagementPage } from "./components/ElderlyManagementPage";
+import { FamilyManagementPage } from "./components/FamilyManagementPage";
 import { HistoryPage } from "./components/HistoryPage";
 import { NotificationSettingsPage } from "./components/NotificationSettingsPage";
 import { BillingPage } from "./components/BillingPage";
@@ -21,12 +21,12 @@ export default function App() {
           content: <DashboardPage />
         };
       
-      case "elderly-management":
+      case "family-management":
         return {
-          title: "高齢者の管理",
+          title: "家族の管理",
           subtitle: "登録対象者の編集・削除",
           showAddButton: false, // ページ内で管理
-          content: <ElderlyManagementPage />
+          content: <FamilyManagementPage />
         };
       
       case "history":
@@ -76,8 +76,8 @@ export default function App() {
 
   const handleAddClick = () => {
     if (currentPage === "dashboard") {
-      // ダッシュボードから新規登録をクリックした場合は高齢者管理ページに遷移
-      setCurrentPage("elderly-management");
+      // ダッシュボードから新規登録をクリックした場合は家族管理ページに遷移
+      setCurrentPage("family-management");
     }
   };
 
