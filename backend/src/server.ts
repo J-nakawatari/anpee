@@ -8,6 +8,7 @@ import { createServer } from 'http'
 import logger from './utils/logger.js'
 import authRoutes from './routes/auth.js'
 import testRoutes from './routes/test.js'
+import elderlyRoutes from './routes/elderly.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み
@@ -83,6 +84,7 @@ logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anp
 // ルート設定
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/test', testRoutes)
+app.use('/api/v1/elderly', elderlyRoutes)
 
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {

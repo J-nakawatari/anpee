@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List, ChevronUp, ChevronDown } from "lucide-react";
+import { elderlyService, ElderlyData } from "../services/elderlyService";
 import {
   Table,
   TableBody,
@@ -38,15 +39,14 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { familyData as initialFamilyData, type FamilyPerson } from "../data/familyData";
 
 const ITEMS_PER_PAGE = 20;
 
 
 // フォームコンポーネントを外部に定義
 interface PersonFormProps {
-  formData: Omit<FamilyPerson, 'id'>;
-  handleInputChange: (field: keyof Omit<FamilyPerson, 'id'>, value: any) => void;
+  formData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'>;
+  handleInputChange: (field: keyof Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'>, value: any) => void;
   isEdit?: boolean;
 }
 
@@ -129,17 +129,19 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
 );
 
 export function FamilyManagementPage() {
-  const [familyData, setFamilyData] = useState<FamilyPerson[]>(initialFamilyData);
+  const [familyData, setFamilyData] = useState<ElderlyData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingPerson, setEditingPerson] = useState<FamilyPerson | null>(null);
+  const [editingPerson, setEditingPerson] = useState<ElderlyData | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState<'age' | 'lastContact' | null>(null);
+  const [sortField, setSortField] = useState<'age' | 'lastResponseAt' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 新規登録用の空のフォームデータ
-  const emptyFormData: Omit<FamilyPerson, 'id'> = {
+  const emptyFormData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'> = {
     name: "",
     age: 0,
     phone: "",
@@ -150,11 +152,28 @@ export function FamilyManagementPage() {
     callTime: "07:00",
     status: 'active',
     notes: "",
-    registeredDate: new Date().toISOString().split('T')[0],
-    lastContact: ""
   };
 
-  const [formData, setFormData] = useState<Omit<FamilyPerson, 'id'>>(emptyFormData);
+  const [formData, setFormData] = useState<Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'>>(emptyFormData);
+
+  // データの取得
+  useEffect(() => {
+    fetchFamilyData();
+  }, []);
+
+  const fetchFamilyData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await elderlyService.getList();
+      setFamilyData(data);
+      setError(null);
+    } catch (err) {
+      console.error('家族データ取得エラー:', err);
+      setError('データの取得に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // フィルタリング
   const filteredData = familyData.filter(person => {
@@ -173,7 +192,7 @@ export function FamilyManagementPage() {
     let bValue: any = b[sortField];
     
     // 最終連絡日の場合、空の値を最後にする
-    if (sortField === 'lastContact') {
+    if (sortField === 'lastResponseAt') {
       if (!aValue && !bValue) return 0;
       if (!aValue) return 1;
       if (!bValue) return -1;
@@ -197,23 +216,20 @@ export function FamilyManagementPage() {
   };
 
   // 新規登録
-  const handleAdd = () => {
-    const newId = Math.max(...familyData.map(p => p.id)) + 1;
-    const newPerson: FamilyPerson = {
-      ...formData,
-      id: newId,
-      hasGenKiButton: false,
-      callTime: "07:00",
-      status: 'active',
-      lastContact: formData.lastContact || new Date().toISOString().split('T')[0]
-    };
-    setFamilyData([...familyData, newPerson]);
-    setFormData(emptyFormData);
-    setIsAddDialogOpen(false);
+  const handleAdd = async () => {
+    try {
+      const newPerson = await elderlyService.create(formData);
+      setFamilyData([...familyData, newPerson]);
+      setFormData(emptyFormData);
+      setIsAddDialogOpen(false);
+    } catch (err) {
+      console.error('登録エラー:', err);
+      alert('登録に失敗しました');
+    }
   };
 
   // 編集
-  const handleEdit = (person: FamilyPerson) => {
+  const handleEdit = (person: ElderlyData) => {
     setEditingPerson(person);
     setFormData({
       name: person.name,
@@ -226,47 +242,57 @@ export function FamilyManagementPage() {
       callTime: person.callTime,
       status: person.status,
       notes: person.notes,
-      registeredDate: person.registeredDate,
-      lastContact: person.lastContact
     });
     setIsEditDialogOpen(true);
   };
 
   // 更新
-  const handleUpdate = () => {
-    if (editingPerson) {
-      const updated = familyData.map(person => 
-        person.id === editingPerson.id 
-          ? { ...person, ...formData }
-          : person
-      );
-      setFamilyData(updated);
-      setIsEditDialogOpen(false);
-      setEditingPerson(null);
-      setFormData(emptyFormData);
+  const handleUpdate = async () => {
+    if (editingPerson && editingPerson._id) {
+      try {
+        const updatedPerson = await elderlyService.update(editingPerson._id, formData);
+        const updated = familyData.map(person => 
+          person._id === editingPerson._id 
+            ? updatedPerson
+            : person
+        );
+        setFamilyData(updated);
+        setIsEditDialogOpen(false);
+        setEditingPerson(null);
+        setFormData(emptyFormData);
+      } catch (err) {
+        console.error('更新エラー:', err);
+        alert('更新に失敗しました');
+      }
     }
   };
 
   // 削除
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('本当に削除しますか？')) {
-      setFamilyData(familyData.filter(person => person.id !== id));
-      // 削除後、現在のページにデータがない場合は前のページに移動
-      const newFilteredData = familyData.filter(person => person.id !== id).filter(person => {
-        const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             person.phone.includes(searchTerm) ||
-                             person.address.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
-      });
-      const newTotalPages = Math.ceil(newFilteredData.length / ITEMS_PER_PAGE);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
+      try {
+        await elderlyService.delete(id);
+        setFamilyData(familyData.filter(person => person._id !== id));
+        // 削除後、現在のページにデータがない場合は前のページに移動
+        const newFilteredData = familyData.filter(person => person._id !== id).filter(person => {
+          const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               person.phone.includes(searchTerm) ||
+                               person.address.toLowerCase().includes(searchTerm.toLowerCase());
+          return matchesSearch;
+        });
+        const newTotalPages = Math.ceil(newFilteredData.length / ITEMS_PER_PAGE);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+      } catch (err) {
+        console.error('削除エラー:', err);
+        alert('削除に失敗しました');
       }
     }
   };
 
   // 連絡一覧を見る
-  const handleViewHistory = (person: FamilyPerson) => {
+  const handleViewHistory = (person: ElderlyData) => {
     alert(`${person.name}さんの連絡一覧を表示します。\n（実装予定の機能です）`);
   };
 
@@ -311,7 +337,7 @@ export function FamilyManagementPage() {
   };
 
   // フォームの入力ハンドラー
-  const handleInputChange = (field: keyof Omit<FamilyPerson, 'id'>, value: any) => {
+  const handleInputChange = (field: keyof Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'>, value: any) => {
     // 電話番号フィールドの場合は自動フォーマット
     if (field === 'phone' || field === 'emergencyPhone') {
       value = formatPhoneNumber(value);
@@ -329,7 +355,7 @@ export function FamilyManagementPage() {
   };
 
   // ソートハンドラー
-  const handleSort = (field: 'age' | 'lastContact') => {
+  const handleSort = (field: 'age' | 'lastResponseAt') => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -338,6 +364,22 @@ export function FamilyManagementPage() {
     }
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">読み込み中...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -468,11 +510,11 @@ export function FamilyManagementPage() {
                 <TableHead className="w-[250px] text-base">住所</TableHead>
                 <TableHead 
                   className="w-[100px] text-base cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleSort('lastContact')}
+                  onClick={() => handleSort('lastResponseAt')}
                 >
                   <div className="flex items-center gap-1">
                     最終連絡
-                    {sortField === 'lastContact' ? (
+                    {sortField === 'lastResponseAt' ? (
                       <img 
                         src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
                         alt={sortOrder === 'asc' ? '昇順' : '降順'}
@@ -493,14 +535,16 @@ export function FamilyManagementPage() {
             <TableBody>
               {currentData.map((person) => {
                 return (
-                  <TableRow key={person.id}>
+                  <TableRow key={person._id}>
                     <TableCell className="font-medium text-base">{person.name}</TableCell>
                     <TableCell className="text-base">{person.age}歳</TableCell>
                     <TableCell className="text-base">{person.phone}</TableCell>
                     <TableCell className="max-w-[250px] truncate text-base" title={person.address}>
                       {person.address}
                     </TableCell>
-                    <TableCell className="text-base">{person.lastContact}</TableCell>
+                    <TableCell className="text-base">
+                      {person.lastResponseAt ? new Date(person.lastResponseAt).toLocaleDateString('ja-JP') : '-'}
+                    </TableCell>
                     <TableCell className="text-right text-base">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -522,7 +566,7 @@ export function FamilyManagementPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(person.id)}
+                          onClick={() => handleDelete(person._id!)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
