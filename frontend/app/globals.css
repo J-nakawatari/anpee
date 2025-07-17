@@ -49,6 +49,29 @@
   box-sizing: border-box;
 }
 
+/* 入力フィールドのフォーカススタイルをカスタマイズ */
+@layer base {
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Tailwindのフォーカスリングを上書き */
+  .focus\:ring-2:focus {
+    --tw-ring-opacity: 0.3;
+  }
+  
+  .focus\:ring-orange-400:focus {
+    --tw-ring-color: rgb(251 146 60 / var(--tw-ring-opacity));
+  }
+  
+  .focus\:border-orange-400:focus {
+    border-color: rgb(251 146 60 / 0.5);
+  }
+}
+
 body {
   font-family: "Hiragino Maru Gothic Pro", "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Meiryo", sans-serif;
   background-color: var(--background);
