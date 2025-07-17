@@ -30,7 +30,7 @@ npm run build
 
 echo "📦 フロントエンドの依存関係をインストール中..."
 cd ../frontend
-npm ci
+npm ci --legacy-peer-deps
 
 echo "🔨 フロントエンドをビルド中..."
 npm run build
