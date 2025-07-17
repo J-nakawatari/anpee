@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List } from "lucide-react";
+import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -135,6 +135,8 @@ export function FamilyManagementPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<'age' | 'lastContact' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // 新規登録用の空のフォームデータ
   const emptyFormData: Omit<FamilyPerson, 'id'> = {
@@ -163,11 +165,30 @@ export function FamilyManagementPage() {
     return matchesSearch;
   });
 
+  // ソート処理
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (!sortField) return 0;
+    
+    let aValue: any = a[sortField];
+    let bValue: any = b[sortField];
+    
+    // 最終連絡日の場合、空の値を最後にする
+    if (sortField === 'lastContact') {
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return 1;
+      if (!bValue) return -1;
+    }
+    
+    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   // ページネーション計算
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sortedData.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentData = filteredData.slice(startIndex, endIndex);
+  const currentData = sortedData.slice(startIndex, endIndex);
 
   // 検索時にページをリセット
   const handleSearch = (value: string) => {
@@ -307,6 +328,16 @@ export function FamilyManagementPage() {
     setCurrentPage(page);
   };
 
+  // ソートハンドラー
+  const handleSort = (field: 'age' | 'lastContact') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
 
   return (
     <>
@@ -364,12 +395,13 @@ export function FamilyManagementPage() {
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
+                style={{ backgroundColor: '#FFEDD5', height: '48px', fontSize: '16px' }}
               />
             </div>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-blue-700" style={{ height: '48px', fontSize: '16px' }}>
                 <Plus className="w-4 h-4 mr-2" />
                 新規登録
               </Button>
@@ -410,26 +442,46 @@ export function FamilyManagementPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">お名前</TableHead>
-                <TableHead className="w-[80px]">年齢</TableHead>
-                <TableHead className="w-[120px]">電話番号</TableHead>
-                <TableHead className="w-[250px]">住所</TableHead>
-                <TableHead className="w-[100px]">最終連絡</TableHead>
-                <TableHead className="w-[180px] text-right">操作</TableHead>
+                <TableHead className="w-[120px] text-base">お名前</TableHead>
+                <TableHead 
+                  className="w-[80px] text-base cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleSort('age')}
+                >
+                  <div className="flex items-center gap-1">
+                    年齢
+                    {sortField === 'age' && (
+                      sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="w-[120px] text-base">電話番号</TableHead>
+                <TableHead className="w-[250px] text-base">住所</TableHead>
+                <TableHead 
+                  className="w-[100px] text-base cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleSort('lastContact')}
+                >
+                  <div className="flex items-center gap-1">
+                    最終連絡
+                    {sortField === 'lastContact' && (
+                      sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="w-[180px] text-right text-base">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentData.map((person) => {
                 return (
                   <TableRow key={person.id}>
-                    <TableCell className="font-medium">{person.name}</TableCell>
-                    <TableCell>{person.age}歳</TableCell>
-                    <TableCell>{person.phone}</TableCell>
-                    <TableCell className="max-w-[250px] truncate" title={person.address}>
+                    <TableCell className="font-medium text-base">{person.name}</TableCell>
+                    <TableCell className="text-base">{person.age}歳</TableCell>
+                    <TableCell className="text-base">{person.phone}</TableCell>
+                    <TableCell className="max-w-[250px] truncate text-base" title={person.address}>
                       {person.address}
                     </TableCell>
-                    <TableCell>{person.lastContact}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-base">{person.lastContact}</TableCell>
+                    <TableCell className="text-right text-base">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
