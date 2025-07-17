@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Heart, Check } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { showToast, ToastComponent } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,8 +62,12 @@ export default function RegisterPage() {
       // });
 
       // 仮実装：登録成功としてログインページへ
-      router.push('/login?registered=true');
+      showToast('アカウントを作成しました！', 'success');
+      setTimeout(() => {
+        router.push('/login?registered=true');
+      }, 1500);
     } catch (err) {
+      showToast('登録に失敗しました。時間をおいて再度お試しください。', 'error');
       setError('登録に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setLoading(false);
@@ -188,6 +194,7 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+      {ToastComponent}
     </div>
   );
 }

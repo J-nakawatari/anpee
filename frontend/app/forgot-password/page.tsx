@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Mail, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const { showToast, ToastComponent } = useToast();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,8 +28,10 @@ export default function ForgotPasswordPage() {
       // });
 
       // 仮実装：メール送信成功
+      showToast('パスワード再設定メールを送信しました！', 'success');
       setSubmitted(true);
     } catch (err) {
+      showToast('エラーが発生しました。時間をおいて再度お試しください。', 'error');
       setError('エラーが発生しました。時間をおいて再度お試しください。');
     } finally {
       setLoading(false);
@@ -132,6 +136,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
       </div>
+      {ToastComponent}
     </div>
   );
 }
