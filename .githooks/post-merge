@@ -23,7 +23,7 @@ cd "$PROJECT_ROOT/frontend"
 
 # 依存関係のインストール
 echo "📦 フロントエンドの依存関係をインストール中..."
-npm ci --production=false
+npm ci --production=false --legacy-peer-deps
 
 # Next.jsのビルドキャッシュをクリア（middleware変更対応）
 echo "🧹 ビルドキャッシュをクリア中..."
