@@ -5,7 +5,7 @@ import logger from '../utils/logger.js'
 // 家族一覧の取得
 export const getElderlyList = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?._id
+    const userId = req.user?.userId
 
     const elderlyList = await Elderly.find({ userId })
       .sort({ createdAt: -1 })
@@ -27,7 +27,7 @@ export const getElderlyList = async (req: Request, res: Response) => {
 export const getElderlyById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const userId = req.user?._id
+    const userId = req.user?.userId
 
     const elderly = await Elderly.findOne({ _id: id, userId })
 
@@ -54,7 +54,7 @@ export const getElderlyById = async (req: Request, res: Response) => {
 // 家族の新規登録
 export const createElderly = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?._id
+    const userId = req.user?.userId
     const {
       name,
       age,
@@ -108,7 +108,7 @@ export const createElderly = async (req: Request, res: Response) => {
 export const updateElderly = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const userId = req.user?._id
+    const userId = req.user?.userId
     const updateData = req.body
 
     // 更新不可フィールドを除外
@@ -148,7 +148,7 @@ export const updateElderly = async (req: Request, res: Response) => {
 export const deleteElderly = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const userId = req.user?._id
+    const userId = req.user?.userId
 
     const elderly = await Elderly.findOneAndDelete({ _id: id, userId })
 
