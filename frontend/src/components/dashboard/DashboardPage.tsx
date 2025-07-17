@@ -156,9 +156,7 @@ export function DashboardPage() {
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
-            <p className="text-orange-600 mt-1">
-              {formatDate(currentTime)} {formatTime(currentTime)}
-            </p>
+            <p className="text-orange-600 mt-1">{formatDate(currentTime)} {formatTime(currentTime)}</p>
             <p className="text-orange-700 mt-2">
               大切なご家族の安否確認を続けています。LINEと電話で毎日の元気をチェックしています。
             </p>
@@ -182,7 +180,9 @@ export function DashboardPage() {
                   <div className="text-3xl">{person.avatar}</div>
                   <div>
                     <h3 className="font-semibold text-orange-800">{person.name}</h3>
-                    <p className="text-sm text-orange-600">{person.realName} ({person.age}歳)</p>
+                    <p className="text-sm text-orange-600">
+                      {person.realName} ({person.age}歳)
+                    </p>
                   </div>
                 </div>
                 <Badge className={person.statusColor}>
