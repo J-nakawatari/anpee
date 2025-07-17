@@ -24,6 +24,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --spacing: 0.25rem;
+          }
+          .w-64 { width: 16rem !important; }
+          .flex-shrink-0 { flex-shrink: 0 !important; }
+        ` }} />
+      </head>
       <body className={`${mPlusRounded1c.variable} ${mPlusRounded1c.className}`}>{children}</body>
     </html>
   )

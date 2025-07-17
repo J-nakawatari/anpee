@@ -87,7 +87,7 @@ export function Layout({
   return (
     <div className="min-h-screen warm-gradient flex">
       {/* サイドバー */}
-      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow" style={{ flexShrink: 0 }}>
+      <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow flex-shrink-0">
         {/* ロゴ部分 */}
         <div className="p-6 border-b border-orange-200">
           <div className="flex items-center gap-3">
