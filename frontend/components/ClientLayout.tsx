@@ -247,6 +247,38 @@ export function ClientLayout({
             {children}
           </div>
         </main>
+
+        {/* フッター */}
+        <footer className="bg-white border-t border-orange-100 px-6 py-4">
+          <div className="max-w-7xl mx-auto flex justify-center space-x-6 text-sm text-gray-500">
+            <a 
+              href="/terms" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              利用規約
+            </a>
+            <span>・</span>
+            <a 
+              href="/privacy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              プライバシーポリシー
+            </a>
+            <span>・</span>
+            <a 
+              href="/commercial-law" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              特定商取引法
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
   );

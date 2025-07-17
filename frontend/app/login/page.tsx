@@ -110,6 +110,37 @@ export default function LoginPage() {
             </a>
           </p>
         </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="flex justify-center space-x-4 text-xs text-gray-500">
+            <a 
+              href="/terms" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              利用規約
+            </a>
+            <span>・</span>
+            <a 
+              href="/privacy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              プライバシーポリシー
+            </a>
+            <span>・</span>
+            <a 
+              href="/commercial-law" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-600"
+            >
+              特定商取引法
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
