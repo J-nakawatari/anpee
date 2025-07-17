@@ -601,14 +601,52 @@ export default function RootLayout({
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
           }
           
-          @media (min-width: 768px) {
+          /* メディアクエリの強化 */
+          @media screen and (min-width: 768px) {
             .md\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            
+            /* 2列表示時のグリッド */
+            .grid.md\:grid-cols-2 {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
           }
           
-          @media (min-width: 1024px) {
+          @media screen and (min-width: 1024px) {
             .lg\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+            
+            /* 4列表示時のグリッド */
+            .grid.lg\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+            
+            /* 2列表示を上書き */
+            .grid.md\:grid-cols-2.lg\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          /* デフォルトのグリッド設定 */
+          .grid.grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+          }
+          
+          /* 統計カード用のグリッド */
+          @media screen and (min-width: 768px) {
+            div.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            
+            div.grid.grid-cols-1.md\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          @media screen and (min-width: 1024px) {
+            div.grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             }
           }
@@ -718,6 +756,18 @@ export default function RootLayout({
           .text-3xl {
             font-size: 1.875rem !important;
             line-height: 2.25rem !important;
+          }
+          
+          /* text-3xlのタイポ修正 */
+          .text-3xl:not(svg) {
+            font-size: 1.875rem !important;
+            line-height: 2.25rem !important;
+          }
+          
+          /* 絵文字用のスタイル */
+          div.text-3xl {
+            font-size: 2rem !important;
+            line-height: 1 !important;
           }
           
           /* インライン要素 */
@@ -988,7 +1038,7 @@ export default function RootLayout({
           }
           
           /* Badge用スタイル */
-          [role="status"], .badge {
+          [role="status"], .badge, [data-slot="badge"] {
             display: inline-flex !important;
             align-items: center !important;
             border-radius: 0.375rem !important;
@@ -997,6 +1047,31 @@ export default function RootLayout({
             font-weight: 600 !important;
             line-height: 1rem !important;
             border: 1px solid transparent !important;
+          }
+          
+          /* 継纍的なグリッドレスポンシブ対応 */
+          @media screen and (min-width: 640px) {
+            .sm\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          @media screen and (min-width: 768px) {
+            /* タブレットサイズ */
+            .grid {
+              gap: 1.5rem !important;
+            }
+          }
+          
+          @media screen and (min-width: 1280px) {
+            .xl\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          /* グリッドアイテムの最小幅設定 */
+          .grid > * {
+            min-width: 0 !important;
           }
           
           /* Button用スタイル */
@@ -1128,7 +1203,7 @@ export default function RootLayout({
           }
           
           /* レスポンシブデザイン */
-          @media (max-width: 767px) {
+          @media screen and (max-width: 767px) {
             .min-h-screen.warm-gradient.flex {
               flex-direction: column !important;
             }
@@ -1137,14 +1212,6 @@ export default function RootLayout({
               width: 100% !important;
               max-width: 100% !important;
               min-width: 100% !important;
-            }
-            
-            .md\:grid-cols-2 {
-              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-            }
-            
-            .lg\:grid-cols-4 {
-              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
             }
           }
           
