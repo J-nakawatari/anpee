@@ -18,16 +18,18 @@ export const register = async (req, res) => {
         }
         // パスワードのハッシュ化
         const hashedPassword = await bcrypt.hash(password, 12);
-        // メール確認トークンの生成
-        const emailVerificationToken = generateEmailVerificationToken();
-        // ユーザーの作成
+        // ユーザーの作成（一旦トークンなしで）
         const user = await User.create({
             email,
             password: hashedPassword,
             name,
             phone,
-            emailVerificationToken,
         });
+        // メール確認トークンの生成（ユーザーIDを含む）
+        const emailVerificationToken = generateEmailVerificationToken(user._id.toString());
+        // トークンを保存
+        user.emailVerificationToken = emailVerificationToken;
+        await user.save();
         // ウェルカムメールを送信（確認リンク付き）
         try {
             await emailService.sendWelcomeEmail(user.email, user.name, emailVerificationToken);

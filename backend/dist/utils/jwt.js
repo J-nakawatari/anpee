@@ -20,8 +20,12 @@ export const verifyAccessToken = (token) => {
 export const verifyRefreshToken = (token) => {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 };
-export const generateEmailVerificationToken = () => {
-    return jwt.sign({ type: 'email_verification', timestamp: Date.now() }, process.env.JWT_SECRET, { expiresIn: '24h' });
+export const generateEmailVerificationToken = (userId) => {
+    return jwt.sign({
+        type: 'email_verification',
+        userId,
+        timestamp: Date.now()
+    }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 export const generatePasswordResetToken = () => {
     return jwt.sign({ type: 'password_reset', timestamp: Date.now() }, process.env.JWT_SECRET, { expiresIn: '1h' });

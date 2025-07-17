@@ -41,9 +41,13 @@ export const verifyRefreshToken = (token: string): { userId: string } => {
   return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as { userId: string }
 }
 
-export const generateEmailVerificationToken = (): string => {
+export const generateEmailVerificationToken = (userId: string): string => {
   return jwt.sign(
-    { type: 'email_verification', timestamp: Date.now() },
+    { 
+      type: 'email_verification', 
+      userId,
+      timestamp: Date.now() 
+    },
     process.env.JWT_SECRET!,
     { expiresIn: '24h' }
   )
