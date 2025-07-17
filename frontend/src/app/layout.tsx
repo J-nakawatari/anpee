@@ -162,14 +162,104 @@ export default function RootLayout({
             padding: 1rem !important;
           }
           
+          .p-3 {
+            padding: 0.75rem !important;
+          }
+          
+          .p-2 {
+            padding: 0.5rem !important;
+          }
+          
           .px-6 {
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
           }
           
+          .px-4 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+          
+          .px-3 {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+          }
+          
+          .px-2 {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+          }
+          
           .py-4 {
             padding-top: 1rem !important;
             padding-bottom: 1rem !important;
+          }
+          
+          .py-3 {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+          }
+          
+          .py-2 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          
+          .py-1 {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+          
+          .pt-6 {
+            padding-top: 1.5rem !important;
+          }
+          
+          .pb-6 {
+            padding-bottom: 1.5rem !important;
+          }
+          
+          .pb-4 {
+            padding-bottom: 1rem !important;
+          }
+          
+          .mt-1 {
+            margin-top: 0.25rem !important;
+          }
+          
+          .mt-2 {
+            margin-top: 0.5rem !important;
+          }
+          
+          .mt-3 {
+            margin-top: 0.75rem !important;
+          }
+          
+          .mb-4 {
+            margin-bottom: 1rem !important;
+          }
+          
+          .mr-1 {
+            margin-right: 0.25rem !important;
+          }
+          
+          .space-y-1 > * + * {
+            margin-top: 0.25rem !important;
+          }
+          
+          .space-y-2 > * + * {
+            margin-top: 0.5rem !important;
+          }
+          
+          .space-y-3 > * + * {
+            margin-top: 0.75rem !important;
+          }
+          
+          .space-y-4 > * + * {
+            margin-top: 1rem !important;
+          }
+          
+          .space-y-6 > * + * {
+            margin-top: 1.5rem !important;
           }
           
           /* 詳細度を上げてスタイルを確実に適用 */
@@ -313,6 +403,16 @@ export default function RootLayout({
           .text-2xl {
             font-size: 1.5rem !important;
             line-height: 2rem !important;
+          }
+          
+          .text-xl {
+            font-size: 1.25rem !important;
+            line-height: 1.75rem !important;
+          }
+          
+          .text-base {
+            font-size: 1rem !important;
+            line-height: 1.5rem !important;
           }
           
           /* フォントウェイト */
@@ -937,6 +1037,165 @@ export default function RootLayout({
             flex-direction: column !important;
             flex-shrink: 0 !important;
             box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15) !important;
+          }
+          
+          /* ボタンの追加スタイル */
+          button.cute-button {
+            cursor: pointer !important;
+            border-radius: 0.75rem !important;
+            transition: all 0.3s ease !important;
+            font-weight: 500 !important;
+            border: none !important;
+            outline: none !important;
+          }
+          
+          button.cute-button:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+          }
+          
+          button.cute-button:active {
+            transform: translateY(0) !important;
+          }
+          
+          /* リンクボタンのスタイル */
+          button[style*="font-size: 14px"] {
+            font-size: 0.875rem !important;
+          }
+          
+          /* レスポンシブデザイン */
+          @media (max-width: 767px) {
+            .min-h-screen.warm-gradient.flex {
+              flex-direction: column !important;
+            }
+            
+            .w-64 {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 100% !important;
+            }
+            
+            .md\:grid-cols-2 {
+              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
+            
+            .lg\:grid-cols-4 {
+              grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
+          }
+          
+          /* カードのホバー効果 */
+          .cute-card {
+            transition: all 0.2s ease !important;
+          }
+          
+          .cute-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 16px rgba(249, 115, 22, 0.15) !important;
+          }
+          
+          /* アイコンのサイズ調整 */
+          .w-5.h-5 {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+          }
+          
+          .w-4.h-4 {
+            width: 1rem !important;
+            height: 1rem !important;
+          }
+          
+          .w-6.h-6 {
+            width: 1.5rem !important;
+            height: 1.5rem !important;
+          }
+          
+          .w-16.h-16 {
+            width: 4rem !important;
+            height: 4rem !important;
+          }
+          
+          /* フレックスボックスの調整 */
+          .flex-1 {
+            flex: 1 1 0% !important;
+            min-width: 0 !important;
+          }
+          
+          .items-start {
+            align-items: flex-start !important;
+          }
+          
+          .self-start {
+            align-self: flex-start !important;
+          }
+          
+          .justify-self-end {
+            justify-self: end !important;
+          }
+          
+          /* グラデーションの強化 */
+          .bg-gradient-to-r.from-orange-50.to-yellow-50 {
+            background: linear-gradient(to right, #fff7ed 0%, #fefce8 100%) !important;
+          }
+          
+          /* テキストアラインメント */
+          .text-right {
+            text-align: right !important;
+          }
+          
+          .text-center {
+            text-align: center !important;
+          }
+          
+          /* 表示関連 */
+          .block {
+            display: block !important;
+          }
+          
+          .inline-block {
+            display: inline-block !important;
+          }
+          
+          .hidden {
+            display: none !important;
+          }
+          
+          /* leading-none */
+          .leading-none {
+            line-height: 1 !important;
+          }
+          
+          /* ポジション */
+          .col-start-2 {
+            grid-column-start: 2 !important;
+          }
+          
+          .row-span-2 {
+            grid-row: span 2 / span 2 !important;
+          }
+          
+          .row-start-1 {
+            grid-row-start: 1 !important;
+          }
+          
+          /* グリッド関連 */
+          .auto-rows-min {
+            grid-auto-rows: min-content !important;
+          }
+          
+          .grid-rows-\[auto_auto\] {
+            grid-template-rows: auto auto !important;
+          }
+          
+          /* ボーダー関連 */
+          .border-t {
+            border-top-width: 1px !important;
+            border-top-style: solid !important;
+          }
+          
+          .border-b {
+            border-bottom-width: 1px !important;
+            border-bottom-style: solid !important;
           }
         ` }} />
         <script dangerouslySetInnerHTML={{ __html: `
