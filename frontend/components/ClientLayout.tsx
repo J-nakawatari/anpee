@@ -104,8 +104,8 @@ export function ClientLayout({
       {/* サイドバー */}
       <div className="w-64 bg-white border-r border-orange-200 flex flex-col gentle-shadow fixed h-screen overflow-y-auto">
         {/* ロゴ部分 */}
-        <div className="p-6 border-b border-orange-200">
-          <div className="flex items-center gap-3">
+        <div className="p-6 border-b border-orange-200" style={{ height: '95px' }}>
+          <div className="flex items-center gap-3 h-full">
             <div className="relative">
               <img 
                 src="/logo.svg" 

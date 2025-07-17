@@ -43,6 +43,91 @@ import { familyData as initialFamilyData, type FamilyPerson } from "../data/fami
 const ITEMS_PER_PAGE = 20;
 
 
+// フォームコンポーネントを外部に定義
+interface PersonFormProps {
+  formData: Omit<FamilyPerson, 'id'>;
+  handleInputChange: (field: keyof Omit<FamilyPerson, 'id'>, value: any) => void;
+  isEdit?: boolean;
+}
+
+const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormProps) => (
+  <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <Label htmlFor="name" className="mb-2">お名前 *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => handleInputChange('name', e.target.value)}
+          placeholder="山田 太郎"
+        />
+      </div>
+      <div>
+        <Label htmlFor="age" className="mb-2">年齢</Label>
+        <Input
+          id="age"
+          type="number"
+          value={formData.age || ''}
+          onChange={(e) => handleInputChange('age', parseInt(e.target.value) || 0)}
+          placeholder="75"
+        />
+      </div>
+    </div>
+
+    <div>
+      <Label htmlFor="phone" className="mb-2">電話番号 *</Label>
+      <Input
+        id="phone"
+        value={formData.phone}
+        onChange={(e) => handleInputChange('phone', e.target.value)}
+        placeholder="03-1234-5678"
+      />
+    </div>
+
+    <div>
+      <Label htmlFor="address" className="mb-2">住所</Label>
+      <Input
+        id="address"
+        value={formData.address}
+        onChange={(e) => handleInputChange('address', e.target.value)}
+        placeholder="東京都新宿区..."
+      />
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <Label htmlFor="emergencyContact" className="mb-2">緊急連絡先（人）</Label>
+        <Input
+          id="emergencyContact"
+          value={formData.emergencyContact}
+          onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
+          placeholder="田中 次郎（息子）"
+        />
+      </div>
+      <div>
+        <Label htmlFor="emergencyPhone" className="mb-2">緊急連絡先（電話）</Label>
+        <Input
+          id="emergencyPhone"
+          value={formData.emergencyPhone}
+          onChange={(e) => handleInputChange('emergencyPhone', e.target.value)}
+          placeholder="090-1234-5678"
+        />
+      </div>
+    </div>
+
+    <div>
+      <Label htmlFor="notes" className="mb-2">メモ</Label>
+      <Textarea
+        id="notes"
+        value={formData.notes}
+        onChange={(e) => handleInputChange('notes', e.target.value)}
+        placeholder="特記事項があれば記入してください..."
+        rows={3}
+      />
+    </div>
+  </div>
+);
+
 export function FamilyManagementPage() {
   const [familyData, setFamilyData] = useState<FamilyPerson[]>(initialFamilyData);
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,84 +262,6 @@ export function FamilyManagementPage() {
     setCurrentPage(page);
   };
 
-  // フォームコンポーネント
-  const PersonForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="name" className="mb-2">お名前 *</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleInputChange('name', e.target.value)}
-            placeholder="山田 太郎"
-          />
-        </div>
-        <div>
-          <Label htmlFor="age" className="mb-2">年齢</Label>
-          <Input
-            id="age"
-            type="number"
-            value={formData.age || ''}
-            onChange={(e) => handleInputChange('age', parseInt(e.target.value) || 0)}
-            placeholder="75"
-          />
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="phone" className="mb-2">電話番号 *</Label>
-        <Input
-          id="phone"
-          value={formData.phone}
-          onChange={(e) => handleInputChange('phone', e.target.value)}
-          placeholder="03-1234-5678"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="address" className="mb-2">住所</Label>
-        <Input
-          id="address"
-          value={formData.address}
-          onChange={(e) => handleInputChange('address', e.target.value)}
-          placeholder="東京都新宿区..."
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="emergencyContact" className="mb-2">緊急連絡先（人）</Label>
-          <Input
-            id="emergencyContact"
-            value={formData.emergencyContact}
-            onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
-            placeholder="田中 次郎（息子）"
-          />
-        </div>
-        <div>
-          <Label htmlFor="emergencyPhone" className="mb-2">緊急連絡先（電話）</Label>
-          <Input
-            id="emergencyPhone"
-            value={formData.emergencyPhone}
-            onChange={(e) => handleInputChange('emergencyPhone', e.target.value)}
-            placeholder="090-1234-5678"
-          />
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="notes" className="mb-2">メモ</Label>
-        <Textarea
-          id="notes"
-          value={formData.notes}
-          onChange={(e) => handleInputChange('notes', e.target.value)}
-          placeholder="特記事項があれば記入してください..."
-          rows={3}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -326,7 +333,7 @@ export function FamilyManagementPage() {
               <DialogHeader>
                 <DialogTitle>新規登録</DialogTitle>
               </DialogHeader>
-              <PersonForm />
+              <PersonForm formData={formData} handleInputChange={handleInputChange} />
               <div className="flex justify-end gap-2 mt-6">
                 <Button variant="outline" onClick={() => {
                   setIsAddDialogOpen(false);
@@ -480,7 +487,7 @@ export function FamilyManagementPage() {
           <DialogHeader>
             <DialogTitle>登録情報の編集</DialogTitle>
           </DialogHeader>
-          <PersonForm isEdit={true} />
+          <PersonForm formData={formData} handleInputChange={handleInputChange} isEdit={true} />
           <div className="flex justify-end gap-2 mt-6">
             <Button variant="outline" onClick={() => {
               setIsEditDialogOpen(false);
