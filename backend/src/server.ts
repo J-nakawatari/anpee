@@ -8,7 +8,7 @@ import { createServer } from 'http'
 import logger from './utils/logger.js'
 import authRoutes from './routes/auth.js'
 import testRoutes from './routes/test.js'
-import csrf from 'csurf'
+import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み
 dotenv.config()
@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 4003
 app.use(helmet())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://anpee.jp', process.env.FRONTEND_URL].filter(Boolean)
+    ? ['https://anpee.jp', process.env.FRONTEND_URL].filter((url): url is string => !!url)
     : ['http://localhost:3003', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
