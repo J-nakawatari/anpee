@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>あんぴーちゃんへようこそ！</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #fef7f0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
+    .header {
+      background: linear-gradient(135deg, #ffedd5 0%, #fef3c7 100%);
+      padding: 40px 20px;
+      text-align: center;
+      border-radius: 0 0 20px 20px;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    .greeting {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ea580c;
+      margin-bottom: 20px;
+    }
+    .button-container {
+      text-align: center;
+      margin: 40px 0;
+    }
+    .button {
+      display: inline-block;
+      padding: 16px 40px;
+      background-color: #f97316;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .features {
+      background-color: #fff7ed;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+    }
+    .feature-item {
+      margin: 15px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+    .feature-item::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #f97316;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .footer {
+      background-color: #fef7f0;
+      padding: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+    .footer a {
+      color: #f97316;
+      text-decoration: none;
+    }
+    .heart {
+      color: #f472b6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="{{baseUrl}}/logo.png" alt="あんぴーちゃん" class="logo">
+      <h1 style="margin: 0; color: #ea580c; font-size: 28px;">あんぴーちゃんへようこそ！</h1>
+    </div>
+    
+    <div class="content">
+      <p class="greeting">
+        <span class="heart">♡</span> {{userName}}様
+      </p>
+      
+      <p>
+        この度は「あんぴーちゃん」にご登録いただき、誠にありがとうございます。<br>
+        大切なご家族の見守りサービスをご利用いただけることを、心より嬉しく思います。
+      </p>
+      
+      <div class="button-container">
+        <a href="{{loginUrl}}" class="button">ログインして始める</a>
+      </div>
+      
+      <div class="features">
+        <h3 style="color: #ea580c; margin-top: 0;">あんぴーちゃんでできること</h3>
+        <div class="feature-item">
+          毎日の安否確認をLINEと電話で自動化</div>
+        <div class="feature-item">
+          応答履歴をリアルタイムで確認</div>
+        <div class="feature-item">
+          緊急時には即座に通知でお知らせ</div>
+        <div class="feature-item">
+          複数の家族メンバーを同時に見守り</div>
+      </div>
+      
+      <h3 style="color: #ea580c;">はじめの設定手順</h3>
+      <ol style="line-height: 2;">
+        <li><strong>ログイン</strong>して、ダッシュボードにアクセス</li>
+        <li><strong>家族情報を登録</strong>（名前、電話番号、LINE設定）</li>
+        <li><strong>通知設定</strong>で見守り時間を設定</li>
+        <li><strong>LINE連携</strong>で「元気ですボタン」を有効化</li>
+      </ol>
+      
+      <p style="background-color: #fef3c7; padding: 20px; border-radius: 10px; margin: 30px 0;">
+        <strong>💡 ヒント：</strong><br>
+        まずは1名から始めて、使い方に慣れたら家族を追加していくのがおすすめです。
+      </p>
+      
+      <p>
+        ご不明な点がございましたら、お気軽にサポートまでお問い合わせください。<br>
+        あなたとご家族の安心のために、全力でサポートさせていただきます。
+      </p>
+      
+      <p style="margin-top: 30px;">
+        どうぞよろしくお願いいたします。
+      </p>
+      
+      <p>
+        <strong>あんぴーちゃんサポートチーム</strong>
+      </p>
+    </div>
+    
+    <div class="footer">
+      <p>
+        このメールは {{userEmail}} 宛に送信されました。<br>
+        お心当たりがない場合は、このメールを破棄してください。
+      </p>
+      <p style="margin-top: 20px;">
+        <a href="{{termsUrl}}">利用規約</a> ・ 
+        <a href="{{privacyUrl}}">プライバシーポリシー</a>
+      </p>
+      <p style="margin-top: 20px; font-size: 12px;">
+        © 2025 株式会社あんぴー All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
