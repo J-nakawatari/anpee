@@ -172,7 +172,16 @@ export function ClientLayout({
 
         {/* ログアウトボタン */}
         <div className="p-4">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-orange-600 hover:bg-orange-50 hover:text-orange-800 transition-all duration-200 cute-button">
+          <button 
+            onClick={() => {
+              // 認証トークンをクリア
+              localStorage.removeItem('token');
+              sessionStorage.removeItem('token');
+              // ログインページへリダイレクト
+              window.location.href = '/login';
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-orange-600 hover:bg-orange-50 hover:text-orange-800 transition-all duration-200 cute-button"
+          >
             <LogOut className="w-5 h-5" />
             ログアウト
           </button>
