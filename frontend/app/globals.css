@@ -143,13 +143,20 @@ h1, h2, h3, h4, h5, h6 {
 /* ハートアクセント */
 .heart-accent {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 .heart-accent::before {
-  content: "♡";
-  color: var(--heart-pink);
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
   margin-right: 0.25rem;
-  font-size: 0.875em;
+  background-image: url('/heart.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* 可愛いボタンスタイル */
