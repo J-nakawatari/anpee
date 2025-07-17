@@ -63,8 +63,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password,
-          phone: '000-0000-0000' // 電話番号は後で設定可能（仮の番号）
+          password: formData.password
         })
       });
 

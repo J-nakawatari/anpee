@@ -24,6 +24,7 @@ router.post(
       .withMessage('パスワードは8文字以上で、大文字・小文字・数字を含む必要があります'),
     body('name').trim().notEmpty().withMessage('名前を入力してください'),
     body('phone')
+      .optional({ nullable: true, checkFalsy: true })
       .matches(/^[0-9-]+$/)
       .withMessage('有効な電話番号を入力してください'),
   ],
