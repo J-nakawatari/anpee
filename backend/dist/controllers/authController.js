@@ -72,13 +72,16 @@ export const login = async (req, res) => {
                 message: 'メールアドレスまたはパスワードが正しくありません',
             });
         }
-        // メール確認の確認（開発環境ではスキップ）
+        // メール確認の確認（一時的に無効化）
+        // TODO: メール確認機能を実装後、このチェックを有効化
+        /*
         if (!user.emailVerified && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({
-                success: false,
-                message: 'メールアドレスの確認が必要です',
-            });
+          return res.status(401).json({
+            success: false,
+            message: 'メールアドレスの確認が必要です',
+          })
         }
+        */
         // トークンの生成
         const accessToken = generateAccessToken({
             _id: user._id,
