@@ -88,6 +88,35 @@
     box-shadow: none !important;
   }
   
+  /* プレースホルダーの色を薄くする */
+  ::placeholder {
+    color: rgb(156 163 175 / 0.4) !important; /* gray-400の40%透明度 */
+    opacity: 1; /* Firefox対応 */
+  }
+  
+  /* ブラウザ固有のプレースホルダースタイル */
+  ::-webkit-input-placeholder {
+    color: rgb(156 163 175 / 0.4) !important;
+  }
+  
+  ::-moz-placeholder {
+    color: rgb(156 163 175 / 0.4) !important;
+    opacity: 1;
+  }
+  
+  :-ms-input-placeholder {
+    color: rgb(156 163 175 / 0.4) !important;
+  }
+  
+  ::-ms-input-placeholder {
+    color: rgb(156 163 175 / 0.4) !important;
+  }
+  
+  ::placeholder {
+    color: rgb(156 163 175 / 0.4) !important;
+    opacity: 1;
+  }
+  
   /* Tailwindのフォーカスリングを上書き */
   .focus\:ring-2:focus {
     --tw-ring-opacity: 0.3;
