@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
   title: 'あんぴーちゃん 見守りサービス',
@@ -33,6 +34,7 @@ export default function RootLayout({
       </head>
       <body className="zen-maru-gothic-medium">
         {children}
+        <Toaster />
       </body>
     </html>
   )

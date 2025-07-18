@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List, ChevronUp, ChevronDown } from "lucide-react";
 import { elderlyService, ElderlyData } from "../services/elderlyService";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -139,6 +140,7 @@ export function FamilyManagementPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // 新規登録用の空のフォームデータ
   const emptyFormData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'> = {
@@ -220,7 +222,11 @@ export function FamilyManagementPage() {
     // フロントエンド側のバリデーション
     if (!formData.name || !formData.phone || !formData.address || 
         !formData.emergencyContact || !formData.emergencyPhone) {
-      alert('必須項目（*印の項目）をすべて入力してください。');
+      toast({
+        title: "入力エラー",
+        description: "必須項目（*印の項目）をすべて入力してください。",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -230,16 +236,24 @@ export function FamilyManagementPage() {
       setFamilyData([...familyData, newPerson]);
       setFormData(emptyFormData);
       setIsAddDialogOpen(false);
+      
+      toast({
+        title: "登録完了",
+        description: `${newPerson.name}さんを登録しました。`,
+      });
     } catch (err: any) {
       console.error('登録エラー:', err);
       // エラーの詳細を表示
       const errorMessage = err.response?.data?.message || '登録に失敗しました';
       const missingFields = err.response?.data?.missingFields;
-      if (missingFields) {
-        alert(`登録に失敗しました。\n不足している項目: ${missingFields.join(', ')}`);
-      } else {
-        alert(errorMessage);
-      }
+      
+      toast({
+        title: "登録エラー",
+        description: missingFields 
+          ? `不足している項目: ${missingFields.join(', ')}`
+          : errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -275,16 +289,26 @@ export function FamilyManagementPage() {
         setIsEditDialogOpen(false);
         setEditingPerson(null);
         setFormData(emptyFormData);
-      } catch (err) {
+        
+        toast({
+          title: "更新完了",
+          description: `${updatedPerson.name}さんの情報を更新しました。`,
+        });
+      } catch (err: any) {
         console.error('更新エラー:', err);
-        alert('更新に失敗しました');
+        toast({
+          title: "更新エラー",
+          description: err.response?.data?.message || '更新に失敗しました',
+          variant: "destructive",
+        });
       }
     }
   };
 
   // 削除
   const handleDelete = async (id: string) => {
-    if (confirm('本当に削除しますか？')) {
+    const person = familyData.find(p => p._id === id);
+    if (confirm(`${person?.name}さんを削除してもよろしいですか？`)) {
       try {
         await elderlyService.delete(id);
         setFamilyData(familyData.filter(person => person._id !== id));
@@ -299,9 +323,18 @@ export function FamilyManagementPage() {
         if (currentPage > newTotalPages && newTotalPages > 0) {
           setCurrentPage(newTotalPages);
         }
-      } catch (err) {
+        
+        toast({
+          title: "削除完了",
+          description: `${person?.name}さんの情報を削除しました。`,
+        });
+      } catch (err: any) {
         console.error('削除エラー:', err);
-        alert('削除に失敗しました');
+        toast({
+          title: "削除エラー",
+          description: err.response?.data?.message || '削除に失敗しました',
+          variant: "destructive",
+        });
       }
     }
   };
