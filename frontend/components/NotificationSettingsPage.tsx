@@ -93,8 +93,9 @@ export function NotificationSettingsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [isInviteSending, setIsInviteSending] = useState(false);
 
-  // ダミーのLINE友だち追加URL
-  const lineAddUrl = "https://lin.ee/XXXXXXXX";
+  // LINE友だち追加URL
+  const lineAddUrl = "https://lin.ee/DwVFPvoY";
+  const lineQrCodeUrl = "https://qr-official.line.me/gs/M_598ulszs_GW.png?oat_content=qr";
 
   const updateTimingSetting = (period: 'morning' | 'evening', field: 'enabled' | 'time', value: boolean | string) => {
     setSettings(prev => ({
@@ -466,12 +467,14 @@ export function NotificationSettingsPage() {
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* QRコード */}
               <div className="flex flex-col items-center space-y-2">
-                <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <div className="text-center">
-                    <QrCode className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">QRコード</p>
-                    <p className="text-xs text-gray-400">(デモ用)</p>
-                  </div>
+                <div className="w-32 h-32 bg-white rounded-lg flex items-center justify-center p-2 shadow-sm">
+                  <img 
+                    src={lineQrCodeUrl} 
+                    alt="LINE友だち追加QRコード" 
+                    width={128} 
+                    height={128}
+                    className="rounded"
+                  />
                 </div>
                 <p className="text-xs text-gray-600 text-center">
                   スマホのカメラで<br />読み取ってください
