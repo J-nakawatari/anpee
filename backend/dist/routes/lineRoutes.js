@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { validateSignature, handleWebhook } from '../services/lineService';
+import { validateSignature, handleWebhook } from '../services/lineService.js';
 const router = Router();
 // LINE Webhook エンドポイント
 router.post('/webhook', async (req, res) => {

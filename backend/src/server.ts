@@ -5,12 +5,12 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
 import { createServer } from 'http'
-import logger from './utils/logger'
-import authRoutes from './routes/auth'
-import testRoutes from './routes/test'
-import elderlyRoutes from './routes/elderly'
-import lineRoutes from './routes/lineRoutes'
-import responseRoutes from './routes/responseRoutes'
+import logger from './utils/logger.js'
+import authRoutes from './routes/auth.js'
+import testRoutes from './routes/test.js'
+import elderlyRoutes from './routes/elderly.js'
+import lineRoutes from './routes/lineRoutes.js'
+import responseRoutes from './routes/responseRoutes.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み

@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { Response } from '../models/Response';
-import Elderly from '../models/Elderly';
-import { authenticate } from '../middleware/auth';
+import { Response } from '../models/Response.js';
+import Elderly from '../models/Elderly.js';
+import { authenticate } from '../middleware/auth.js';
 import mongoose from 'mongoose';
 const router = Router();
 // 元気ですボタンの応答を記録（公開エンドポイント）

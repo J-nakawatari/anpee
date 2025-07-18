@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { WebhookRequestBody } from '@line/bot-sdk';
-import { validateSignature, handleWebhook } from '../services/lineService';
+import { validateSignature, handleWebhook } from '../services/lineService.js';
 
 const router = Router();
 

@@ -1,8 +1,8 @@
 import { Client } from '@line/bot-sdk';
 import crypto from 'crypto';
-import { Response } from '../models/Response';
-import Elderly from '../models/Elderly';
-import { LineUser } from '../models/LineUser';
+import { Response } from '../models/Response.js';
+import Elderly from '../models/Elderly.js';
+import { LineUser } from '../models/LineUser.js';
 // LINE Bot SDK クライアントの初期化
 const client = new Client({
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
