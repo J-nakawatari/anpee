@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, List, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, ChevronUp, ChevronDown } from "lucide-react";
 import { elderlyService, ElderlyData } from "../services/elderlyService";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -339,10 +339,6 @@ export function FamilyManagementPage() {
     }
   };
 
-  // 連絡一覧を見る
-  const handleViewHistory = (person: ElderlyData) => {
-    alert(`${person.name}さんの連絡一覧を表示します。\n（実装予定の機能です）`);
-  };
 
   // 電話番号フォーマット関数
   const formatPhoneNumber = (value: string): string => {
@@ -595,14 +591,6 @@ export function FamilyManagementPage() {
                     </TableCell>
                     <TableCell className="text-right text-base">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewHistory(person)}
-                          className="text-purple-600 hover:text-purple-700"
-                        >
-                          <List className="w-4 h-4" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
