@@ -249,8 +249,8 @@ export function HistoryPage() {
                   <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
+              <PopoverContent className="w-full p-0 bg-white" align="start">
+                <Command className="bg-white">
                   <CommandInput placeholder="名前で検索..." />
                   <CommandEmpty>該当する家族が見つかりません。</CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
