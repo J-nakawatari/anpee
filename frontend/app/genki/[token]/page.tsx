@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Heart, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import apiClient from "@/services/apiClient";
+import { apiClient } from "@/services/apiClient";
 
 type Status = 'loading' | 'ready' | 'success' | 'error' | 'expired';
 
