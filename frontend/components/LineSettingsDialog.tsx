@@ -35,7 +35,7 @@ export function LineSettingsDialog({
   const { toast } = useToast();
 
   // LINE公式アカウントのURL
-  const lineAccountUrl = "https://lin.ee/DwVFPvoY";
+  const lineAccountUrl = process.env.NEXT_PUBLIC_LINE_ADD_FRIEND_URL || "https://lin.ee/DwVFPvoY";
   const lineQrCodeUrl = "https://qr-official.line.me/gs/M_598ulszs_GW.png?oat_content=qr";
   
   // 登録コードをコピー
