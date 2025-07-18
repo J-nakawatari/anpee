@@ -134,7 +134,7 @@ export function ClientLayout({
                 <button
                   key={item.id}
                   onClick={() => handleMenuClick(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group cute-button ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 group cute-button ${
                     isActive
                       ? "bg-orange-100 text-orange-700 border border-orange-200 gentle-shadow" 
                       : "text-orange-600 hover:bg-orange-50 hover:text-orange-800"
@@ -184,7 +184,7 @@ export function ClientLayout({
               // ログインページへリダイレクト
               window.location.href = '/login';
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-orange-600 hover:bg-orange-50 hover:text-orange-800 transition-all duration-200 cute-button"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-orange-600 hover:bg-orange-50 hover:text-orange-800 transition-all duration-200 cute-button"
           >
             <LogOut className="w-5 h-5" />
             ログアウト
@@ -193,7 +193,7 @@ export function ClientLayout({
 
         {/* 底部の情報 */}
         <div className="p-4 border-t border-orange-200">
-          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-3 cute-card">
+          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-3 cute-card">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -231,7 +231,7 @@ export function ClientLayout({
               {showAddButton && (
                 <button 
                   onClick={handleAddClick}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 cute-button font-medium"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 cute-button font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   {addButtonText}
