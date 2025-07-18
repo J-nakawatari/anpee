@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useToast } from "@/hooks/use-toast";
-import QRCode from "react-qr-code";
+// QRコードライブラリは不要（LINE公式QRコード画像を使用）
 import { ElderlyData } from "../services/elderlyService";
 
 interface LineSettingsDialogProps {
@@ -34,8 +34,9 @@ export function LineSettingsDialog({
   const [copiedUrl, setCopiedUrl] = useState(false);
   const { toast } = useToast();
 
-  // LINE公式アカウントのURL（環境変数から取得）
-  const lineAccountUrl = process.env.NEXT_PUBLIC_LINE_ADD_FRIEND_URL || "https://lin.ee/YOUR_LINE_ID";
+  // LINE公式アカウントのURL
+  const lineAccountUrl = "https://lin.ee/DwVFPvoY";
+  const lineQrCodeUrl = "https://qr-official.line.me/gs/M_598ulszs_GW.png?oat_content=qr";
   
   // 登録コードをコピー
   const handleCopyCode = async () => {
@@ -119,7 +120,13 @@ export function LineSettingsDialog({
               {/* QRコード */}
               <div className="bg-gray-50 p-4 rounded-lg text-center">
                 <div className="bg-white p-4 rounded-lg inline-block">
-                  <QRCode value={lineAccountUrl} size={150} />
+                  <img 
+                    src={lineQrCodeUrl} 
+                    alt="LINE友だち追加QRコード" 
+                    width={150} 
+                    height={150}
+                    className="rounded"
+                  />
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
                   QRコードを読み取って友だち追加
