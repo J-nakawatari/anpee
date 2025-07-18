@@ -331,7 +331,7 @@ export function HistoryPage() {
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">すべて</SelectItem>
                   <SelectItem value="today">今日</SelectItem>
                   <SelectItem value="week">過去7日</SelectItem>
@@ -345,7 +345,7 @@ export function HistoryPage() {
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">すべて</SelectItem>
                   <SelectItem value="call">通話</SelectItem>
                   <SelectItem value="button">元気ボタン</SelectItem>
