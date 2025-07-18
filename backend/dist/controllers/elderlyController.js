@@ -71,7 +71,7 @@ export const createElderly = async (req, res) => {
                 missingFields,
             });
         }
-        const elderly = await Elderly.create({
+        const elderly = new Elderly({
             userId,
             name,
             age,
@@ -87,6 +87,14 @@ export const createElderly = async (req, res) => {
             retryInterval: 30,
             status: 'active',
         });
+        // 登録コードを生成
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        elderly.registrationCode = code;
+        await elderly.save();
         res.status(201).json({
             success: true,
             message: '家族を登録しました',

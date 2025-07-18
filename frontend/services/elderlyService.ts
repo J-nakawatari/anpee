@@ -9,6 +9,8 @@ export interface ElderlyData {
   emergencyContact: string
   emergencyPhone: string
   hasGenKiButton: boolean
+  lineUserId?: string
+  registrationCode?: string
   callTime: string
   status: 'active' | 'inactive' | 'suspended'
   notes: string

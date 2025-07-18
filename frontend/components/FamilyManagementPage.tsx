@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, ChevronUp, ChevronDown, MessageCircle } from "lucide-react";
 import { elderlyService, ElderlyData } from "../services/elderlyService";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
+import { LineSettingsDialog } from "./LineSettingsDialog";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -140,6 +141,7 @@ export function FamilyManagementPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lineSettingsPerson, setLineSettingsPerson] = useState<ElderlyData | null>(null);
   const { toast } = useToast();
 
   // 新規登録用の空のフォームデータ
@@ -573,6 +575,7 @@ export function FamilyManagementPage() {
                     )}
                   </div>
                 </TableHead>
+                <TableHead className="w-[100px] text-base text-center">LINE連携</TableHead>
                 <TableHead className="w-[180px] text-right text-base">操作</TableHead>
               </TableRow>
             </TableHeader>
@@ -588,6 +591,20 @@ export function FamilyManagementPage() {
                     </TableCell>
                     <TableCell className="text-base">
                       {person.lastResponseAt ? new Date(person.lastResponseAt).toLocaleDateString('ja-JP') : '-'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setLineSettingsPerson(person)}
+                        className={`${
+                          person.hasGenKiButton
+                            ? "text-green-600 hover:text-green-700"
+                            : "text-gray-600 hover:text-gray-700"
+                        }`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right text-base">
                       <div className="flex justify-end gap-2">
@@ -699,6 +716,15 @@ export function FamilyManagementPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* LINE設定ダイアログ */}
+      {lineSettingsPerson && (
+        <LineSettingsDialog
+          open={!!lineSettingsPerson}
+          onOpenChange={(open) => !open && setLineSettingsPerson(null)}
+          person={lineSettingsPerson}
+        />
+      )}
     </>
   );
 }
