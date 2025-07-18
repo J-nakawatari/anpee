@@ -66,10 +66,20 @@ export const createElderly = async (req: Request, res: Response) => {
     } = req.body
 
     // 必須項目のバリデーション
-    if (!name || !age || !phone || !address || !emergencyContact || !emergencyPhone) {
+    const missingFields = []
+    if (!name) missingFields.push('name')
+    if (!age && age !== 0) missingFields.push('age')
+    if (!phone) missingFields.push('phone')
+    if (!address) missingFields.push('address')
+    if (!emergencyContact) missingFields.push('emergencyContact')
+    if (!emergencyPhone) missingFields.push('emergencyPhone')
+    
+    if (missingFields.length > 0) {
+      logger.error('必須項目が不足:', { userId, missingFields, body: req.body })
       return res.status(400).json({
         success: false,
         message: '必須項目が不足しています',
+        missingFields,
       })
     }
 

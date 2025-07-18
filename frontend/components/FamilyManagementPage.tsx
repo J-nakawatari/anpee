@@ -68,7 +68,7 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
           id="age"
           type="number"
           value={formData.age || ''}
-          onChange={(e) => handleInputChange('age', parseInt(e.target.value) || 0)}
+          onChange={(e) => handleInputChange('age', e.target.value ? parseInt(e.target.value) : 0)}
           placeholder="75"
         />
       </div>
@@ -143,7 +143,7 @@ export function FamilyManagementPage() {
   // 新規登録用の空のフォームデータ
   const emptyFormData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'> = {
     name: "",
-    age: 0,
+    age: 0,  // 0は有効な値として扱われる
     phone: "",
     address: "",
     emergencyContact: "",
@@ -217,14 +217,29 @@ export function FamilyManagementPage() {
 
   // 新規登録
   const handleAdd = async () => {
+    // フロントエンド側のバリデーション
+    if (!formData.name || !formData.phone || !formData.address || 
+        !formData.emergencyContact || !formData.emergencyPhone) {
+      alert('必須項目（*印の項目）をすべて入力してください。');
+      return;
+    }
+    
     try {
+      console.log('送信データ:', formData); // デバッグ用
       const newPerson = await elderlyService.create(formData);
       setFamilyData([...familyData, newPerson]);
       setFormData(emptyFormData);
       setIsAddDialogOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('登録エラー:', err);
-      alert('登録に失敗しました');
+      // エラーの詳細を表示
+      const errorMessage = err.response?.data?.message || '登録に失敗しました';
+      const missingFields = err.response?.data?.missingFields;
+      if (missingFields) {
+        alert(`登録に失敗しました。\n不足している項目: ${missingFields.join(', ')}`);
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
