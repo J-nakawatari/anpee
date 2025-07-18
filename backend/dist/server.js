@@ -30,8 +30,6 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 4003;
 // ミドルウェア
-// LINE Webhookのための生データ処理設定
-app.use('/api/v1/line/webhook', express.raw({ type: 'application/json' }));
 app.use(helmet());
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
@@ -41,7 +39,15 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }));
-app.use(express.json());
+// LINE Webhook用の条件付きミドルウェア設定
+app.use((req, res, next) => {
+    if (req.path === '/api/v1/line/webhook') {
+        express.raw({ type: 'application/json' })(req, res, next);
+    }
+    else {
+        express.json()(req, res, next);
+    }
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // CSRF保護
