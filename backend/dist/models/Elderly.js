@@ -42,6 +42,13 @@ const elderlySchema = new Schema({
     },
     lineUserId: {
         type: String,
+        unique: true,
+        sparse: true,
+    },
+    registrationCode: {
+        type: String,
+        unique: true,
+        sparse: true,
     },
     callTime: {
         type: String,
@@ -83,4 +90,14 @@ const elderlySchema = new Schema({
 elderlySchema.index({ userId: 1 });
 elderlySchema.index({ status: 1 });
 elderlySchema.index({ callTime: 1 });
+elderlySchema.index({ registrationCode: 1 });
+// 登録コード生成メソッド
+elderlySchema.methods.generateRegistrationCode = function () {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+};
 export default mongoose.model('Elderly', elderlySchema);

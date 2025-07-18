@@ -5,10 +5,12 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
 import { createServer } from 'http'
-import logger from './utils/logger.js'
-import authRoutes from './routes/auth.js'
-import testRoutes from './routes/test.js'
-import elderlyRoutes from './routes/elderly.js'
+import logger from './utils/logger'
+import authRoutes from './routes/auth'
+import testRoutes from './routes/test'
+import elderlyRoutes from './routes/elderly'
+import lineRoutes from './routes/lineRoutes'
+import responseRoutes from './routes/responseRoutes'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み
@@ -33,6 +35,9 @@ const httpServer = createServer(app)
 const PORT = process.env.PORT || 4003
 
 // ミドルウェア
+// LINE Webhookのための生データ処理設定
+app.use('/api/v1/line/webhook', express.raw({ type: 'application/json' }))
+
 app.use(helmet())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
@@ -67,9 +72,9 @@ app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
 // CSRF保護を適用（開発環境では無効化可能）
 const enableCsrf = process.env.ENABLE_CSRF === 'true';
 if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
-  // CSRFトークンエンドポイント以外に適用
+  // CSRFトークンエンドポイントとLINE Webhookは除外
   app.use((req, res, next) => {
-    if (req.path === '/api/v1/csrf-token') {
+    if (req.path === '/api/v1/csrf-token' || req.path === '/api/v1/line/webhook') {
       return next();
     }
     csrfProtection(req, res, next);
@@ -85,6 +90,8 @@ logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anp
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/test', testRoutes)
 app.use('/api/v1/elderly', elderlyRoutes)
+app.use('/api/v1/line', lineRoutes)
+app.use('/api/v1/responses', responseRoutes)
 
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {

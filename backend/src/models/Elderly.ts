@@ -10,6 +10,7 @@ export interface IElderly extends Document {
   emergencyPhone: string
   hasGenKiButton: boolean
   lineUserId?: string
+  registrationCode?: string
   callTime: string
   callEnabled: boolean
   retryCount: number
@@ -65,6 +66,13 @@ const elderlySchema = new Schema<IElderly>(
     },
     lineUserId: {
       type: String,
+      unique: true,
+      sparse: true,
+    },
+    registrationCode: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     callTime: {
       type: String,
@@ -109,5 +117,16 @@ const elderlySchema = new Schema<IElderly>(
 elderlySchema.index({ userId: 1 })
 elderlySchema.index({ status: 1 })
 elderlySchema.index({ callTime: 1 })
+elderlySchema.index({ registrationCode: 1 })
+
+// 登録コード生成メソッド
+elderlySchema.methods.generateRegistrationCode = function(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let code = ''
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
+}
 
 export default mongoose.model<IElderly>('Elderly', elderlySchema)

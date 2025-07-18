@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import { verifyAccessToken } from '../utils/jwt.js'
-import User from '../models/User.js'
-import logger from '../utils/logger.js'
+import { verifyAccessToken } from '../utils/jwt'
+import User from '../models/User'
+import logger from '../utils/logger'
 
 declare module 'express' {
   interface Request {
