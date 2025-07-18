@@ -43,6 +43,8 @@ export function HistoryPage() {
   const [editingNotes, setEditingNotes] = useState<{[key: number]: string}>({});
   const [isEditingNote, setIsEditingNote] = useState<{[key: number]: boolean}>({});
   const [isSaving, setIsSaving] = useState<{[key: number]: boolean}>({});
+  const [sortField, setSortField] = useState<'date' | 'time' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // 履歴データを生成（実際の実装では外部APIから取得）
   const [historyData, setHistoryData] = useState<HistoryRecord[]>(() => generateHistoryData());
@@ -81,8 +83,31 @@ export function HistoryPage() {
       filtered = filtered.filter(record => record.type === typeFilter);
     }
     
+    // ソート処理
+    if (sortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+        
+        if (sortField === 'date') {
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+        } else if (sortField === 'time') {
+          // 時刻を比較可能な形式に変換（HH:MM形式を分に変換）
+          const [aHour, aMin] = a.time.split(':').map(Number);
+          const [bHour, bMin] = b.time.split(':').map(Number);
+          aValue = aHour * 60 + aMin;
+          bValue = bHour * 60 + bMin;
+        }
+        
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    
     return filtered;
-  }, [selectedFamilyId, historyData, dateFilter, typeFilter]);
+  }, [selectedFamilyId, historyData, dateFilter, typeFilter, sortField, sortOrder]);
 
   // ステータスアイコンとスタイルを取得
   const getStatusInfo = (status: string, type: string) => {
@@ -227,6 +252,16 @@ export function HistoryPage() {
     }
   };
 
+  // ソートハンドラー
+  const handleSort = (field: 'date' | 'time') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
   return (
     <>
       {/* 家族選択と統計セクション */}
@@ -363,8 +398,48 @@ export function HistoryPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[120px]">日付</TableHead>
-                  <TableHead className="w-[100px]">時刻</TableHead>
+                  <TableHead 
+                    className="w-[120px] cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleSort('date')}
+                  >
+                    <div className="flex items-center gap-1">
+                      日付
+                      {sortField === 'date' ? (
+                        <img 
+                          src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
+                          alt={sortOrder === 'asc' ? '昇順' : '降順'}
+                          className="w-4 h-4"
+                        />
+                      ) : (
+                        <img 
+                          src="/sort-amount-asc.svg" 
+                          alt="ソート可能"
+                          className="w-4 h-4 opacity-30"
+                        />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="w-[100px] cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleSort('time')}
+                  >
+                    <div className="flex items-center gap-1">
+                      時刻
+                      {sortField === 'time' ? (
+                        <img 
+                          src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
+                          alt={sortOrder === 'asc' ? '昇順' : '降順'}
+                          className="w-4 h-4"
+                        />
+                      ) : (
+                        <img 
+                          src="/sort-amount-asc.svg" 
+                          alt="ソート可能"
+                          className="w-4 h-4 opacity-30"
+                        />
+                      )}
+                    </div>
+                  </TableHead>
                   <TableHead className="w-[140px] pl-6">種類</TableHead>
                   <TableHead className="w-[160px] pl-6">ステータス</TableHead>
                   <TableHead className="w-[120px] pl-6">通話時間</TableHead>
