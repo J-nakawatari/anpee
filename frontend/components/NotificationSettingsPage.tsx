@@ -94,6 +94,15 @@ export function NotificationSettingsPage() {
   const [inviteEmailError, setInviteEmailError] = useState("");
   const [isInviteSending, setIsInviteSending] = useState(false);
 
+  // 通知テストの状態
+  const [isTestingNotification, setIsTestingNotification] = useState<{
+    morning: boolean;
+    evening: boolean;
+  }>({
+    morning: false,
+    evening: false
+  });
+
   // LINE友だち追加URL
   const lineAddUrl = "https://lin.ee/DwVFPvoY";
   const lineQrCodeUrl = "https://qr-official.line.me/gs/M_598ulszs_GW.png?oat_content=qr";
@@ -222,6 +231,26 @@ export function NotificationSettingsPage() {
     toast.success('通知設定を保存しました');
   };
 
+  // 通知テスト送信
+  const handleTestNotification = async (timing: 'morning' | 'evening') => {
+    setIsTestingNotification(prev => ({ ...prev, [timing]: true }));
+    
+    try {
+      // TODO: 実際のAPIコールを実装
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast.success(
+        timing === 'morning' 
+          ? '朝の通知テストを送信しました。LINEをご確認ください。' 
+          : '夜の通知テストを送信しました。LINEをご確認ください。'
+      );
+    } catch (error) {
+      toast.error('テスト通知の送信に失敗しました');
+    } finally {
+      setIsTestingNotification(prev => ({ ...prev, [timing]: false }));
+    }
+  };
+
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -284,61 +313,93 @@ export function NotificationSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 朝の通知設定 */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">朝の通知</Label>
-              <p className="text-sm text-gray-500">毎朝の見守り開始通知</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">朝の通知</Label>
+                <p className="text-sm text-gray-500">毎朝の見守り開始通知</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Select
+                  value={settings.timing.morning.time}
+                  onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
+                  disabled={!settings.timing.morning.enabled}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map(time => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Switch
+                  checked={settings.timing.morning.enabled}
+                  onCheckedChange={(checked) => updateTimingSetting('morning', 'enabled', checked)}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Select
-                value={settings.timing.morning.time}
-                onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
-                disabled={!settings.timing.morning.enabled}
-              >
-                <SelectTrigger className="w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map(time => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Switch
-                checked={settings.timing.morning.enabled}
-                onCheckedChange={(checked) => updateTimingSetting('morning', 'enabled', checked)}
-              />
-            </div>
+            {settings.timing.morning.enabled && (
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestNotification('morning')}
+                  disabled={isTestingNotification.morning}
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  {isTestingNotification.morning ? 'テスト送信中...' : 'テスト通知を送信'}
+                </Button>
+              </div>
+            )}
           </div>
 
           <Separator />
 
           {/* 夜の通知設定 */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">夜の通知</Label>
-              <p className="text-sm text-gray-500">毎夜の見守り完了通知</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">夜の通知</Label>
+                <p className="text-sm text-gray-500">毎夜の見守り完了通知</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Select
+                  value={settings.timing.evening.time}
+                  onValueChange={(value) => updateTimingSetting('evening', 'time', value)}
+                  disabled={!settings.timing.evening.enabled}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map(time => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Switch
+                  checked={settings.timing.evening.enabled}
+                  onCheckedChange={(checked) => updateTimingSetting('evening', 'enabled', checked)}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Select
-                value={settings.timing.evening.time}
-                onValueChange={(value) => updateTimingSetting('evening', 'time', value)}
-                disabled={!settings.timing.evening.enabled}
-              >
-                <SelectTrigger className="w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map(time => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Switch
-                checked={settings.timing.evening.enabled}
-                onCheckedChange={(checked) => updateTimingSetting('evening', 'enabled', checked)}
-              />
-            </div>
+            {settings.timing.evening.enabled && (
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestNotification('evening')}
+                  disabled={isTestingNotification.evening}
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  {isTestingNotification.evening ? 'テスト送信中...' : 'テスト通知を送信'}
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
