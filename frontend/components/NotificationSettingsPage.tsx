@@ -16,7 +16,9 @@ import {
   ArrowUp,
   Copy,
   QrCode,
-  ExternalLink
+  ExternalLink,
+  Phone,
+  FlaskConical
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -96,6 +98,8 @@ export function NotificationSettingsPage() {
 
   // 通知テストの状態
   const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [isTestingPhone, setIsTestingPhone] = useState(false);
+  const [isTestingLineNotification, setIsTestingLineNotification] = useState(false);
 
   // LINE友だち追加URL
   const lineAddUrl = "https://lin.ee/DwVFPvoY";
@@ -238,6 +242,38 @@ export function NotificationSettingsPage() {
       toast.error('テスト通知の送信に失敗しました');
     } finally {
       setIsTestingNotification(false);
+    }
+  };
+
+  // LINE通知テスト送信
+  const handleTestLineNotification = async () => {
+    setIsTestingLineNotification(true);
+    
+    try {
+      // TODO: 実際のAPIコールを実装
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast.success('LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
+    } catch (error) {
+      toast.error('LINE通知のテスト送信に失敗しました');
+    } finally {
+      setIsTestingLineNotification(false);
+    }
+  };
+
+  // 電話テスト
+  const handleTestPhoneCall = async () => {
+    setIsTestingPhone(true);
+    
+    try {
+      // TODO: 実際のAPIコールを実装
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast.success('テスト架電を開始しました。登録されている電話番号に発信します。');
+    } catch (error) {
+      toast.error('テスト架電に失敗しました');
+    } finally {
+      setIsTestingPhone(false);
     }
   };
 
@@ -657,6 +693,68 @@ export function NotificationSettingsPage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* テスト通知セクション */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-purple-600" />
+            テスト通知
+          </CardTitle>
+          <CardDescription>
+            設定した通知方法のテストを実行できます
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+            {/* LINE通知テスト */}
+            <Button
+              variant="outline"
+              onClick={handleTestLineNotification}
+              disabled={isTestingLineNotification}
+              className="flex items-center justify-center gap-2 h-12"
+            >
+              <MessageSquare className="w-4 h-4 text-green-600" />
+              {isTestingLineNotification ? 'LINE送信中...' : 'LINEテスト送信'}
+            </Button>
+
+            {/* メール通知テスト */}
+            <Button
+              variant="outline"
+              onClick={() => handleTestSend('email')}
+              disabled={isTestingSending.email || !settings.methods.email.enabled || !settings.methods.email.address}
+              className="flex items-center justify-center gap-2 h-12"
+            >
+              <Mail className="w-4 h-4 text-blue-600" />
+              {isTestingSending.email ? 'メール送信中...' : 'メールテスト送信'}
+            </Button>
+
+            {/* 電話通知テスト */}
+            <Button
+              variant="outline"
+              onClick={handleTestPhoneCall}
+              disabled={isTestingPhone}
+              className="flex items-center justify-center gap-2 h-12"
+            >
+              <Phone className="w-4 h-4 text-orange-600" />
+              {isTestingPhone ? '架電中...' : '電話テスト発信'}
+            </Button>
+          </div>
+
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700">
+              <strong>テスト通知について:</strong>
+              <ul className="mt-2 space-y-1 text-sm">
+                <li>• LINE通知は登録されている家族のLINEに送信されます</li>
+                <li>• メール通知は設定されたメールアドレスに送信されます</li>
+                <li>• 電話通知は登録されている家族の電話番号に発信されます</li>
+                <li>• テスト通知は即座に実行されます（時間設定は無視されます）</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
