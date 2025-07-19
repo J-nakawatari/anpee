@@ -91,11 +91,18 @@ export function NotificationSettingsPage() {
 
   // LINE招待関連の状態
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteEmailError, setInviteEmailError] = useState("");
   const [isInviteSending, setIsInviteSending] = useState(false);
 
   // LINE友だち追加URL
   const lineAddUrl = "https://lin.ee/DwVFPvoY";
   const lineQrCodeUrl = "https://qr-official.line.me/gs/M_598ulszs_GW.png?oat_content=qr";
+
+  // メールアドレスのバリデーション
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const updateTimingSetting = (period: 'morning' | 'evening', field: 'enabled' | 'time', value: boolean | string) => {
     setSettings(prev => ({
@@ -190,8 +197,8 @@ export function NotificationSettingsPage() {
       return;
     }
     
-    if (!inviteEmail.includes('@')) {
-      toast.error('有効なメールアドレスを入力してください');
+    if (!validateEmail(inviteEmail)) {
+      toast.error('正しいメールアドレスの形式で入力してください');
       return;
     }
 
@@ -202,6 +209,7 @@ export function NotificationSettingsPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success(`${inviteEmail}に招待リンクを送信しました`);
       setInviteEmail('');
+      setInviteEmailError('');
     } catch (error) {
       toast.error('招待リンクの送信に失敗しました');
     } finally {
@@ -505,23 +513,37 @@ export function NotificationSettingsPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">メールで招待リンクを送る</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="example@domain.com"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={handleSendInvite}
-                      disabled={isInviteSending}
-                      className="flex items-center gap-1"
-                    >
-                      <Send className="w-4 h-4" />
-                      {isInviteSending ? '送信中...' : '招待リンクを送る'}
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        placeholder="example@domain.com"
+                        value={inviteEmail}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setInviteEmail(value);
+                          // リアルタイムバリデーション
+                          if (value && !validateEmail(value)) {
+                            setInviteEmailError('メールアドレスの形式が正しくありません');
+                          } else {
+                            setInviteEmailError('');
+                          }
+                        }}
+                        className={`flex-1 ${inviteEmailError ? 'border-red-500' : ''}`}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleSendInvite}
+                        disabled={isInviteSending || !!inviteEmailError}
+                        className="flex items-center gap-1"
+                      >
+                        <Send className="w-4 h-4" />
+                        {isInviteSending ? '送信中...' : '招待リンクを送る'}
+                      </Button>
+                    </div>
+                    {inviteEmailError && (
+                      <p className="text-sm text-red-500 mt-1">{inviteEmailError}</p>
+                    )}
                   </div>
                 </div>
               </div>
