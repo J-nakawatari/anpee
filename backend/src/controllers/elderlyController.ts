@@ -220,8 +220,23 @@ export const unlinkLine = async (req: Request, res: Response) => {
     // 家族情報を更新し、新しい登録コードを生成
     elderly.hasGenKiButton = false
     elderly.lineUserId = undefined
-    // 新しい登録コードを生成（pre-saveフックで自動生成）
-    elderly.registrationCode = undefined
+    
+    // 新しい登録コードを明示的に生成
+    let isUnique = false
+    let newCode = ''
+    
+    while (!isUnique) {
+      newCode = elderly.generateRegistrationCode()
+      const existing = await Elderly.findOne({ 
+        registrationCode: newCode,
+        _id: { $ne: elderly._id }
+      })
+      if (!existing) {
+        isUnique = true
+      }
+    }
+    
+    elderly.registrationCode = newCode
     await elderly.save()
 
     res.json({
