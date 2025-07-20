@@ -83,10 +83,10 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
       <div>
         <Label htmlFor="gender" className="mb-2">性別</Label>
         <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
-          <SelectTrigger id="gender">
+          <SelectTrigger id="gender" className="bg-white">
             <SelectValue placeholder="性別を選択" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="male">男性</SelectItem>
             <SelectItem value="female">女性</SelectItem>
             <SelectItem value="other">その他</SelectItem>
