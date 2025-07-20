@@ -18,6 +18,7 @@ export async function generateResponseToken(elderlyId: string): Promise<string> 
     await Response.create({
       elderlyId,
       token,
+      type: 'genki_button', // 元気ボタンのタイプを追加
       status: 'pending',
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24時間後
     })
