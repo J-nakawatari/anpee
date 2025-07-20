@@ -4,6 +4,7 @@ export interface IElderly extends Document {
   userId: Types.ObjectId
   name: string
   age: number
+  gender: 'male' | 'female' | 'other'
   phone: string
   address: string
   emergencyContact: string
@@ -40,6 +41,12 @@ const elderlySchema = new Schema<IElderly>(
       required: true,
       min: 0,
       max: 150,
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other'],
+      required: true,
+      default: 'other',
     },
     phone: {
       type: String,

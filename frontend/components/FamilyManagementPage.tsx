@@ -80,6 +80,19 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
           placeholder="75"
         />
       </div>
+      <div>
+        <Label htmlFor="gender" className="mb-2">性別</Label>
+        <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+          <SelectTrigger id="gender">
+            <SelectValue placeholder="性別を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="male">男性</SelectItem>
+            <SelectItem value="female">女性</SelectItem>
+            <SelectItem value="other">その他</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
 
     <div>
@@ -153,6 +166,7 @@ export function FamilyManagementPage() {
   const emptyFormData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'> = {
     name: "",
     age: 0,  // 0は有効な値として扱われる
+    gender: 'other',
     phone: "",
     address: "",
     emergencyContact: "",
@@ -259,6 +273,7 @@ export function FamilyManagementPage() {
     setFormData({
       name: person.name,
       age: person.age,
+      gender: person.gender || 'other',
       phone: person.phone,
       address: person.address,
       emergencyContact: person.emergencyContact,

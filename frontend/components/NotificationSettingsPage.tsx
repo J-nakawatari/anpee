@@ -411,18 +411,18 @@ export function NotificationSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
-            通知タイミング設定
+            通知時間設定
           </CardTitle>
           <CardDescription>
-            通知を送信する時間帯を設定します
+            家族に元気確認メッセージを送信する時間を設定します
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* 朝の通知設定 */}
+          {/* 1回目の通知設定 */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-sm font-medium">朝の通知</Label>
-              <p className="text-sm text-gray-500">毎朝の見守り開始通知</p>
+              <Label className="text-sm font-medium">1回目の通知</Label>
+              <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
             </div>
             <div className="flex items-center gap-4">
               <Select
@@ -448,11 +448,11 @@ export function NotificationSettingsPage() {
 
           <Separator />
 
-          {/* 夜の通知設定 */}
+          {/* 2回目の通知設定 */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-sm font-medium">夜の通知</Label>
-              <p className="text-sm text-gray-500">毎夜の見守り完了通知</p>
+              <Label className="text-sm font-medium">2回目の通知</Label>
+              <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
             </div>
             <div className="flex items-center gap-4">
               <Select
@@ -885,7 +885,7 @@ export function NotificationSettingsPage() {
                 className="flex items-center justify-center gap-2 h-12"
               >
                 <Clock className="w-4 h-4 text-yellow-600" />
-                {isTestingMorningNotification ? '朝の通知送信中...' : '朝の通知を今すぐ送信'}
+                {isTestingMorningNotification ? '元気確認送信中...' : '元気確認を今すぐ送信'}
               </Button>
             </div>
           </div>
@@ -899,7 +899,7 @@ export function NotificationSettingsPage() {
                 <li>• メール通知は設定されたメールアドレスに送信されます</li>
                 <li>• 電話通知は登録されている家族の電話番号に発信されます</li>
                 <li>• テスト通知は即座に実行されます（時間設定は無視されます）</li>
-                <li>• 「朝の通知を今すぐ送信」は元気確認ボタン付きのメッセージを送信します</li>
+                <li>• 「元気確認を今すぐ送信」は家族に元気ですボタン付きのメッセージを送信します</li>
               </ul>
             </AlertDescription>
           </Alert>

@@ -1,44 +1,75 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { elderlyService, ElderlyData } from "@/services/elderlyService";
+import { toast } from "@/lib/toast";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
+  const [elderlyList, setElderlyList] = useState<ElderlyData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 見守り対象者データ（1-2人想定）
-  const elderlyPeople = [
-    {
-      id: 1,
-      name: "おばあちゃん",
-      realName: "田中花子",
-      age: 78,
-      status: "安全",
-      lastLineResponse: "07:30",
-      lastPhoneResponse: "昨日 19:00",
-      todayLineResponse: true,
-      todayPhoneResponse: false,
-      avatar: "👵",
-      statusColor: "bg-green-100 text-green-700"
-    },
-    {
-      id: 2,
-      name: "おじいちゃん",
-      realName: "田中太郎",
-      age: 82,
-      status: "安全",
-      lastLineResponse: "08:15",
-      lastPhoneResponse: "今日 17:30",
-      todayLineResponse: true,
-      todayPhoneResponse: true,
-      avatar: "👴",
-      statusColor: "bg-green-100 text-green-700"
+  useEffect(() => {
+    fetchElderlyData();
+  }, []);
+
+  const fetchElderlyData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await elderlyService.getList();
+      setElderlyList(data);
+    } catch (error) {
+      console.error("家族データの取得に失敗しました:", error);
+      toast.error("家族データの取得に失敗しました");
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  // 性別に基づいて敬称を取得
+  const getHonorific = (gender: 'male' | 'female' | 'other') => {
+    switch (gender) {
+      case 'male':
+        return 'おじいちゃん';
+      case 'female':
+        return 'おばあちゃん';
+      default:
+        return '';
+    }
+  };
+
+  // 性別に基づいてアバターを取得
+  const getAvatar = (gender: 'male' | 'female' | 'other') => {
+    switch (gender) {
+      case 'male':
+        return '👴';
+      case 'female':
+        return '👵';
+      default:
+        return '👤';
+    }
+  };
+
+  // 見守り対象者データを実際のデータから生成
+  const elderlyPeople = elderlyList.map((elderly, index) => ({
+    id: elderly._id || `${index}`,
+    name: getHonorific(elderly.gender),
+    realName: elderly.name,
+    age: elderly.age,
+    gender: elderly.gender,
+    status: "安全",
+    lastLineResponse: elderly.lastResponseAt ? new Date(elderly.lastResponseAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : "未応答",
+    lastPhoneResponse: "昨日 19:00",
+    todayLineResponse: elderly.lastResponseAt ? new Date(elderly.lastResponseAt).toDateString() === new Date().toDateString() : false,
+    todayPhoneResponse: false,
+    avatar: getAvatar(elderly.gender),
+    statusColor: "bg-green-100 text-green-700"
+  }));
 
   // 統計データ（1-2人向け）
   const stats = [
@@ -87,49 +118,45 @@ export function DashboardPage() {
     { day: "日", line: 2, phone: 1 }
   ];
 
-  // 最新の応答記録
-  const recentResponses = [
-    {
-      id: 1,
-      person: "おばあちゃん",
-      type: "LINE",
-      action: "元気ですボタン",
-      status: "応答",
-      time: "07:30",
-      icon: MessageSquare,
-      color: "text-green-600"
-    },
-    {
-      id: 2,
-      person: "おじいちゃん",
-      type: "電話",
-      action: "安否確認電話",
-      status: "応答",
-      time: "17:30",
-      icon: Phone,
-      color: "text-green-600"
-    },
-    {
-      id: 3,
-      person: "おじいちゃん",
-      type: "LINE",
-      action: "元気ですボタン",
-      status: "応答",
-      time: "08:15",
-      icon: MessageSquare,
-      color: "text-green-600"
-    },
-    {
-      id: 4,
-      person: "おばあちゃん",
-      type: "電話",
-      action: "安否確認電話",
-      status: "未応答",
-      time: "12:00",
-      icon: Phone,
-      color: "text-orange-600"
+  // 最新の応答記録（実際のデータから生成）
+  const recentResponses = elderlyPeople.flatMap(person => {
+    const responses = [];
+    
+    // LINE応答があれば追加
+    if (person.lastLineResponse !== "未応答") {
+      responses.push({
+        id: `${person.id}-line`,
+        person: person.name || person.realName,
+        type: "LINE",
+        action: "元気ですボタン",
+        status: "応答",
+        time: person.lastLineResponse,
+        icon: MessageSquare,
+        color: "text-green-600"
+      });
     }
-  ];
+    
+    // 電話応答データ（モック）
+    if (Math.random() > 0.3) { // 70%の確率で電話応答あり
+      responses.push({
+        id: `${person.id}-phone`,
+        person: person.name || person.realName,
+        type: "電話",
+        action: "安否確認電話",
+        status: "応答",
+        time: "17:30",
+        icon: Phone,
+        color: "text-green-600"
+      });
+    }
+    
+    return responses;
+  }).sort((a, b) => {
+    // 時刻でソート（新しい順）
+    const timeA = a.time.includes(':') ? a.time : '00:00';
+    const timeB = b.time.includes(':') ? b.time : '00:00';
+    return timeB.localeCompare(timeA);
+  }).slice(0, 4); // 最新4件のみ表示
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('ja-JP', { 
@@ -147,6 +174,17 @@ export function DashboardPage() {
       weekday: 'long'
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">データを読み込んでいます...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

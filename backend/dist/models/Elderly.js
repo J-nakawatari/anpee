@@ -16,6 +16,12 @@ const elderlySchema = new Schema({
         min: 0,
         max: 150,
     },
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'other'],
+        required: true,
+        default: 'other',
+    },
     phone: {
         type: String,
         required: true,
