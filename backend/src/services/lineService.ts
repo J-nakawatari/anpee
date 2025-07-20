@@ -181,11 +181,34 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     // 既に登録済みかチェック
     const existingUser = await LineUser.findOne({ elderlyId: elderly._id });
     if (existingUser) {
-      await client.pushMessage(userId, {
-        type: 'text',
-        text: 'このコードは既に使用されています。',
-      });
-      return;
+      // 同じユーザーが再登録しようとしている場合
+      if (existingUser.userId === userId) {
+        // 再アクティブ化
+        existingUser.isActive = true;
+        existingUser.lastActiveAt = new Date();
+        await existingUser.save();
+        
+        // 家族情報も更新
+        elderly.hasGenKiButton = true;
+        elderly.lineUserId = userId;
+        await elderly.save();
+        
+        await client.pushMessage(userId, {
+          type: 'text',
+          text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
+        });
+        return;
+      } else if (existingUser.isActive) {
+        // 別のユーザーがアクティブに使用中
+        await client.pushMessage(userId, {
+          type: 'text',
+          text: 'このコードは既に別の方が使用中です。',
+        });
+        return;
+      } else {
+        // 非アクティブなら削除して新規登録を続行
+        await LineUser.deleteOne({ _id: existingUser._id });
+      }
     }
 
     // LINEユーザー情報を取得
