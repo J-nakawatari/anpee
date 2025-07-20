@@ -2,13 +2,9 @@
 
 import { useState } from "react";
 import { 
-  Bell, 
   Mail, 
   MessageSquare, 
   Clock, 
-  Send, 
-  Check, 
-  X,
   AlertCircle,
   Settings,
   RotateCcw,
@@ -83,13 +79,6 @@ export function NotificationSettingsPage() {
     }
   });
 
-  const [testResults, setTestResults] = useState<{[key: string]: 'success' | 'error' | null}>({
-    email: null
-  });
-
-  const [isTestingSending, setIsTestingSending] = useState<{[key: string]: boolean}>({
-    email: false
-  });
 
   // LINE招待関連の状態
   const [inviteEmail, setInviteEmail] = useState("");
@@ -97,7 +86,7 @@ export function NotificationSettingsPage() {
   const [isInviteSending, setIsInviteSending] = useState(false);
 
   // 通知テストの状態
-  const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [isTestingSendingEmail, setIsTestingSendingEmail] = useState(false);
   const [isTestingPhone, setIsTestingPhone] = useState(false);
   const [isTestingLineNotification, setIsTestingLineNotification] = useState(false);
 
@@ -147,45 +136,6 @@ export function NotificationSettingsPage() {
     }));
   };
 
-  const handleTestSend = async (method: 'email') => {
-    setIsTestingSending(prev => ({...prev, [method]: true}));
-    setTestResults(prev => ({...prev, [method]: null}));
-
-    try {
-      // 模擬的なAPIコール
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 実際の実装では適切なバリデーションと送信処理を行う
-      let success = false;
-      
-      switch (method) {
-        case 'email':
-          success = settings.methods.email.enabled && 
-                   settings.methods.email.address.includes('@');
-          break;
-      }
-      
-      setTestResults(prev => ({...prev, [method]: success ? 'success' : 'error'}));
-      
-      if (success) {
-        toast.success(`${getMethodName(method)}のテスト送信が完了しました`);
-      } else {
-        toast.error(`${getMethodName(method)}のテスト送信に失敗しました`);
-      }
-      
-    } catch (error) {
-      setTestResults(prev => ({...prev, [method]: 'error'}));
-      toast.error(`${getMethodName(method)}のテスト送信でエラーが発生しました`);
-    } finally {
-      setIsTestingSending(prev => ({...prev, [method]: false}));
-    }
-  };
-
-  const getMethodName = (method: 'email') => {
-    switch (method) {
-      case 'email': return 'メール';
-    }
-  };
 
   // URLをクリップボードにコピー
   const handleCopyUrl = async () => {
@@ -229,35 +179,51 @@ export function NotificationSettingsPage() {
     toast.success('通知設定を保存しました');
   };
 
-  // 通知テスト送信
-  const handleTestNotification = async () => {
-    setIsTestingNotification(true);
-    
-    try {
-      // TODO: 実際のAPIコールを実装
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('テスト通知を送信しました。登録されている家族のLINEをご確認ください。');
-    } catch (error) {
-      toast.error('テスト通知の送信に失敗しました');
-    } finally {
-      setIsTestingNotification(false);
-    }
-  };
 
   // LINE通知テスト送信
   const handleTestLineNotification = async () => {
     setIsTestingLineNotification(true);
     
     try {
-      // TODO: 実際のAPIコールを実装
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/v1/notifications/test/line', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      toast.success('LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
+      if (!response.ok) throw new Error('Failed to send test LINE notification');
+      
+      const data = await response.json();
+      toast.success(data.message || 'LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
     } catch (error) {
       toast.error('LINE通知のテスト送信に失敗しました');
     } finally {
       setIsTestingLineNotification(false);
+    }
+  };
+
+  // メール通知テスト送信
+  const handleTestEmailNotification = async () => {
+    setIsTestingSendingEmail(true);
+    
+    try {
+      const response = await fetch('/api/v1/notifications/test/email', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to send test email');
+      
+      toast.success('テストメールを送信しました。メールをご確認ください。');
+    } catch (error) {
+      toast.error('メールのテスト送信に失敗しました');
+    } finally {
+      setIsTestingSendingEmail(false);
     }
   };
 
@@ -266,10 +232,18 @@ export function NotificationSettingsPage() {
     setIsTestingPhone(true);
     
     try {
-      // TODO: 実際のAPIコールを実装
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/v1/notifications/test/phone', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      toast.success('テスト架電を開始しました。登録されている電話番号に発信します。');
+      if (!response.ok) throw new Error('Failed to send test phone call');
+      
+      const data = await response.json();
+      toast.success(data.message || 'テスト架電を開始しました。登録されている電話番号に発信します。');
     } catch (error) {
       toast.error('テスト架電に失敗しました');
     } finally {
@@ -329,27 +303,13 @@ export function NotificationSettingsPage() {
       {/* 通知タイミング設定 */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                通知タイミング設定
-              </CardTitle>
-              <CardDescription className="mt-1">
-                通知を送信する時間帯を設定します
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestNotification}
-              disabled={isTestingNotification}
-              className="flex items-center gap-2"
-            >
-              <Bell className="w-4 h-4" />
-              {isTestingNotification ? 'テスト送信中...' : 'テスト通知を送信'}
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            通知タイミング設定
+          </CardTitle>
+          <CardDescription>
+            通知を送信する時間帯を設定します
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 朝の通知設定 */}
@@ -668,29 +628,6 @@ export function NotificationSettingsPage() {
                   onChange={(e) => updateMethodSetting('email', 'address', e.target.value)}
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleTestSend('email')}
-                  disabled={isTestingSending.email}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {isTestingSending.email ? '送信中...' : 'テスト送信'}
-                </Button>
-                {testResults.email === 'success' && (
-                  <div className="flex items-center gap-1 text-green-600">
-                    <Check className="w-4 h-4" />
-                    <span className="text-sm">送信成功</span>
-                  </div>
-                )}
-                {testResults.email === 'error' && (
-                  <div className="flex items-center gap-1 text-red-600">
-                    <X className="w-4 h-4" />
-                    <span className="text-sm">送信失敗</span>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </CardContent>
@@ -723,12 +660,12 @@ export function NotificationSettingsPage() {
             {/* メール通知テスト */}
             <Button
               variant="outline"
-              onClick={() => handleTestSend('email')}
-              disabled={isTestingSending.email || !settings.methods.email.enabled || !settings.methods.email.address}
+              onClick={handleTestEmailNotification}
+              disabled={isTestingSendingEmail || !settings.methods.email.enabled || !settings.methods.email.address}
               className="flex items-center justify-center gap-2 h-12"
             >
               <Mail className="w-4 h-4 text-blue-600" />
-              {isTestingSending.email ? 'メール送信中...' : 'メールテスト送信'}
+              {isTestingSendingEmail ? 'メール送信中...' : 'メールテスト送信'}
             </Button>
 
             {/* 電話通知テスト */}
