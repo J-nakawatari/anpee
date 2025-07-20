@@ -107,10 +107,15 @@ export function HistoryPage() {
     try {
       setIsLoadingElderly(true);
       const response = await apiClient.get('/elderly');
-      if (response.data.elderlyList) {
-        setElderlyList(response.data.elderlyList);
+      
+      // レスポンスの構造: {success: true, data: [...]}
+      if (response.data && response.data.success && response.data.data) {
+        setElderlyList(response.data.data);
+      } else {
+        console.warn('予期しないレスポンス構造:', response.data);
+        setElderlyList([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('家族リスト取得エラー:', error);
       toast.error('家族リストの取得に失敗しました');
     } finally {
