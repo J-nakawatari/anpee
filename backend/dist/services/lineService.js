@@ -21,6 +21,10 @@ export const validateSignature = (body, signature) => {
 export const handleWebhook = async (events) => {
     await Promise.all(events.map(handleEvent));
 };
+// 汎用的なLINEメッセージ送信関数
+export const sendLineMessage = async (userId, messages) => {
+    return await client.pushMessage(userId, messages);
+};
 // 個別イベント処理
 const handleEvent = async (event) => {
     // フォローイベント（友だち追加）

@@ -11,6 +11,7 @@ import testRoutes from './routes/test.js';
 import elderlyRoutes from './routes/elderly.js';
 import lineRoutes from './routes/lineRoutes.js';
 import responseRoutes from './routes/responseRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import csrf from 'csurf'; // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 // 環境変数の読み込み
 import path from 'path';
@@ -87,6 +88,7 @@ app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/elderly', elderlyRoutes);
 app.use('/api/v1/line', lineRoutes);
 app.use('/api/v1/responses', responseRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {
     res.json({
