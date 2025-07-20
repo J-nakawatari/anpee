@@ -92,6 +92,15 @@ class RetryNotificationService {
         if (this.shouldSendRetry(latestResponse, latestHistory, retrySettings)) {
           await this.sendRetryNotification(elderly, user, latestHistory)
         }
+        // 最大再通知回数に達していて、2分経過した場合、管理者に通知（テスト用）
+        else if (this.shouldNotifyAdmin(latestResponse, latestHistory, retrySettings)) {
+          await this.notifyAdmin(user, elderly)
+          // 管理者通知済みフラグを設定
+          if (latestHistory) {
+            latestHistory.adminNotified = true
+            await latestHistory.save()
+          }
+        }
       }
     } catch (error) {
       logger.error(`ユーザー ${user._id} の再通知チェックエラー:`, error)
@@ -176,11 +185,6 @@ class RetryNotificationService {
 
       logger.info(`再通知送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`)
       
-      // 最終再通知の場合、管理者に通知
-      if (retryCount >= user.notificationSettings.retrySettings.maxRetries) {
-        await this.notifyAdmin(user, elderly)
-      }
-      
     } catch (error) {
       logger.error(`再通知送信エラー: ${elderly.name}さん`, error)
     }
@@ -222,6 +226,38 @@ class RetryNotificationService {
     } catch (error) {
       logger.error('管理者通知エラー:', error)
     }
+  }
+
+  // 管理者通知が必要かどうか判定
+  private shouldNotifyAdmin(
+    latestResponse: any,
+    latestHistory: any,
+    retrySettings: any
+  ): boolean {
+    // 今日の応答がある場合は通知不要
+    if (latestResponse && latestResponse.status === 'success') {
+      return false
+    }
+
+    // 履歴がない、または最大再通知回数に達していない場合
+    if (!latestHistory || latestHistory.retryCount < retrySettings.maxRetries) {
+      return false
+    }
+
+    // 管理者通知が既に送信済みかチェック
+    if (latestHistory.adminNotified) {
+      return false
+    }
+
+    // 最後の通知から30分経過しているかチェック
+    const lastNotificationTime = latestHistory.lastNotificationTime || latestHistory.createdAt
+    const now = new Date()
+    const minutesSinceLastNotification = Math.floor(
+      (now.getTime() - new Date(lastNotificationTime).getTime()) / (1000 * 60)
+    )
+
+    // 最後の通知から2分経過していれば管理者に通知（テスト用に一時的に2分）
+    return minutesSinceLastNotification >= 2
   }
 
   // サービス停止

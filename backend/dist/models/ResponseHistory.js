@@ -48,6 +48,10 @@ const responseHistorySchema = new Schema({
     lastNotificationTime: {
         type: Date,
     },
+    adminNotified: {
+        type: Boolean,
+        default: false,
+    },
 }, {
     timestamps: true,
 });

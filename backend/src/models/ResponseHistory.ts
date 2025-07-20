@@ -12,6 +12,7 @@ export interface IResponseHistory extends Document {
   retryCount?: number
   date: Date  // 追加: 通知日（日付のみ）
   lastNotificationTime?: Date  // 追加: 最後の通知送信時刻
+  adminNotified?: boolean  // 追加: 管理者通知済みフラグ
   createdAt: Date
   updatedAt: Date
 }
@@ -65,6 +66,10 @@ const responseHistorySchema = new Schema<IResponseHistory>(
     },
     lastNotificationTime: {
       type: Date,
+    },
+    adminNotified: {
+      type: Boolean,
+      default: false,
     },
   },
   {
