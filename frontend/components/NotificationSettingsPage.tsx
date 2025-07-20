@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiClient } from "@/services/apiClient";
 import { 
   Mail, 
   MessageSquare, 
@@ -186,30 +187,11 @@ export function NotificationSettingsPage() {
     setIsTestingLineNotification(true);
     
     try {
-      // CSRFトークンを取得
-      const csrfResponse = await fetch('/api/v1/csrf-token');
-      const csrfData = await csrfResponse.json();
-      
-      const response = await fetch('/api/v1/notifications/test/line', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfData.csrfToken
-        },
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send test LINE notification');
-      }
-      
-      const data = await response.json();
-      toast.success(data.message || 'LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
-    } catch (error) {
+      const response = await apiClient.post('/notifications/test/line');
+      toast.success(response.data.message || 'LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
+    } catch (error: any) {
       console.error('LINE test error:', error);
-      toast.error('LINE通知のテスト送信に失敗しました');
+      toast.error(error.response?.data?.message || 'LINE通知のテスト送信に失敗しました');
     } finally {
       setIsTestingLineNotification(false);
     }
@@ -220,29 +202,11 @@ export function NotificationSettingsPage() {
     setIsTestingSendingEmail(true);
     
     try {
-      // CSRFトークンを取得
-      const csrfResponse = await fetch('/api/v1/csrf-token');
-      const csrfData = await csrfResponse.json();
-      
-      const response = await fetch('/api/v1/notifications/test/email', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfData.csrfToken
-        },
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send test email');
-      }
-      
-      toast.success('テストメールを送信しました。メールをご確認ください。');
-    } catch (error) {
+      const response = await apiClient.post('/notifications/test/email');
+      toast.success(response.data.message || 'テストメールを送信しました。メールをご確認ください。');
+    } catch (error: any) {
       console.error('Email test error:', error);
-      toast.error('メールのテスト送信に失敗しました');
+      toast.error(error.response?.data?.message || 'メールのテスト送信に失敗しました');
     } finally {
       setIsTestingSendingEmail(false);
     }
@@ -253,30 +217,11 @@ export function NotificationSettingsPage() {
     setIsTestingPhone(true);
     
     try {
-      // CSRFトークンを取得
-      const csrfResponse = await fetch('/api/v1/csrf-token');
-      const csrfData = await csrfResponse.json();
-      
-      const response = await fetch('/api/v1/notifications/test/phone', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfData.csrfToken
-        },
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send test phone call');
-      }
-      
-      const data = await response.json();
-      toast.success(data.message || 'テスト架電を開始しました。登録されている電話番号に発信します。');
-    } catch (error) {
+      const response = await apiClient.post('/notifications/test/phone');
+      toast.success(response.data.message || 'テスト架電を開始しました。登録されている電話番号に発信します。');
+    } catch (error: any) {
       console.error('Phone test error:', error);
-      toast.error('テスト架電に失敗しました');
+      toast.error(error.response?.data?.message || 'テスト架電に失敗しました');
     } finally {
       setIsTestingPhone(false);
     }
