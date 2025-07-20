@@ -8,6 +8,20 @@ import logger from '../utils/logger.js'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 
+// 時間帯に応じた挨拶を取得
+function getGreeting(hour: number): { greeting: string; emoji: string } {
+  if (hour >= 5 && hour < 10) {
+    return { greeting: 'おはようございます', emoji: '☀️' }
+  } else if (hour >= 10 && hour < 17) {
+    return { greeting: 'こんにちは', emoji: '🌞' }
+  } else if (hour >= 17 && hour < 23) {
+    return { greeting: 'こんばんは', emoji: '🌙' }
+  } else {
+    // 深夜帯（23時～5時）
+    return { greeting: 'こんばんは', emoji: '🌙' }
+  }
+}
+
 // 通知送信サービス
 class ScheduledNotificationService {
   private tasks: Map<string, cron.ScheduledTask> = new Map()
@@ -124,11 +138,15 @@ class ScheduledNotificationService {
           // 今日の日付を日本語形式で取得
           const today = new Date()
           const dateStr = format(today, 'M月d日', { locale: ja })
+          
+          // 現在の時間帯に応じた挨拶を取得
+          const hour = today.getHours()
+          const { greeting, emoji } = getGreeting(hour)
 
           const messages = [
             {
               type: 'text' as const,
-              text: `おはようございます、${elderly.name}さん！☀️\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
+              text: `${greeting}、${elderly.name}さん！${emoji}\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
             }
           ]
 
@@ -172,11 +190,15 @@ class ScheduledNotificationService {
           // 今日の日付を日本語形式で取得
           const today = new Date()
           const dateStr = format(today, 'M月d日', { locale: ja })
+          
+          // 現在の時間帯に応じた挨拶を取得
+          const hour = today.getHours()
+          const { greeting, emoji } = getGreeting(hour)
 
           const messages = [
             {
               type: 'text' as const,
-              text: `こんばんは、${elderly.name}さん！🌙\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
+              text: `${greeting}、${elderly.name}さん！${emoji}\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
             }
           ]
 
