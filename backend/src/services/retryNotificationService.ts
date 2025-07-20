@@ -79,6 +79,7 @@ class RetryNotificationService {
         const latestResponse = await Response.findOne({
           elderlyId: elderly._id,
           type: 'genki_button',
+          status: 'success',
           respondedAt: { $gte: today }
         }).sort({ respondedAt: -1 })
 
