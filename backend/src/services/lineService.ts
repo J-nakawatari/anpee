@@ -113,13 +113,20 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     }
 
     // LINEユーザー情報を取得
-    const profile = await client.getProfile(userId);
+    let profile: { displayName: string; pictureUrl?: string } = { displayName: '未設定' };
+    try {
+      const lineProfile = await client.getProfile(userId);
+      profile = lineProfile;
+    } catch (profileError: any) {
+      console.error('プロファイル取得エラー:', profileError.response?.status);
+      console.error('アクセストークンの確認が必要です');
+    }
 
     // LineUserモデルに保存
     await LineUser.create({
       userId,
       elderlyId: elderly._id,
-      displayName: profile.displayName,
+      displayName: profile.displayName || elderly.name,
       pictureUrl: profile.pictureUrl,
       registeredAt: new Date(),
     });
@@ -140,12 +147,16 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
 どうぞよろしくお願いします🌸`,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration error:', error);
-    await client.pushMessage(userId, {
-      type: 'text',
-      text: '登録中にエラーが発生しました。しばらく経ってからお試しください。',
+    console.error('Error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
     });
+    
+    // エラー時のpushMessageは避ける（無限ループ防止）
+    console.error('登録エラーが発生しました。ユーザーID:', userId);
   }
 };
 
