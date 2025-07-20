@@ -3,12 +3,13 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IResponse extends Document {
   elderlyId: mongoose.Types.ObjectId; // 家族のID
   type: 'genki_button' | 'phone_call' | 'auto_call'; // 応答タイプ
-  status: 'pending' | 'success' | 'no_answer' | 'failed'; // ステータス
+  status: 'pending' | 'success' | 'no_answer' | 'failed' | 'expired'; // ステータス
   respondedAt?: Date; // 応答日時
   duration?: number; // 通話時間（秒）
   notes?: string; // メモ
   token?: string; // ワンタイムトークン（元気ボタン用）
   tokenExpiresAt?: Date; // トークン有効期限
+  expiresAt?: Date; // レスポンスの有効期限
   metadata?: any; // その他のメタデータ
   createdAt: Date;
   updatedAt: Date;
@@ -28,7 +29,7 @@ const responseSchema = new Schema<IResponse>({
   },
   status: {
     type: String,
-    enum: ['pending', 'success', 'no_answer', 'failed'],
+    enum: ['pending', 'success', 'no_answer', 'failed', 'expired'],
     default: 'pending',
   },
   respondedAt: {
@@ -46,6 +47,9 @@ const responseSchema = new Schema<IResponse>({
     sparse: true, // nullを許可しつつユニーク制約
   },
   tokenExpiresAt: {
+    type: Date,
+  },
+  expiresAt: {
     type: Date,
   },
   metadata: {
@@ -67,4 +71,5 @@ responseSchema.methods.isTokenValid = function(): boolean {
   return new Date() < this.tokenExpiresAt;
 };
 
-export const Response = mongoose.model<IResponse>('Response', responseSchema);
+const ResponseModel = mongoose.model<IResponse>('Response', responseSchema);
+export default ResponseModel;

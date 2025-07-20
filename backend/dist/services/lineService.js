@@ -1,6 +1,6 @@
 import { Client } from '@line/bot-sdk';
 import crypto from 'crypto';
-import { Response } from '../models/Response.js';
+import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
 import { LineUser } from '../models/LineUser.js';
 // LINE Bot SDK クライアントの初期化

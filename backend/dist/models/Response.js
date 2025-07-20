@@ -13,7 +13,7 @@ const responseSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'success', 'no_answer', 'failed'],
+        enum: ['pending', 'success', 'no_answer', 'failed', 'expired'],
         default: 'pending',
     },
     respondedAt: {
@@ -33,6 +33,9 @@ const responseSchema = new Schema({
     tokenExpiresAt: {
         type: Date,
     },
+    expiresAt: {
+        type: Date,
+    },
     metadata: {
         type: Schema.Types.Mixed,
     },
@@ -50,4 +53,5 @@ responseSchema.methods.isTokenValid = function () {
         return false;
     return new Date() < this.tokenExpiresAt;
 };
-export const Response = mongoose.model('Response', responseSchema);
+const ResponseModel = mongoose.model('Response', responseSchema);
+export default ResponseModel;

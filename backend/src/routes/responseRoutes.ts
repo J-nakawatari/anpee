@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Response } from '../models/Response.js';
+import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
 import { authenticate } from '../middleware/auth.js';
 import mongoose from 'mongoose';
@@ -190,7 +190,7 @@ router.get('/stats', authenticate, async (req, res) => {
       }
     };
 
-    stats.forEach(stat => {
+    stats.forEach((stat: any) => {
       const { type, status } = stat._id;
       if (type in formattedStats) {
         const typeKey = type as keyof typeof formattedStats;
