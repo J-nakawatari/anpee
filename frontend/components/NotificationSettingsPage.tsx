@@ -806,42 +806,6 @@ export function NotificationSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* メール通知設定 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="w-5 h-5 text-blue-600" />
-            メール通知設定
-          </CardTitle>
-          <CardDescription>
-            メールでの通知を設定します
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">メール通知を有効にする</Label>
-            <Switch
-              checked={settings.methods.email.enabled}
-              onCheckedChange={(checked) => updateMethodSetting('email', 'enabled', checked)}
-            />
-          </div>
-
-          {settings.methods.email.enabled && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-address">メールアドレス</Label>
-                <Input
-                  id="email-address"
-                  type="email"
-                  placeholder="example@domain.com"
-                  value={settings.methods.email.address}
-                  onChange={(e) => updateMethodSetting('email', 'address', e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* テスト通知セクション */}
       <Card>
@@ -855,7 +819,7 @@ export function NotificationSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
             {/* LINE通知テスト */}
             <Button
               variant="outline"
@@ -865,17 +829,6 @@ export function NotificationSettingsPage() {
             >
               <MessageSquare className="w-4 h-4 text-green-600" />
               {isTestingLineNotification ? 'LINE送信中...' : 'LINEテスト送信'}
-            </Button>
-
-            {/* メール通知テスト */}
-            <Button
-              variant="outline"
-              onClick={handleTestEmailNotification}
-              disabled={isTestingSendingEmail || !settings.methods.email.enabled || !settings.methods.email.address}
-              className="flex items-center justify-center gap-2 h-12"
-            >
-              <Mail className="w-4 h-4 text-blue-600" />
-              {isTestingSendingEmail ? 'メール送信中...' : 'メールテスト送信'}
             </Button>
 
             {/* 電話通知テスト */}
@@ -914,7 +867,6 @@ export function NotificationSettingsPage() {
               <strong>テスト通知について:</strong>
               <ul className="mt-2 space-y-1 text-sm">
                 <li>• LINE通知は登録されている家族のLINEに送信されます</li>
-                <li>• メール通知は設定されたメールアドレスに送信されます</li>
                 <li>• 電話通知は登録されている家族の電話番号に発信されます</li>
                 <li>• テスト通知は即座に実行されます（時間設定は無視されます）</li>
                 <li>• 「元気確認を今すぐ送信」は家族に元気ですボタン付きのメッセージを送信します</li>
@@ -931,7 +883,7 @@ export function NotificationSettingsPage() {
           <strong>注意事項:</strong>
           <ul className="mt-2 space-y-1 text-sm">
             <li>• LINE通知を利用するには公式アカウントの友だち追加とアカウント連携が必要です</li>
-            <li>• メールのテスト送信は実際の通知と同じ内容で送信されます</li>
+            <li>• 電話通知を利用するには家族管理画面で電話番号の登録が必要です</li>
             <li>• 再通知設定はプランによって制限があります</li>
             <li>• 通知設定の変更は即座に反映されます</li>
           </ul>

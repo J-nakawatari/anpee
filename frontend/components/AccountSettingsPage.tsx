@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   User, 
   Mail, 
@@ -34,6 +34,7 @@ import {
   TableRow 
 } from "./ui/table";
 import { toast } from "@/lib/toast";
+import { apiClient } from "@/services/apiClient";
 import { 
   mockUserAccount, 
   mockSecurityLogs,
@@ -80,8 +81,69 @@ export function AccountSettingsPage() {
     email: false,
     password: false,
     delete: false,
-    twoFactor: false
+    twoFactor: false,
+    notificationSettings: false
   });
+
+  // メール通知設定
+  const [notificationSettings, setNotificationSettings] = useState({
+    email: {
+      enabled: false,
+      address: ''
+    }
+  });
+
+  // 完全な通知設定を保持（他の設定を保存時に維持するため）
+  const [fullNotificationSettings, setFullNotificationSettings] = useState<any>(null);
+
+  // 通知設定を取得
+  useEffect(() => {
+    const loadNotificationSettings = async () => {
+      try {
+        const response = await apiClient.get('/notifications/settings');
+        const { settings } = response.data;
+        
+        setFullNotificationSettings(settings);
+        
+        if (settings?.methods?.email) {
+          setNotificationSettings({
+            email: settings.methods.email
+          });
+        }
+      } catch (error) {
+        console.error('通知設定の取得エラー:', error);
+      }
+    };
+
+    loadNotificationSettings();
+  }, []);
+
+  // 通知設定を保存
+  const saveNotificationSettings = async () => {
+    setIsLoading(prev => ({ ...prev, notificationSettings: true }));
+    
+    try {
+      // 既存の設定を維持しながら、メール設定のみ更新
+      const settingsToSave = {
+        ...(fullNotificationSettings || {}),
+        methods: {
+          ...(fullNotificationSettings?.methods || {}),
+          email: notificationSettings.email
+        }
+      };
+      
+      await apiClient.put('/notifications/settings', {
+        settings: settingsToSave
+      });
+      
+      toast.success('通知設定を保存しました');
+    } catch (error) {
+      console.error('通知設定の保存エラー:', error);
+      toast.error('通知設定の保存に失敗しました');
+    } finally {
+      setIsLoading(prev => ({ ...prev, notificationSettings: false }));
+    }
+  };
 
   // メールアドレス変更
   const handleEmailChange = async () => {
@@ -287,6 +349,82 @@ export function AccountSettingsPage() {
                 disabled={isLoading.twoFactor}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 管理者通知設定 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            管理者通知設定
+          </CardTitle>
+          <CardDescription>
+            家族からの応答状況や日次サマリーをメールで受け取る設定です
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-gray-900">メール通知</h4>
+              <p className="text-sm text-gray-600">
+                家族から応答がない場合や日次サマリーをメールで受け取ります
+              </p>
+            </div>
+            <Switch
+              checked={notificationSettings.email.enabled}
+              onCheckedChange={(checked) => {
+                setNotificationSettings(prev => ({
+                  ...prev,
+                  email: { ...prev.email, enabled: checked }
+                }));
+              }}
+            />
+          </div>
+
+          {notificationSettings.email.enabled && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="notification-email">通知先メールアドレス</Label>
+                <Input
+                  id="notification-email"
+                  type="email"
+                  placeholder="example@domain.com"
+                  value={notificationSettings.email.address}
+                  onChange={(e) => {
+                    setNotificationSettings(prev => ({
+                      ...prev,
+                      email: { ...prev.email, address: e.target.value }
+                    }));
+                  }}
+                />
+                <p className="text-sm text-gray-500">
+                  登録メールアドレスとは別のアドレスも指定できます
+                </p>
+              </div>
+
+              <Alert className="bg-blue-50 border-blue-200">
+                <Mail className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-700">
+                  <strong>通知内容:</strong>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    <li>• 再通知回数に達しても応答がない場合の通知</li>
+                    <li>• 毎日21時に送信される日次サマリー</li>
+                    <li>• その他重要なお知らせ</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </>
+          )}
+
+          <div className="flex justify-end">
+            <Button
+              onClick={saveNotificationSettings}
+              disabled={isLoading.notificationSettings}
+            >
+              {isLoading.notificationSettings ? '保存中...' : '通知設定を保存'}
+            </Button>
           </div>
         </CardContent>
       </Card>
