@@ -413,61 +413,54 @@ export function NotificationSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 通知タイミング設定 */}
+      {/* 通知設定 */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
-            通知時間設定
+            通知設定
           </CardTitle>
           <CardDescription>
-            家族に元気確認メッセージを送信する時間を設定します
+            元気確認メッセージの送信時間と再通知ルールを設定します
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* 1回目の通知設定 */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">通知時間</Label>
-              <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Select
-                value={settings.timing.morning.time}
-                onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
-                disabled={!settings.timing.morning.enabled}
-              >
-                <SelectTrigger className="w-24 bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
-                  {timeOptions.map(time => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Switch
-                checked={settings.timing.morning.enabled}
-                onCheckedChange={(checked) => updateTimingSetting('morning', 'enabled', checked)}
-              />
+          {/* 通知時間設定 */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700">通知時間</h3>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">毎日の通知時間</Label>
+                <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Select
+                  value={settings.timing.morning.time}
+                  onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
+                  disabled={!settings.timing.morning.enabled}
+                >
+                  <SelectTrigger className="w-24 bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
+                    {timeOptions.map(time => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Switch
+                  checked={settings.timing.morning.enabled}
+                  onCheckedChange={(checked) => updateTimingSetting('morning', 'enabled', checked)}
+                />
+              </div>
             </div>
           </div>
 
-        </CardContent>
-      </Card>
+          <Separator />
 
-      {/* 再通知設定 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <RotateCcw className="w-5 h-5" />
-            再通知設定
-          </CardTitle>
-          <CardDescription>
-            応答がない場合の再通知ルールを設定します
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          {/* 再通知設定 */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700">再通知設定</h3>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <Label className="text-sm font-medium">再通知を有効にする</Label>
@@ -481,8 +474,6 @@ export function NotificationSettingsPage() {
 
           {settings.retry.enabled && (
             <>
-              <Separator />
-              
               {/* 再通知回数設定 */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -513,7 +504,7 @@ export function NotificationSettingsPage() {
 
               </div>
 
-              <Separator />
+              <div className="h-4" />
 
               {/* 再通知間隔設定 */}
               <div className="space-y-3">
@@ -552,6 +543,7 @@ export function NotificationSettingsPage() {
               </div>
             </>
           )}
+          </div>
         </CardContent>
       </Card>
 
