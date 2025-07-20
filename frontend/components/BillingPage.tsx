@@ -68,14 +68,14 @@ export function BillingPage() {
     if (!newPlan) return;
 
     // 実際の実装では、Stripe APIを呼び出してプランを変更
-    toast.success(`プランを${newPlan.displayName}に変更しました`);
+    toast.success(`[モック] プランを${newPlan.displayName}に変更しました（実際には変更されません）`);
     setShowPlanDetailDialog(false);
     setSelectedPlan(null);
   };
 
   const handleCancelSubscription = () => {
     // 実際の実装では、Stripe APIを呼び出して契約をキャンセル
-    toast.success('契約をキャンセルしました。次回請求日に終了します。');
+    toast.success('[モック] 契約をキャンセルしました（実際にはキャンセルされません）');
     setShowCancelDialog(false);
   };
 
@@ -196,7 +196,7 @@ export function BillingPage() {
                 size="sm"
                 onClick={() => handlePlanChange('premium')}
               >
-                プラン変更
+                プラン変更（モック）
               </Button>
               <Button 
                 variant="outline" 
@@ -239,7 +239,7 @@ export function BillingPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            請求履歴
+            請求履歴（モックデータ）
           </CardTitle>
           <CardDescription>
             過去の請求書と支払い状況

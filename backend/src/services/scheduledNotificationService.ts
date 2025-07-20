@@ -38,6 +38,16 @@ class ScheduledNotificationService {
 
       for (const user of users) {
         await this.scheduleUserNotifications(user)
+        
+        // 初回設定を保存
+        const { timing } = user.notificationSettings || {}
+        const morningTime = timing?.morning?.enabled ? timing.morning.time : null
+        const eveningTime = timing?.evening?.enabled ? timing.evening.time : null
+        
+        this.userSettings.set((user._id as any).toString(), {
+          morning: morningTime,
+          evening: eveningTime
+        })
       }
       
       logger.info(`${users.length}人のユーザーの通知をスケジュールしました`)
@@ -135,63 +145,56 @@ class ScheduledNotificationService {
     }
   }
 
-  // 夜の通知送信
+  // 夜の通知送信（2回目の元気確認）
   async sendEveningNotification(userId: string) {
     try {
-      logger.info(`夜の通知送信開始: ユーザー ${userId}`)
+      logger.info(`2回目の通知送信開始: ユーザー ${userId}`)
       
-      // 今日の応答状況を確認
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
+      // ユーザーの家族情報を取得
       const elderlyList = await Elderly.find({
         userId,
-        status: 'active'
+        status: 'active',
+        lineUserId: { $exists: true, $ne: null }
       })
 
-      let respondedCount = 0
-      let notRespondedCount = 0
-      const notRespondedNames: string[] = []
+      if (elderlyList.length === 0) {
+        logger.warn(`LINE連携済みの家族が見つかりません: ユーザー ${userId}`)
+        return
+      }
 
+      // 各家族に元気確認メッセージを送信
       for (const elderly of elderlyList) {
-        const todayResponse = await Response.findOne({
-          elderlyId: elderly._id,
-          createdAt: { $gte: today }
-        })
+        try {
+          // 応答用トークンを生成
+          const token = await generateResponseToken((elderly._id as any).toString())
+          const responseUrl = `${process.env.FRONTEND_URL || 'https://anpee.jp'}/genki/${token}`
 
-        if (todayResponse) {
-          respondedCount++
-        } else {
-          notRespondedCount++
-          notRespondedNames.push(elderly.name)
+          // 今日の日付を日本語形式で取得
+          const today = new Date()
+          const dateStr = format(today, 'M月d日', { locale: ja })
+
+          const messages = [
+            {
+              type: 'text' as const,
+              text: `こんばんは、${elderly.name}さん！🌙\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
+            }
+          ]
+
+          await sendLineMessage(elderly.lineUserId || '', messages)
+          logger.info(`2回目の通知送信成功: ${elderly.name}さん (${elderly._id})`)
+          
+        } catch (error) {
+          logger.error(`2回目の通知送信エラー: ${elderly.name}さん`, error)
         }
       }
-
-      // 管理者（ユーザー）にサマリーを送信
-      const user = await User.findById(userId)
-      if (!user) return
-
-      let summaryMessage = `本日の見守り結果\n\n`
-      summaryMessage += `✅ 応答あり: ${respondedCount}名\n`
-      
-      if (notRespondedCount > 0) {
-        summaryMessage += `❌ 応答なし: ${notRespondedCount}名\n`
-        summaryMessage += `\n【応答がなかった方】\n`
-        notRespondedNames.forEach(name => {
-          summaryMessage += `・${name}さん\n`
-        })
-        summaryMessage += `\n応答がなかった方には、明日の朝に再度確認メッセージが送信されます。`
-      } else {
-        summaryMessage += `\n本日は全員から応答がありました！`
-      }
-
-      // TODO: 管理者へのLINE通知実装（管理者のLINE連携機能が必要）
-      logger.info(`夜のサマリー: ${summaryMessage}`)
       
     } catch (error) {
-      logger.error(`夜の通知処理エラー: ユーザー ${userId}`, error)
+      logger.error(`2回目の通知処理エラー: ユーザー ${userId}`, error)
     }
   }
+
+  // タスク設定を保存するマップ
+  private userSettings: Map<string, {morning?: string | null, evening?: string | null}> = new Map()
 
   // スケジュールの更新チェック
   private async checkAndUpdateSchedules() {
@@ -205,18 +208,25 @@ class ScheduledNotificationService {
       }).select('_id notificationSettings updatedAt')
 
       for (const user of users) {
-        // 既存のタスクと設定を比較して、変更があれば更新
-        const morningTaskId = `${user._id}-morning`
-        const eveningTaskId = `${user._id}-evening`
+        const userId = (user._id as any).toString()
+        const currentSettings = this.userSettings.get(userId) || {}
+        const { timing } = user.notificationSettings || {}
         
-        const hasMorningTask = this.tasks.has(morningTaskId)
-        const hasEveningTask = this.tasks.has(eveningTaskId)
+        // 設定が変更されたかチェック
+        const morningTime = timing?.morning?.enabled ? timing.morning.time : null
+        const eveningTime = timing?.evening?.enabled ? timing.evening.time : null
         
-        const shouldHaveMorning = user.notificationSettings?.timing?.morning?.enabled || false
-        const shouldHaveEvening = user.notificationSettings?.timing?.evening?.enabled || false
+        const hasChanged = currentSettings.morning !== morningTime || currentSettings.evening !== eveningTime
         
-        if (hasMorningTask !== shouldHaveMorning || hasEveningTask !== shouldHaveEvening) {
+        if (hasChanged) {
+          logger.info(`ユーザー ${userId} の通知設定が変更されました`)
           await this.scheduleUserNotifications(user)
+          
+          // 新しい設定を保存
+          this.userSettings.set(userId, {
+            morning: morningTime,
+            evening: eveningTime
+          })
         }
       }
     } catch (error) {
