@@ -1,13 +1,13 @@
 import { Router } from 'express';
+import express from 'express';
 import { WebhookRequestBody } from '@line/bot-sdk';
 import { validateSignature, handleWebhook } from '../services/lineService.js';
 
 const router = Router();
 
-// LINE Webhook エンドポイント
-router.post('/webhook', async (req, res) => {
+// LINE Webhook エンドポイント - 生のボディを処理
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   console.log('LINE Webhook受信 - Headers:', req.headers);
-  console.log('LINE Webhook受信 - Body:', req.body);
   
   try {
     // 署名検証
@@ -18,7 +18,8 @@ router.post('/webhook', async (req, res) => {
     }
 
     // リクエストボディを文字列として取得
-    const body = JSON.stringify(req.body);
+    const body = req.body.toString('utf8');
+    console.log('LINE Webhook受信 - Raw Body:', body);
     
     // 署名を検証
     if (!validateSignature(body, signature)) {
@@ -29,7 +30,7 @@ router.post('/webhook', async (req, res) => {
     console.log('署名検証成功');
 
     // Webhookイベントを処理
-    const webhookBody = req.body as WebhookRequestBody;
+    const webhookBody = JSON.parse(body) as WebhookRequestBody;
     await handleWebhook(webhookBody.events);
 
     // LINEプラットフォームに200を返す

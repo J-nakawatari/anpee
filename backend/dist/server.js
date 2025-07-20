@@ -40,8 +40,16 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }));
-// ボディパーサー設定
-app.use(express.json());
+// LINE Webhook用の条件付きミドルウェア設定
+app.use((req, res, next) => {
+    // LINE Webhookは生のボディが必要
+    if (req.path === '/api/v1/line/webhook') {
+        next();
+    }
+    else {
+        express.json()(req, res, next);
+    }
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // CSRF保護
