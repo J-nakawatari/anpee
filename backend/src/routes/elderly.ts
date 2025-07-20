@@ -5,6 +5,7 @@ import {
   createElderly,
   updateElderly,
   deleteElderly,
+  unlinkLine,
 } from '../controllers/elderlyController.js'
 import { authenticate } from '../middleware/auth.js'
 
@@ -27,5 +28,8 @@ router.put('/:id', updateElderly)
 
 // 家族の削除
 router.delete('/:id', deleteElderly)
+
+// LINE連携解除
+router.post('/:id/unlink-line', unlinkLine)
 
 export default router

@@ -187,6 +187,24 @@ export function NotificationSettingsPage() {
     toast.success('通知設定を保存しました');
   };
 
+  // LINE連携解除
+  const handleUnlinkLine = async (elderlyId: string, elderlyName: string) => {
+    if (!confirm(`${elderlyName}さんのLINE連携を解除しますか？\n\n解除後も、家族が再度登録コードを送信すれば再連携できます。`)) {
+      return;
+    }
+
+    try {
+      await apiClient.post(`/elderly/${elderlyId}/unlink-line`);
+      toast.success('LINE連携を解除しました');
+      // 家族リストを再読み込み
+      const updatedList = await apiClient.get('/elderly');
+      setFamilyList(updatedList.data.data);
+    } catch (error) {
+      console.error('LINE連携解除エラー:', error);
+      toast.error('LINE連携の解除に失敗しました');
+    }
+  };
+
 
   // LINE通知テスト送信
   const handleTestLineNotification = async () => {
@@ -623,9 +641,19 @@ export function NotificationSettingsPage() {
                       <div className="flex items-center gap-3">
                         <div className="font-medium text-gray-900">{person.name}さん</div>
                         {person.lineUserId ? (
-                          <div className="flex items-center gap-1 text-green-600 text-sm">
-                            <CheckCircle className="w-4 h-4" />
-                            <span>LINE連携済み</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-green-600 text-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>LINE連携済み</span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleUnlinkLine(person._id || '', person.name)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs"
+                            >
+                              解除
+                            </Button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-gray-500 text-sm">
