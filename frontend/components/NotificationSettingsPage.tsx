@@ -54,6 +54,9 @@ interface NotificationSettings {
       enabled: boolean;
       address: string;
     };
+    phone: {
+      enabled: boolean;
+    };
   };
 }
 
@@ -81,6 +84,9 @@ export function NotificationSettingsPage() {
       email: {
         enabled: true,
         address: ""
+      },
+      phone: {
+        enabled: false
       }
     }
   });
@@ -104,7 +110,8 @@ export function NotificationSettingsPage() {
               intervalMinutes: 2 // 一時的に2分固定（元: loadedSettings.retrySettings?.retryInterval || 30）
             },
             methods: {
-              email: loadedSettings.methods?.email || { enabled: false, address: "" }
+              email: loadedSettings.methods?.email || { enabled: false, address: "" },
+              phone: loadedSettings.methods?.phone || { enabled: false }
             }
           });
         }
@@ -166,7 +173,7 @@ export function NotificationSettingsPage() {
     }));
   };
 
-  const updateMethodSetting = (method: 'email', field: string, value: boolean | string) => {
+  const updateMethodSetting = (method: 'email' | 'phone', field: string, value: boolean | string) => {
     setSettings(prev => ({
       ...prev,
       methods: {
@@ -235,7 +242,7 @@ export function NotificationSettingsPage() {
         methods: {
           line: { enabled: true }, // LINE通知は常に有効
           email: settings.methods.email,
-          phone: { enabled: false } // 電話通知は未実装
+          phone: settings.methods.phone
         },
         timing: settings.timing,
         retrySettings: {
@@ -544,6 +551,56 @@ export function NotificationSettingsPage() {
             </>
           )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* 電話通知設定 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-orange-600" />
+            電話通知設定
+          </CardTitle>
+          <CardDescription>
+            応答がない場合に自動で電話をかけて安否確認を行います
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">電話通知を有効にする</Label>
+              <p className="text-sm text-gray-500">
+                LINE通知で応答がない場合、登録された電話番号に自動で電話をかけます
+              </p>
+            </div>
+            <Switch
+              checked={settings.methods.phone.enabled}
+              onCheckedChange={(checked) => updateMethodSetting('phone', 'enabled', checked)}
+            />
+          </div>
+
+          {settings.methods.phone.enabled && (
+            <Alert className="bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700">
+                <strong>ご注意:</strong> 電話通知機能は現在準備中です。
+                サービス開始時に別途ご案内いたします。
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700">
+              <strong>電話通知の仕組み:</strong>
+              <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
+                <li>LINE通知に応答がない場合、設定した時間後に自動で電話をかけます</li>
+                <li>電話に出ていただければ、それだけで安否確認となります</li>
+                <li>電話番号は家族管理画面で登録された番号を使用します</li>
+                <li>通話料金は別途かかりません（プラン料金に含まれます）</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
