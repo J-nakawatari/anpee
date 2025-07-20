@@ -254,8 +254,8 @@ class EmailService {
         name: this.fromName
       },
       subject: options.subject,
-      text: options.text,
-      html: options.html || options.text
+      text: options.text || '',
+      html: options.html || options.text || ''
     };
 
     try {

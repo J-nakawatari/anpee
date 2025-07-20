@@ -12,6 +12,21 @@ export interface IUser extends Document {
   emailVerificationToken?: string
   passwordResetToken?: string
   passwordResetExpires?: Date
+  notificationSettings?: {
+    methods: {
+      line: { enabled: boolean }
+      email: { enabled: boolean; address: string }
+      phone: { enabled: boolean }
+    }
+    timing: {
+      morning: { enabled: boolean; time: string }
+      evening: { enabled: boolean; time: string }
+    }
+    retrySettings: {
+      maxRetries: number
+      retryInterval: number
+    }
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -66,6 +81,33 @@ const userSchema = new Schema<IUser>(
     passwordResetExpires: {
       type: Date,
     },
+    notificationSettings: {
+      type: {
+        methods: {
+          line: { enabled: { type: Boolean, default: true } },
+          email: { 
+            enabled: { type: Boolean, default: false },
+            address: { type: String, default: '' }
+          },
+          phone: { enabled: { type: Boolean, default: false } }
+        },
+        timing: {
+          morning: { 
+            enabled: { type: Boolean, default: true },
+            time: { type: String, default: '08:00' }
+          },
+          evening: { 
+            enabled: { type: Boolean, default: false },
+            time: { type: String, default: '20:00' }
+          }
+        },
+        retrySettings: {
+          maxRetries: { type: Number, default: 3 },
+          retryInterval: { type: Number, default: 30 }
+        }
+      },
+      default: {}
+    }
   },
   {
     timestamps: true,

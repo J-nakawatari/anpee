@@ -25,6 +25,11 @@ export const handleWebhook = async (events: WebhookEvent[]): Promise<void> => {
   await Promise.all(events.map(handleEvent));
 };
 
+// 汎用的なLINEメッセージ送信関数
+export const sendLineMessage = async (userId: string, messages: any[]): Promise<MessageAPIResponseBase> => {
+  return await client.pushMessage(userId, messages);
+};
+
 // 個別イベント処理
 const handleEvent = async (event: WebhookEvent): Promise<MessageAPIResponseBase | void> => {
   // フォローイベント（友だち追加）
