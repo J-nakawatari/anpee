@@ -346,7 +346,7 @@ export function NotificationSettingsPage() {
                 <SelectTrigger className="w-24 bg-peach-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
                   {timeOptions.map(time => (
                     <SelectItem key={time} value={time}>{time}</SelectItem>
                   ))}
@@ -376,7 +376,7 @@ export function NotificationSettingsPage() {
                 <SelectTrigger className="w-24 bg-peach-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
                   {timeOptions.map(time => (
                     <SelectItem key={time} value={time}>{time}</SelectItem>
                   ))}
