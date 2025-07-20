@@ -634,11 +634,11 @@ export function NotificationSettingsPage() {
                           </div>
                         )}
                       </div>
-                      {person.registrationCode && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <code className="bg-white px-3 py-1 rounded text-sm font-mono">
-                            登録:{person.registrationCode}
-                          </code>
+                      <div className="mt-2 flex items-center gap-2">
+                        <code className="bg-white px-3 py-1 rounded text-sm font-mono">
+                          登録:{person.registrationCode || '未生成'}
+                        </code>
+                        {person.registrationCode ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -650,8 +650,12 @@ export function NotificationSettingsPage() {
                           >
                             <Copy className="w-3 h-3" />
                           </Button>
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-xs text-amber-600 ml-2">
+                            家族管理画面で再保存してください
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

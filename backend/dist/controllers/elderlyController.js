@@ -87,13 +87,7 @@ export const createElderly = async (req, res) => {
             retryInterval: 30,
             status: 'active',
         });
-        // 登録コードを生成
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        elderly.registrationCode = code;
+        // 登録コードは保存時に自動生成される
         await elderly.save();
         res.status(201).json({
             success: true,
@@ -120,13 +114,19 @@ export const updateElderly = async (req, res) => {
         delete updateData.userId;
         delete updateData.createdAt;
         delete updateData.updatedAt;
-        const elderly = await Elderly.findOneAndUpdate({ _id: id, userId }, updateData, { new: true, runValidators: true });
-        if (!elderly) {
+        // 既存データを先に取得
+        const existingElderly = await Elderly.findOne({ _id: id, userId });
+        if (!existingElderly) {
             return res.status(404).json({
                 success: false,
                 message: '家族情報が見つかりません',
             });
         }
+        // 登録コードがない場合はsaveメソッドを使用して自動生成
+        if (!existingElderly.registrationCode) {
+            await existingElderly.save(); // pre saveフックが登録コードを生成
+        }
+        const elderly = await Elderly.findOneAndUpdate({ _id: id, userId }, updateData, { new: true, runValidators: true });
         res.json({
             success: true,
             message: '家族情報を更新しました',

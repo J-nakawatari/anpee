@@ -20,6 +20,7 @@ export interface IElderly extends Document {
   lastResponseAt?: Date
   createdAt: Date
   updatedAt: Date
+  generateRegistrationCode(): string
 }
 
 const elderlySchema = new Schema<IElderly>(
@@ -128,5 +129,25 @@ elderlySchema.methods.generateRegistrationCode = function(): string {
   }
   return code
 }
+
+// 保存前に登録コードを自動生成
+elderlySchema.pre('save', async function(next) {
+  if (!this.registrationCode) {
+    // ユニークな登録コードを生成
+    let isUnique = false
+    let code = ''
+    
+    while (!isUnique) {
+      code = this.generateRegistrationCode()
+      const existing = await mongoose.model('Elderly').findOne({ registrationCode: code })
+      if (!existing) {
+        isUnique = true
+      }
+    }
+    
+    this.registrationCode = code
+  }
+  next()
+})
 
 export default mongoose.model<IElderly>('Elderly', elderlySchema)
