@@ -505,10 +505,18 @@ export function HistoryPage() {
                     >
                       <div className="flex items-center gap-1">
                         日付・時刻
-                        {sortField === 'date' && (
-                          <span className="text-xs">
-                            {sortOrder === 'asc' ? '▲' : '▼'}
-                          </span>
+                        {sortField === 'date' ? (
+                          <img 
+                            src={sortOrder === 'asc' ? '/sort-amount-asc.svg' : '/sort-amount-desc.svg'} 
+                            alt={sortOrder === 'asc' ? '昇順' : '降順'}
+                            className="w-4 h-4"
+                          />
+                        ) : (
+                          <img 
+                            src="/sort-amount-asc.svg" 
+                            alt="ソート可能"
+                            className="w-4 h-4 opacity-30"
+                          />
                         )}
                       </div>
                     </th>
