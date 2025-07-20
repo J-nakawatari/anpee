@@ -13,4 +13,7 @@ router.post('/test/phone', authenticate, notificationController.testPhoneNotific
 router.get('/settings', authenticate, notificationController.getNotificationSettings)
 router.put('/settings', authenticate, notificationController.updateNotificationSettings)
 
+// 招待メール送信
+router.post('/send-invitation', authenticate, notificationController.sendInvitationEmail)
+
 export default router

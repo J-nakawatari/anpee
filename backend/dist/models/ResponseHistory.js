@@ -5,6 +5,11 @@ const responseHistorySchema = new Schema({
         ref: 'Elderly',
         required: true,
     },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
     type: {
         type: String,
         enum: ['line_button', 'phone_call'],
@@ -17,8 +22,9 @@ const responseHistorySchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['responded', 'no_response', 'failed'],
+        enum: ['responded', 'no_response', 'failed', 'pending'],
         required: true,
+        default: 'pending',
     },
     twilioCallSid: {
         type: String,
@@ -33,6 +39,14 @@ const responseHistorySchema = new Schema({
     retryCount: {
         type: Number,
         default: 0,
+    },
+    date: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    },
+    lastNotificationTime: {
+        type: Date,
     },
 }, {
     timestamps: true,

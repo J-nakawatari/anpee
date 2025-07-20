@@ -225,3 +225,56 @@ export const updateNotificationSettings = async (req, res) => {
         });
     }
 };
+// 招待メール送信
+export const sendInvitationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const userId = req.user.userId;
+        // バリデーション
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'メールアドレスを入力してください'
+            });
+        }
+        // メールアドレスの形式をチェック
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'メールアドレスの形式が正しくありません'
+            });
+        }
+        // ユーザー情報を取得
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'ユーザーが見つかりません'
+            });
+        }
+        // LINE友だち追加URLを取得
+        const lineAddUrl = process.env.LINE_ADD_FRIEND_URL || 'https://lin.ee/vxjKXkX';
+        // 招待メールを送信
+        const result = await emailService.sendInvitationEmail(email, user.name || 'あんぴーちゃんユーザー', lineAddUrl);
+        if (result) {
+            res.json({
+                success: true,
+                message: '招待メールを送信しました'
+            });
+        }
+        else {
+            res.status(500).json({
+                success: false,
+                message: '招待メールの送信に失敗しました'
+            });
+        }
+    }
+    catch (error) {
+        logger.error('Send invitation email error:', error);
+        res.status(500).json({
+            success: false,
+            message: '招待メールの送信に失敗しました'
+        });
+    }
+};

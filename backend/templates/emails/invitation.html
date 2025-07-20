@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あんぴーちゃんへのご招待</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #fef3c7; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ea580c; font-size: 24px; font-weight: bold;">
+                                あんぴーちゃん 🍑
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: #92400e; font-size: 14px;">
+                                家族の見守りサービス
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="margin: 0 0 20px 0; color: #374151; font-size: 20px; font-weight: bold;">
+                                {{senderName}}さんからのお知らせ
+                            </h2>
+                            
+                            <p style="margin: 0 0 30px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                こんにちは！<br><br>
+                                {{senderName}}さんが、あなたに「あんぴーちゃん」への参加をお勧めしています。
+                            </p>
+                            
+                            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 0 0 30px 0;">
+                                <p style="margin: 0 0 10px 0; color: #374151; font-size: 16px; font-weight: bold;">
+                                    あんぴーちゃんとは？
+                                </p>
+                                <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">
+                                    毎日決まった時間にLINEで「元気ですボタン」を送信。<br>
+                                    ボタンをタップするだけで、離れて暮らす家族に元気を知らせることができる見守りサービスです。
+                                </p>
+                            </div>
+                            
+                            <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                以下の手順で、簡単に始められます：
+                            </p>
+                            
+                            <ol style="margin: 0 0 30px 20px; padding: 0; color: #4b5563; font-size: 16px; line-height: 1.8;">
+                                <li>下のボタンから公式LINEアカウントを友だち追加</li>
+                                <li>{{senderName}}さんから共有される登録コードを送信</li>
+                                <li>毎日の元気確認がスタート！</li>
+                            </ol>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <a href="{{lineAddUrl}}" style="display: inline-block; padding: 16px 40px; background-color: #ea580c; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;">
+                                            LINE友だち追加する
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; text-align: center;">
+                                または以下のURLをコピーしてLINEアプリで開いてください：<br>
+                                <span style="color: #3b82f6; word-break: break-all;">{{lineAddUrl}}</span>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 12px; text-align: center;">
+                                このメールは{{senderName}}さんからのリクエストにより送信されました。
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                                © 2025 あんぴーちゃん All rights reserved.<br>
+                                <a href="{{termsUrl}}" style="color: #9ca3af; text-decoration: underline;">利用規約</a> | 
+                                <a href="{{privacyUrl}}" style="color: #9ca3af; text-decoration: underline;">プライバシーポリシー</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

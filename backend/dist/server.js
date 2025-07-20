@@ -14,6 +14,7 @@ import responseRoutes from './routes/responseRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js';
 import scheduledNotificationService from './services/scheduledNotificationService.js';
+import retryNotificationService from './services/retryNotificationService.js';
 import csrf from 'csurf'; // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 // 環境変数の読み込み
 import path from 'path';
@@ -126,6 +127,10 @@ const startServer = async () => {
         scheduledNotificationService.start().catch(error => {
             logger.error('定時通知サービスの開始に失敗しました:', error);
         });
+        // 再通知サービスを開始
+        retryNotificationService.start().catch(error => {
+            logger.error('再通知サービスの開始に失敗しました:', error);
+        });
     });
 };
 // グレースフルシャットダウン
@@ -133,6 +138,8 @@ process.on('SIGTERM', async () => {
     logger.info('SIGTERM signal received: closing HTTP server');
     // 定時通知サービスを停止
     scheduledNotificationService.stopAll();
+    // 再通知サービスを停止
+    retryNotificationService.stop();
     httpServer.close(async () => {
         logger.info('HTTP server closed');
         await mongoose.connection.close();

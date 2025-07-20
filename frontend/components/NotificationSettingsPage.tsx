@@ -205,13 +205,20 @@ export function NotificationSettingsPage() {
     setIsInviteSending(true);
     
     try {
-      // 模擬的なAPIコール
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(`${inviteEmail}に招待リンクを送信しました`);
-      setInviteEmail('');
-      setInviteEmailError('');
-    } catch (error) {
-      toast.error('招待リンクの送信に失敗しました');
+      const response = await apiClient.post('/notifications/send-invitation', {
+        email: inviteEmail
+      });
+      
+      if (response.data.success) {
+        toast.success(`${inviteEmail}に招待リンクを送信しました`);
+        setInviteEmail('');
+        setInviteEmailError('');
+      } else {
+        toast.error(response.data.message || '招待リンクの送信に失敗しました');
+      }
+    } catch (error: any) {
+      console.error('招待メール送信エラー:', error);
+      toast.error(error.response?.data?.message || '招待リンクの送信に失敗しました');
     } finally {
       setIsInviteSending(false);
     }

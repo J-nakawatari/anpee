@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import User from '../models/User.js';
 import Elderly from '../models/Elderly.js';
+import ResponseHistory from '../models/ResponseHistory.js';
 import { sendLineMessage } from './lineService.js';
 import { generateResponseToken } from './tokenService.js';
 import logger from '../utils/logger.js';
@@ -110,6 +111,33 @@ class ScheduledNotificationService {
                     ];
                     await sendLineMessage(elderly.lineUserId || '', messages);
                     logger.info(`通知送信成功: ${elderly.name}さん (${elderly._id})`);
+                    // 通知履歴を作成
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    // 今日の履歴があるか確認
+                    let history = await ResponseHistory.findOne({
+                        elderlyId: elderly._id,
+                        userId,
+                        date: { $gte: todayStart }
+                    });
+                    if (!history) {
+                        // 新規作成
+                        await ResponseHistory.create({
+                            elderlyId: elderly._id,
+                            userId,
+                            type: 'line_button',
+                            responseAt: new Date(),
+                            status: 'pending',
+                            retryCount: 0,
+                            date: new Date(),
+                            lastNotificationTime: new Date()
+                        });
+                    }
+                    else {
+                        // 既存の履歴を更新（再通知の場合）
+                        history.lastNotificationTime = new Date();
+                        await history.save();
+                    }
                 }
                 catch (error) {
                     logger.error(`通知送信エラー: ${elderly.name}さん`, error);

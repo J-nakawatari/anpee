@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
+import ResponseHistory from '../models/ResponseHistory.js';
 import { authenticate } from '../middleware/auth.js';
 import mongoose from 'mongoose';
 const router = Router();
@@ -32,9 +33,36 @@ router.post('/genki/:token', async (req, res) => {
         response.respondedAt = new Date();
         await response.save();
         // 家族の最終応答日時を更新
-        await Elderly.findByIdAndUpdate(response.elderlyId, {
+        const elderly = await Elderly.findByIdAndUpdate(response.elderlyId, {
             lastResponseAt: new Date()
-        });
+        }, { new: true });
+        // ResponseHistoryを更新
+        if (elderly) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const history = await ResponseHistory.findOne({
+                elderlyId: response.elderlyId,
+                date: { $gte: today }
+            });
+            if (history) {
+                // 既存の履歴を更新
+                history.status = 'responded';
+                history.responseAt = new Date();
+                await history.save();
+            }
+            else {
+                // 履歴がない場合は作成（通常は発生しない）
+                await ResponseHistory.create({
+                    elderlyId: response.elderlyId,
+                    userId: elderly.userId,
+                    type: 'line_button',
+                    responseAt: new Date(),
+                    status: 'responded',
+                    retryCount: 0,
+                    date: new Date()
+                });
+            }
+        }
         res.json({
             success: true,
             message: '元気ですボタンが押されました！'

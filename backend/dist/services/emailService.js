@@ -154,6 +154,25 @@ class EmailService {
         });
     }
     /**
+     * 招待メールを送信
+     */
+    async sendInvitationEmail(to, senderName, lineAddUrl) {
+        logger.info(`招待メール送信開始: ${to}, 送信者: ${senderName}`);
+        const variables = {
+            senderName,
+            lineAddUrl,
+            userEmail: to
+        };
+        const result = await this.sendEmail({
+            to,
+            subject: `${senderName}さんからのお知らせ - あんぴーちゃん`,
+            template: 'invitation',
+            variables
+        });
+        logger.info(`招待メール送信結果: ${result ? '成功' : '失敗'} - ${to}`);
+        return result;
+    }
+    /**
      * テストメールを送信（開発用）
      */
     async sendTestEmail(to) {
@@ -236,42 +255,6 @@ class EmailService {
         <p style="color: #6b7280; font-size: 14px;">
           このメールは「あんぴーちゃん」から自動送信されています。<br>
           通知設定の変更は<a href="https://anpee.jp/user/notifications" style="color: #f97316;">こちら</a>から行えます。
-        </p>
-      </div>
-    `;
-        await this.sendDirectEmail({ to, subject, html });
-    }
-    /**
-     * 招待メールを送信
-     */
-    async sendInvitationEmail(to, elderlyName, registrationCode, senderName) {
-        const subject = '【あんぴーちゃん】家族見守りサービスへのご招待';
-        const html = `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #f97316;">家族見守りサービスへのご招待</h2>
-        <p>${senderName}さんから、「あんぴーちゃん」の見守りサービスにご招待されました。</p>
-        
-        <div style="background-color: #fff7ed; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">登録手順</h3>
-          <ol>
-            <li>以下のQRコードまたはURLからLINE公式アカウントを友だち追加</li>
-            <li>友だち追加後に送られてくるメッセージの指示に従って登録</li>
-            <li>登録コード <strong style="font-size: 18px; color: #f97316;">${registrationCode}</strong> を入力</li>
-          </ol>
-        </div>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <p>LINE友だち追加URL：</p>
-          <a href="https://lin.ee/DwVFPvoY" style="color: #f97316; font-size: 18px;">https://lin.ee/DwVFPvoY</a>
-        </div>
-        
-        <p>「あんぴーちゃん」は、毎日の安否確認をLINEで行う見守りサービスです。<br>
-        簡単な「元気ですボタン」をタップするだけで、ご家族に安心をお届けします。</p>
-        
-        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
-        <p style="color: #6b7280; font-size: 14px;">
-          このメールは「あんぴーちゃん」から送信されています。<br>
-          心当たりがない場合は、このメールを削除してください。
         </p>
       </div>
     `;

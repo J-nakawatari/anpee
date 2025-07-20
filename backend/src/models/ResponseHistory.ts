@@ -2,13 +2,16 @@ import mongoose, { Document, Schema, Types } from 'mongoose'
 
 export interface IResponseHistory extends Document {
   elderlyId: Types.ObjectId
+  userId: Types.ObjectId  // 追加: ユーザーID
   type: 'line_button' | 'phone_call'
   responseAt: Date
-  status: 'responded' | 'no_response' | 'failed'
+  status: 'responded' | 'no_response' | 'failed' | 'pending'  // pending追加
   twilioCallSid?: string
   duration?: number
   notes?: string
   retryCount?: number
+  date: Date  // 追加: 通知日（日付のみ）
+  lastNotificationTime?: Date  // 追加: 最後の通知送信時刻
   createdAt: Date
   updatedAt: Date
 }
@@ -18,6 +21,11 @@ const responseHistorySchema = new Schema<IResponseHistory>(
     elderlyId: {
       type: Schema.Types.ObjectId,
       ref: 'Elderly',
+      required: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     type: {
@@ -32,8 +40,9 @@ const responseHistorySchema = new Schema<IResponseHistory>(
     },
     status: {
       type: String,
-      enum: ['responded', 'no_response', 'failed'],
+      enum: ['responded', 'no_response', 'failed', 'pending'],
       required: true,
+      default: 'pending',
     },
     twilioCallSid: {
       type: String,
@@ -48,6 +57,14 @@ const responseHistorySchema = new Schema<IResponseHistory>(
     retryCount: {
       type: Number,
       default: 0,
+    },
+    date: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    lastNotificationTime: {
+      type: Date,
     },
   },
   {
