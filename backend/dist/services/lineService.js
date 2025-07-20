@@ -3,15 +3,23 @@ import crypto from 'crypto';
 import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
 import { LineUser } from '../models/LineUser.js';
-// LINE Bot SDK クライアントの初期化
-const client = new Client({
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
-    channelSecret: process.env.LINE_CHANNEL_SECRET || '',
-});
+// LINE環境変数チェック
+const hasLineConfig = !!(process.env.LINE_CHANNEL_ACCESS_TOKEN &&
+    process.env.LINE_CHANNEL_SECRET &&
+    process.env.LINE_CHANNEL_ACCESS_TOKEN !== 'dummy-access-token-for-testing');
 console.log('LINE環境変数チェック:', {
     hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
     hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+    isValidConfig: hasLineConfig,
 });
+// LINE Bot SDK クライアントの初期化（環境変数が設定されている場合のみ）
+let client = null;
+if (hasLineConfig) {
+    client = new Client({
+        channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+        channelSecret: process.env.LINE_CHANNEL_SECRET,
+    });
+}
 // 署名検証
 export const validateSignature = (body, signature) => {
     const channelSecret = process.env.LINE_CHANNEL_SECRET || '';
@@ -28,6 +36,9 @@ export const handleWebhook = async (events) => {
 };
 // 汎用的なLINEメッセージ送信関数
 export const sendLineMessage = async (userId, messages) => {
+    if (!client || !hasLineConfig) {
+        throw new Error('LINE設定が不完全です。環境変数を確認してください。');
+    }
     return await client.pushMessage(userId, messages);
 };
 // 個別イベント処理
@@ -89,10 +100,12 @@ const handleFollow = async (userId) => {
                 await elderly.save();
             }
             // 再登録メッセージ
-            await client.pushMessage(userId, {
-                type: 'text',
-                text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
-            });
+            if (client) {
+                await client.pushMessage(userId, {
+                    type: 'text',
+                    text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
+                });
+            }
             return;
         }
         // 新規ユーザーの場合はウェルカムメッセージ
@@ -140,7 +153,9 @@ const sendWelcomeMessage = async (userId) => {
 
 ご不明な点がございましたら、ご家族の方にお問い合わせください。`,
     };
-    await client.pushMessage(userId, welcomeMessage);
+    if (client) {
+        await client.pushMessage(userId, welcomeMessage);
+    }
 };
 // 登録処理
 const handleRegistration = async (userId, registrationCode) => {
@@ -148,10 +163,12 @@ const handleRegistration = async (userId, registrationCode) => {
         // 登録コードから家族情報を検索
         const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
         if (!elderly) {
-            await client.pushMessage(userId, {
-                type: 'text',
-                text: '登録コードが見つかりません。正しいコードか確認してください。',
-            });
+            if (client) {
+                await client.pushMessage(userId, {
+                    type: 'text',
+                    text: '登録コードが見つかりません。正しいコードか確認してください。',
+                });
+            }
             return;
         }
         // 既に登録済みかチェック
@@ -167,18 +184,22 @@ const handleRegistration = async (userId, registrationCode) => {
                 elderly.hasGenKiButton = true;
                 elderly.lineUserId = userId;
                 await elderly.save();
-                await client.pushMessage(userId, {
-                    type: 'text',
-                    text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
-                });
+                if (client) {
+                    await client.pushMessage(userId, {
+                        type: 'text',
+                        text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
+                    });
+                }
                 return;
             }
             else if (existingUser.isActive) {
                 // 別のユーザーがアクティブに使用中
-                await client.pushMessage(userId, {
-                    type: 'text',
-                    text: 'このコードは既に別の方が使用中です。',
-                });
+                if (client) {
+                    await client.pushMessage(userId, {
+                        type: 'text',
+                        text: 'このコードは既に別の方が使用中です。',
+                    });
+                }
                 return;
             }
             else {
@@ -188,13 +209,15 @@ const handleRegistration = async (userId, registrationCode) => {
         }
         // LINEユーザー情報を取得
         let profile = { displayName: '未設定' };
-        try {
-            const lineProfile = await client.getProfile(userId);
-            profile = lineProfile;
-        }
-        catch (profileError) {
-            console.error('プロファイル取得エラー:', profileError.response?.status);
-            console.error('アクセストークンの確認が必要です');
+        if (client) {
+            try {
+                const lineProfile = await client.getProfile(userId);
+                profile = lineProfile;
+            }
+            catch (profileError) {
+                console.error('プロファイル取得エラー:', profileError.response?.status);
+                console.error('アクセストークンの確認が必要です');
+            }
         }
         // LineUserモデルに保存
         await LineUser.create({
@@ -208,16 +231,18 @@ const handleRegistration = async (userId, registrationCode) => {
         elderly.hasGenKiButton = true;
         elderly.lineUserId = userId;
         await elderly.save();
-        await client.pushMessage(userId, {
-            type: 'text',
-            text: `${elderly.name}さん、登録が完了しました！✨
+        if (client) {
+            await client.pushMessage(userId, {
+                type: 'text',
+                text: `${elderly.name}さん、登録が完了しました！✨
 
 明日の朝から、毎日「元気です」ボタンをお送りします。
 
 ボタンを押すだけで、ご家族に元気なことが伝わります。
 
 どうぞよろしくお願いします🌸`,
-        });
+            });
+        }
     }
     catch (error) {
         console.error('Registration error:', error);
@@ -267,7 +292,9 @@ ${genkiUrl}
 
 ご家族が${elderly.name}さんの元気を待っています💝`,
         };
-        await client.pushMessage(lineUser.userId, message);
+        if (client) {
+            await client.pushMessage(lineUser.userId, message);
+        }
     }
     catch (error) {
         console.error('Error sending daily genki message:', error);

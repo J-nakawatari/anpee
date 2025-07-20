@@ -4,16 +4,25 @@ import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
 import { LineUser } from '../models/LineUser.js';
 
-// LINE Bot SDK クライアントの初期化
-const client = new Client({
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
-  channelSecret: process.env.LINE_CHANNEL_SECRET || '',
-});
+// LINE環境変数チェック
+const hasLineConfig = !!(process.env.LINE_CHANNEL_ACCESS_TOKEN && 
+                        process.env.LINE_CHANNEL_SECRET &&
+                        process.env.LINE_CHANNEL_ACCESS_TOKEN !== 'dummy-access-token-for-testing');
 
 console.log('LINE環境変数チェック:', {
   hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
   hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+  isValidConfig: hasLineConfig,
 });
+
+// LINE Bot SDK クライアントの初期化（環境変数が設定されている場合のみ）
+let client: Client | null = null;
+if (hasLineConfig) {
+  client = new Client({
+    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
+    channelSecret: process.env.LINE_CHANNEL_SECRET!,
+  });
+}
 
 // 署名検証
 export const validateSignature = (body: string, signature: string): boolean => {
@@ -33,6 +42,9 @@ export const handleWebhook = async (events: WebhookEvent[]): Promise<void> => {
 
 // 汎用的なLINEメッセージ送信関数
 export const sendLineMessage = async (userId: string, messages: any[]): Promise<MessageAPIResponseBase> => {
+  if (!client || !hasLineConfig) {
+    throw new Error('LINE設定が不完全です。環境変数を確認してください。');
+  }
   return await client.pushMessage(userId, messages);
 };
 
@@ -105,10 +117,12 @@ const handleFollow = async (userId: string): Promise<void> => {
       }
       
       // 再登録メッセージ
-      await client.pushMessage(userId, {
-        type: 'text',
-        text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
-      });
+      if (client) {
+        await client.pushMessage(userId, {
+          type: 'text',
+          text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
+        });
+      }
       return;
     }
     
@@ -161,7 +175,9 @@ const sendWelcomeMessage = async (userId: string): Promise<void> => {
 ご不明な点がございましたら、ご家族の方にお問い合わせください。`,
   };
 
-  await client.pushMessage(userId, welcomeMessage);
+  if (client) {
+    await client.pushMessage(userId, welcomeMessage);
+  }
 };
 
 // 登録処理
@@ -171,10 +187,12 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
 
     if (!elderly) {
-      await client.pushMessage(userId, {
-        type: 'text',
-        text: '登録コードが見つかりません。正しいコードか確認してください。',
-      });
+      if (client) {
+        await client.pushMessage(userId, {
+          type: 'text',
+          text: '登録コードが見つかりません。正しいコードか確認してください。',
+        });
+      }
       return;
     }
 
@@ -193,17 +211,21 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
         elderly.lineUserId = userId;
         await elderly.save();
         
-        await client.pushMessage(userId, {
-          type: 'text',
-          text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
-        });
+        if (client) {
+          await client.pushMessage(userId, {
+            type: 'text',
+            text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
+          });
+        }
         return;
       } else if (existingUser.isActive) {
         // 別のユーザーがアクティブに使用中
-        await client.pushMessage(userId, {
-          type: 'text',
-          text: 'このコードは既に別の方が使用中です。',
-        });
+        if (client) {
+          await client.pushMessage(userId, {
+            type: 'text',
+            text: 'このコードは既に別の方が使用中です。',
+          });
+        }
         return;
       } else {
         // 非アクティブなら削除して新規登録を続行
@@ -213,12 +235,14 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
 
     // LINEユーザー情報を取得
     let profile: { displayName: string; pictureUrl?: string } = { displayName: '未設定' };
-    try {
-      const lineProfile = await client.getProfile(userId);
-      profile = lineProfile;
-    } catch (profileError: any) {
-      console.error('プロファイル取得エラー:', profileError.response?.status);
-      console.error('アクセストークンの確認が必要です');
+    if (client) {
+      try {
+        const lineProfile = await client.getProfile(userId);
+        profile = lineProfile;
+      } catch (profileError: any) {
+        console.error('プロファイル取得エラー:', profileError.response?.status);
+        console.error('アクセストークンの確認が必要です');
+      }
     }
 
     // LineUserモデルに保存
@@ -235,16 +259,18 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     elderly.lineUserId = userId;
     await elderly.save();
 
-    await client.pushMessage(userId, {
-      type: 'text',
-      text: `${elderly.name}さん、登録が完了しました！✨
+    if (client) {
+      await client.pushMessage(userId, {
+        type: 'text',
+        text: `${elderly.name}さん、登録が完了しました！✨
 
 明日の朝から、毎日「元気です」ボタンをお送りします。
 
 ボタンを押すだけで、ご家族に元気なことが伝わります。
 
 どうぞよろしくお願いします🌸`,
-    });
+      });
+    }
 
   } catch (error: any) {
     console.error('Registration error:', error);
@@ -301,7 +327,9 @@ ${genkiUrl}
 ご家族が${elderly.name}さんの元気を待っています💝`,
     };
 
-    await client.pushMessage(lineUser.userId, message);
+    if (client) {
+      await client.pushMessage(lineUser.userId, message);
+    }
 
   } catch (error: any) {
     console.error('Error sending daily genki message:', error);

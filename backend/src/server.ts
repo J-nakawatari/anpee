@@ -123,7 +123,8 @@ const connectDB = async () => {
     logger.info('MongoDB connected successfully')
   } catch (error) {
     logger.error('MongoDB connection error:', error)
-    process.exit(1)
+    logger.warn('サーバーはMongoDB接続なしで起動します（一部機能が制限されます）')
+    // process.exit(1) をコメントアウトして、DBなしでもサーバーを起動
   }
 }
 
