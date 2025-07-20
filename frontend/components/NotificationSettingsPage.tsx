@@ -14,7 +14,8 @@ import {
   QrCode,
   ExternalLink,
   Phone,
-  FlaskConical
+  FlaskConical,
+  Send
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
