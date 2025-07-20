@@ -88,18 +88,18 @@ export default function GenkiPage() {
               <button
                 onClick={handleGenkiButton}
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white text-2xl font-bold py-8 px-8 rounded-2xl hover:from-pink-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                className="w-full aspect-square bg-gradient-to-r from-pink-500 to-orange-500 text-white text-3xl font-bold py-16 px-8 rounded-3xl hover:from-pink-600 hover:to-orange-600 transition-all duration-200 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 flex flex-col items-center justify-center"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                    送信中...
-                  </span>
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
+                    <span className="text-2xl">送信中...</span>
+                  </div>
                 ) : (
-                  <span className="flex items-center justify-center">
-                    <Heart className="w-8 h-8 mr-3" />
-                    元気です！
-                  </span>
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <Heart className="w-20 h-20 animate-pulse" />
+                    <span className="text-4xl">元気です！</span>
+                  </div>
                 )}
               </button>
 
