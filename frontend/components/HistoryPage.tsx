@@ -370,7 +370,7 @@ export function HistoryPage() {
               履歴を確認する家族を選択
             </Label>
             <Select value={selectedFamilyId || ''} onValueChange={setSelectedFamilyId}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
                 <SelectValue placeholder="家族を選択..." />
               </SelectTrigger>
               <SelectContent className="bg-white">
@@ -457,7 +457,7 @@ export function HistoryPage() {
             <div className="flex items-center gap-2">
               <Label htmlFor="date-filter">期間:</Label>
               <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -471,7 +471,7 @@ export function HistoryPage() {
             <div className="flex items-center gap-2">
               <Label htmlFor="type-filter">種類:</Label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
