@@ -60,6 +60,7 @@ interface NotificationSettings {
 
 export function NotificationSettingsPage() {
   const [currentPlan] = useState<SubscriptionPlan>(getCurrentUserPlan());
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   
   const [settings, setSettings] = useState<NotificationSettings>({
     timing: {
@@ -84,6 +85,40 @@ export function NotificationSettingsPage() {
       }
     }
   });
+
+  // 通知設定を取得
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await apiClient.get('/notifications/settings');
+        const { settings: loadedSettings } = response.data;
+        
+        if (loadedSettings) {
+          setSettings({
+            timing: {
+              morning: loadedSettings.timing?.morning || { enabled: true, time: "08:00" },
+              evening: loadedSettings.timing?.evening || { enabled: false, time: "20:00" }
+            },
+            retry: {
+              enabled: loadedSettings.retrySettings?.maxRetries > 0,
+              maxCount: loadedSettings.retrySettings?.maxRetries || 3,
+              intervalMinutes: loadedSettings.retrySettings?.retryInterval || 30
+            },
+            methods: {
+              email: loadedSettings.methods?.email || { enabled: false, address: "" }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('通知設定の取得エラー:', error);
+        toast.error('通知設定の読み込みに失敗しました');
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
 
   // LINE招待関連の状態
@@ -182,9 +217,38 @@ export function NotificationSettingsPage() {
     }
   };
 
-  const handleSaveSettings = () => {
-    // 実際の実装では設定をAPIに保存
-    toast.success('通知設定を保存しました');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    
+    try {
+      // バックエンドの形式に変換
+      const settingsToSave = {
+        methods: {
+          line: { enabled: true }, // LINE通知は常に有効
+          email: settings.methods.email,
+          phone: { enabled: false } // 電話通知は未実装
+        },
+        timing: settings.timing,
+        retrySettings: {
+          maxRetries: settings.retry.enabled ? settings.retry.maxCount : 0,
+          retryInterval: settings.retry.intervalMinutes
+        }
+      };
+      
+      await apiClient.put('/notifications/settings', { settings: settingsToSave });
+      
+      toast.success('通知設定を保存しました', {
+        duration: 4000,
+        position: 'top-center',
+      });
+    } catch (error) {
+      console.error('設定保存エラー:', error);
+      toast.error('設定の保存に失敗しました');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // LINE連携解除
@@ -291,6 +355,17 @@ export function NotificationSettingsPage() {
       default: return 'bg-gray-100 text-gray-700';
     }
   };
+
+  if (isLoadingSettings) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-gray-600">設定を読み込んでいます...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -819,10 +894,20 @@ export function NotificationSettingsPage() {
         <Button 
           onClick={handleSaveSettings} 
           size="lg"
+          disabled={isSaving}
           className="flex items-center gap-2 px-8 py-3 text-base font-medium"
         >
-          <Settings className="w-5 h-5" />
-          設定を保存
+          {isSaving ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              保存中...
+            </>
+          ) : (
+            <>
+              <Settings className="w-5 h-5" />
+              設定を保存
+            </>
+          )}
         </Button>
       </div>
     </div>
