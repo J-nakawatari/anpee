@@ -5,6 +5,8 @@ import Response from '../models/Response.js';
 import { sendLineMessage } from './lineService.js';
 import { generateResponseToken } from './tokenService.js';
 import logger from '../utils/logger.js';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
 // 通知送信サービス
 class ScheduledNotificationService {
     tasks = new Map();
@@ -88,25 +90,13 @@ class ScheduledNotificationService {
                     // 応答用トークンを生成
                     const token = await generateResponseToken(elderly._id.toString());
                     const responseUrl = `${process.env.FRONTEND_URL || 'https://anpee.jp'}/genki/${token}`;
+                    // 今日の日付を日本語形式で取得
+                    const today = new Date();
+                    const dateStr = format(today, 'M月d日', { locale: ja });
                     const messages = [
                         {
                             type: 'text',
-                            text: `おはようございます、${elderly.name}さん！\n今日も元気にお過ごしですか？\n\n下の「元気です」ボタンを押して、ご家族に元気をお知らせください。`
-                        },
-                        {
-                            type: 'template',
-                            altText: '元気確認ボタン',
-                            template: {
-                                type: 'buttons',
-                                text: '本日の元気確認',
-                                actions: [
-                                    {
-                                        type: 'uri',
-                                        label: '元気です！',
-                                        uri: responseUrl
-                                    }
-                                ]
-                            }
+                            text: `おはようございます、${elderly.name}さん！☀️\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
                         }
                     ];
                     await sendLineMessage(elderly.lineUserId || '', messages);
