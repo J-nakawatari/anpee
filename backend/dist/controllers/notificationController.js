@@ -204,6 +204,35 @@ export const updateNotificationSettings = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { settings } = req.body;
+        // 現在の設定を取得して時間変更をチェック
+        const currentUser = await User.findById(userId).select('notificationSettings');
+        const oldSettings = currentUser?.notificationSettings;
+        const timeChanged = oldSettings?.timing?.morning?.time !== settings.timing?.morning?.time ||
+            oldSettings?.timing?.evening?.time !== settings.timing?.evening?.time;
+        // 通知時間が変更された場合の処理
+        if (timeChanged) {
+            const ResponseHistory = (await import('../models/ResponseHistory.js')).default;
+            const Response = (await import('../models/Response.js')).default;
+            const Elderly = (await import('../models/Elderly.js')).default;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            // 本日の履歴を削除（再通知回数をリセット）
+            await ResponseHistory.deleteMany({
+                userId: userId,
+                date: { $gte: today }
+            });
+            // ユーザーの家族を取得
+            const elderlyList = await Elderly.find({ userId });
+            // 確認待ち(pending)のResponseを期限切れ(expired)に変更
+            for (const elderly of elderlyList) {
+                await Response.updateMany({
+                    elderlyId: elderly._id,
+                    status: 'pending',
+                    createdAt: { $gte: today }
+                }, { status: 'expired' });
+            }
+            logger.info(`通知時間変更により本日の履歴をリセット、確認待ちを期限切れに変更: ユーザー ${userId}`);
+        }
         const user = await User.findByIdAndUpdate(userId, { notificationSettings: settings }, { new: true, runValidators: true }).select('notificationSettings');
         if (!user) {
             return res.status(404).json({
@@ -213,7 +242,7 @@ export const updateNotificationSettings = async (req, res) => {
         }
         res.json({
             success: true,
-            message: '通知設定を更新しました',
+            message: timeChanged ? '通知設定を更新し、本日の履歴をリセットしました' : '通知設定を更新しました',
             settings: user.notificationSettings
         });
     }
