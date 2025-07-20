@@ -15,7 +15,7 @@ export const testLineNotification = async (req: AuthRequest, res: Response) => {
     // ユーザーの家族情報を取得
     const elderlyList = await Elderly.find({ 
       userId, 
-      isActive: true,
+      status: 'active',
       lineUserId: { $exists: true, $ne: null }
     })
 
@@ -121,7 +121,7 @@ export const testPhoneNotification = async (req: AuthRequest, res: Response) => 
     // ユーザーの家族情報を取得（電話番号が登録されているもののみ）
     const elderlyList = await Elderly.find({ 
       userId, 
-      isActive: true,
+      status: 'active',
       phone: { $exists: true, $ne: null }
     })
 
