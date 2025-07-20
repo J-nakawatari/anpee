@@ -5,6 +5,7 @@ import Response from '../models/Response.js';
 import ResponseHistory from '../models/ResponseHistory.js';
 import { sendLineMessage } from './lineService.js';
 import { generateResponseToken } from './tokenService.js';
+import emailService from './emailService.js';
 import logger from '../utils/logger.js';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -71,9 +72,9 @@ class RetryNotificationService {
                 today.setHours(0, 0, 0, 0);
                 const latestResponse = await Response.findOne({
                     elderlyId: elderly._id,
-                    type: 'button',
-                    timestamp: { $gte: today }
-                }).sort({ timestamp: -1 });
+                    type: 'genki_button',
+                    respondedAt: { $gte: today }
+                }).sort({ respondedAt: -1 });
                 // 最新の履歴を確認
                 const latestHistory = await ResponseHistory.findOne({
                     elderlyId: elderly._id,
@@ -92,7 +93,7 @@ class RetryNotificationService {
     // 再通知が必要かどうか判定
     shouldSendRetry(latestResponse, latestHistory, retrySettings) {
         // 今日の応答がある場合は再通知不要
-        if (latestResponse && latestResponse.status === 'responded') {
+        if (latestResponse && latestResponse.status === 'success') {
             return false;
         }
         // 履歴がない場合（初回通知がまだ送信されていない）
@@ -170,8 +171,16 @@ class RetryNotificationService {
             }
             // メール通知が有効な場合
             if (userDoc.notificationSettings?.methods?.email?.enabled) {
-                // TODO: メール送信実装
-                logger.info(`管理者通知をメールで送信予定: ${userDoc.email}`);
+                // メールサービスを使用してお知らせメールを送信
+                const emailAddress = userDoc.notificationSettings.methods.email.address || userDoc.email;
+                // 最後の応答時刻を取得
+                const lastResponse = await Response.findOne({
+                    elderlyId: elderly._id,
+                    type: 'genki_button',
+                    status: 'success'
+                }).sort({ respondedAt: -1 });
+                await emailService.sendSafetyCheckNotification(emailAddress, elderly.name, lastResponse?.respondedAt);
+                logger.info(`管理者通知メール送信完了: ${emailAddress} - ${elderly.name}さんの応答なし通知`);
             }
             logger.info(`応答なし通知: ${elderly.name}さんから応答がありません（ユーザー: ${user._id}）`);
         }

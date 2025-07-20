@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notificationRoutes.js'
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js'
 import scheduledNotificationService from './services/scheduledNotificationService.js'
 import retryNotificationService from './services/retryNotificationService.js'
+import dailySummaryService from './services/dailySummaryService.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
 // 環境変数の読み込み
@@ -146,6 +147,11 @@ const startServer = async () => {
     retryNotificationService.start().catch(error => {
       logger.error('再通知サービスの開始に失敗しました:', error)
     })
+    
+    // 日次サマリーサービスを開始
+    dailySummaryService.start().catch(error => {
+      logger.error('日次サマリーサービスの開始に失敗しました:', error)
+    })
   })
 }
 
@@ -158,6 +164,9 @@ process.on('SIGTERM', async () => {
   
   // 再通知サービスを停止
   retryNotificationService.stop()
+  
+  // 日次サマリーサービスを停止
+  dailySummaryService.stop()
   
   httpServer.close(async () => {
     logger.info('HTTP server closed')
