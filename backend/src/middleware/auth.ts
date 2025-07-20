@@ -3,16 +3,6 @@ import { verifyAccessToken } from '../utils/jwt.js'
 import User from '../models/User.js'
 import logger from '../utils/logger.js'
 
-declare module 'express' {
-  interface Request {
-    user?: {
-      userId: string
-      email: string
-      role: string
-    }
-  }
-}
-
 export interface AuthRequest extends Request {
   user?: {
     userId: string
