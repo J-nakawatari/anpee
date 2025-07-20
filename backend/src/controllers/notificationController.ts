@@ -12,12 +12,34 @@ export const testLineNotification = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
 
+    logger.info('LINE test notification request', { userId });
+
+    // デバッグ用：すべての家族データを確認
+    const allElderly = await Elderly.find({ userId });
+    logger.info('All elderly for user', { 
+      userId, 
+      count: allElderly.length,
+      elderly: allElderly.map(e => ({ 
+        id: e._id, 
+        name: e.name, 
+        status: e.status,
+        lineUserId: e.lineUserId,
+        hasLineUserId: !!e.lineUserId
+      }))
+    });
+
     // ユーザーの家族情報を取得
     const elderlyList = await Elderly.find({ 
       userId, 
       status: 'active',
       lineUserId: { $exists: true, $ne: null }
     })
+
+    logger.info('Found elderly for LINE test', { 
+      userId, 
+      count: elderlyList.length,
+      elderly: elderlyList.map(e => ({ id: e._id, name: e.name, lineUserId: e.lineUserId }))
+    });
 
     if (elderlyList.length === 0) {
       return res.status(400).json({

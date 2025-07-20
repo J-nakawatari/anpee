@@ -191,6 +191,7 @@ export function NotificationSettingsPage() {
       toast.success(response.data.message || 'LINE通知のテストを送信しました。登録されている家族のLINEをご確認ください。');
     } catch (error: any) {
       console.error('LINE test error:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || 'LINE通知のテスト送信に失敗しました');
     } finally {
       setIsTestingLineNotification(false);
