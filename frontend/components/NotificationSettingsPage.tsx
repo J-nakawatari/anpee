@@ -504,11 +504,6 @@ export function NotificationSettingsPage() {
                   </div>
                 </div>
 
-                {settings.retry.maxCount === currentPlan.features.maxRetryCount && (
-                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                    現在のプランの上限です。より多くの再通知が必要な場合は上位プランをご検討ください。
-                  </div>
-                )}
               </div>
 
               <Separator />
@@ -547,16 +542,6 @@ export function NotificationSettingsPage() {
                   </div>
                 </div>
 
-                {currentPlan.features.retryIntervals.length < 5 && (
-                  <div className="flex items-start gap-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                    <ArrowUp className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium">上位プランで更に細かい設定が可能</span>
-                      <br />
-                      プレミアムプランでは15分間隔から設定できます
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           )}
