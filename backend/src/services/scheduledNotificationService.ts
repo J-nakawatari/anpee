@@ -112,22 +112,7 @@ class ScheduledNotificationService {
           const messages = [
             {
               type: 'text' as const,
-              text: `おはようございます、${elderly.name}さん！\n今日も元気にお過ごしですか？\n\n下の「元気です」ボタンを押して、ご家族に元気をお知らせください。`
-            },
-            {
-              type: 'template' as const,
-              altText: '元気確認ボタン',
-              template: {
-                type: 'buttons' as const,
-                text: '本日の元気確認',
-                actions: [
-                  {
-                    type: 'uri' as const,
-                    label: '元気です！',
-                    uri: responseUrl
-                  }
-                ]
-              }
+              text: `おはようございます、${elderly.name}さん！☀️\n\n今日も元気にお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
             }
           ]
 
