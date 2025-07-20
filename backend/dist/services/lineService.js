@@ -35,19 +35,32 @@ const handleEvent = async (event) => {
     // フォローイベント（友だち追加）
     if (event.type === 'follow' && event.source.type === 'user') {
         const userId = event.source.userId;
-        await sendWelcomeMessage(userId);
+        await handleFollow(userId);
+        return;
+    }
+    // アンフォローイベント（ブロック・削除）
+    if (event.type === 'unfollow' && event.source.type === 'user') {
+        const userId = event.source.userId;
+        await handleUnfollow(userId);
         return;
     }
     // メッセージイベント
     if (event.type === 'message' && event.message.type === 'text' && event.source.type === 'user') {
         const userId = event.source.userId;
-        const text = event.message.text;
+        const text = event.message.text.trim();
         console.log('メッセージ受信:', { userId, text });
-        // 登録コマンドの処理
+        // 登録コードの処理
+        // 「登録:」プレフィックス付きの場合
         if (text.startsWith('登録:')) {
             const registrationCode = text.replace('登録:', '').trim();
             console.log('登録コード処理開始:', { userId, registrationCode });
             await handleRegistration(userId, registrationCode);
+            return;
+        }
+        // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
+        if (/^[A-Z0-9]{6}$/i.test(text)) {
+            console.log('登録コード処理開始:', { userId, registrationCode: text.toUpperCase() });
+            await handleRegistration(userId, text.toUpperCase());
             return;
         }
     }
@@ -59,6 +72,60 @@ const handleEvent = async (event) => {
         console.log('Postback received:', { userId, data });
     }
 };
+// フォロー（友だち追加）処理
+const handleFollow = async (userId) => {
+    try {
+        console.log('友だち追加:', userId);
+        // 既存のLineUserがある場合は再アクティブ化
+        const existingUser = await LineUser.findOne({ userId });
+        if (existingUser) {
+            existingUser.isActive = true;
+            existingUser.lastActiveAt = new Date();
+            await existingUser.save();
+            // 家族情報も更新
+            const elderly = await Elderly.findById(existingUser.elderlyId);
+            if (elderly) {
+                elderly.hasGenKiButton = true;
+                await elderly.save();
+            }
+            // 再登録メッセージ
+            await client.pushMessage(userId, {
+                type: 'text',
+                text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
+            });
+            return;
+        }
+        // 新規ユーザーの場合はウェルカムメッセージ
+        await sendWelcomeMessage(userId);
+    }
+    catch (error) {
+        console.error('フォロー処理エラー:', error);
+    }
+};
+// アンフォロー（ブロック・削除）処理
+const handleUnfollow = async (userId) => {
+    try {
+        console.log('友だち削除/ブロック:', userId);
+        // LineUserを非アクティブ化
+        const lineUser = await LineUser.findOne({ userId });
+        if (lineUser) {
+            lineUser.isActive = false;
+            lineUser.lastActiveAt = new Date();
+            await lineUser.save();
+            // 家族情報も更新
+            const elderly = await Elderly.findById(lineUser.elderlyId).populate('userId');
+            if (elderly) {
+                elderly.hasGenKiButton = false;
+                await elderly.save();
+                // 管理者に通知（将来的にメール通知実装）
+                console.log(`通知: ${elderly.name}さんがLINE連携を解除しました（管理者: ${elderly.userId}）`);
+            }
+        }
+    }
+    catch (error) {
+        console.error('アンフォロー処理エラー:', error);
+    }
+};
 // ウェルカムメッセージ送信
 const sendWelcomeMessage = async (userId) => {
     const welcomeMessage = {
@@ -67,9 +134,9 @@ const sendWelcomeMessage = async (userId) => {
 
 毎日の安否確認をお手伝いします。
 
-まずは、ご家族の方から受け取った「登録コード」を入力してください。
+ご家族から受け取った6文字の登録コードを送信してください。
 
-例：登録:ABC123
+例：ABC123
 
 ご不明な点がございましたら、ご家族の方にお問い合わせください。`,
     };
@@ -142,12 +209,13 @@ const handleRegistration = async (userId, registrationCode) => {
 };
 // 元気確認メッセージ送信（定期実行用）
 export const sendDailyGenkiMessage = async (elderlyId) => {
+    let lineUser = null;
     try {
         const elderly = await Elderly.findById(elderlyId);
         if (!elderly || !elderly.lineUserId)
             return;
-        const lineUser = await LineUser.findOne({ elderlyId: elderly._id });
-        if (!lineUser)
+        lineUser = await LineUser.findOne({ elderlyId: elderly._id });
+        if (!lineUser || !lineUser.isActive)
             return;
         // ワンタイムトークンを生成
         const token = crypto.randomBytes(32).toString('hex');
@@ -180,6 +248,23 @@ ${genkiUrl}
     }
     catch (error) {
         console.error('Error sending daily genki message:', error);
+        // 403エラーの場合はブロックされている可能性
+        if (error.statusCode === 403 || error.response?.status === 403) {
+            if (lineUser) {
+                console.log('ユーザーがブロックしている可能性があります:', lineUser.userId);
+                // LineUserを非アクティブ化
+                lineUser.isActive = false;
+                lineUser.lastActiveAt = new Date();
+                await lineUser.save();
+                // 家族情報も更新
+                const elderly = await Elderly.findById(elderlyId).populate('userId');
+                if (elderly) {
+                    elderly.hasGenKiButton = false;
+                    await elderly.save();
+                    console.log(`通知: ${elderly.name}さんがLINEをブロックしている可能性があります（管理者: ${elderly.userId}）`);
+                }
+            }
+        }
     }
 };
 // LINE通知送信（管理者向け）

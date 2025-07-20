@@ -166,3 +166,42 @@ export const deleteElderly = async (req, res) => {
         });
     }
 };
+// LINE連携解除
+export const unlinkLine = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.userId;
+        // 家族情報を確認
+        const elderly = await Elderly.findOne({ _id: id, userId });
+        if (!elderly) {
+            return res.status(404).json({
+                success: false,
+                message: '家族情報が見つかりません',
+            });
+        }
+        // LineUser情報を取得して非アクティブ化
+        const { LineUser } = await import('../models/LineUser.js');
+        const lineUser = await LineUser.findOne({ elderlyId: elderly._id });
+        if (lineUser) {
+            lineUser.isActive = false;
+            lineUser.lastActiveAt = new Date();
+            await lineUser.save();
+        }
+        // 家族情報を更新
+        elderly.hasGenKiButton = false;
+        elderly.lineUserId = undefined;
+        await elderly.save();
+        res.json({
+            success: true,
+            message: 'LINE連携を解除しました',
+            data: elderly,
+        });
+    }
+    catch (error) {
+        logger.error('LINE連携解除エラー:', error);
+        res.status(500).json({
+            success: false,
+            message: 'LINE連携の解除に失敗しました',
+        });
+    }
+};

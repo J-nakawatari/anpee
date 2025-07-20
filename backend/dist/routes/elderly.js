@@ -1,5 +1,5 @@
 import express from 'express';
-import { getElderlyList, getElderlyById, createElderly, updateElderly, deleteElderly, } from '../controllers/elderlyController.js';
+import { getElderlyList, getElderlyById, createElderly, updateElderly, deleteElderly, unlinkLine, } from '../controllers/elderlyController.js';
 import { authenticate } from '../middleware/auth.js';
 const router = express.Router();
 // すべてのルートに認証を適用
@@ -14,4 +14,6 @@ router.post('/', createElderly);
 router.put('/:id', updateElderly);
 // 家族の削除
 router.delete('/:id', deleteElderly);
+// LINE連携解除
+router.post('/:id/unlink-line', unlinkLine);
 export default router;

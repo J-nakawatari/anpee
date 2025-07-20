@@ -238,11 +238,13 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
 
 // 元気確認メッセージ送信（定期実行用）
 export const sendDailyGenkiMessage = async (elderlyId: string): Promise<void> => {
+  let lineUser: any = null;
+  
   try {
     const elderly = await Elderly.findById(elderlyId);
     if (!elderly || !elderly.lineUserId) return;
 
-    const lineUser = await LineUser.findOne({ elderlyId: elderly._id });
+    lineUser = await LineUser.findOne({ elderlyId: elderly._id });
     if (!lineUser || !lineUser.isActive) return;
 
     // ワンタイムトークンを生成
@@ -283,20 +285,22 @@ ${genkiUrl}
     
     // 403エラーの場合はブロックされている可能性
     if (error.statusCode === 403 || error.response?.status === 403) {
-      console.log('ユーザーがブロックしている可能性があります:', lineUser.userId);
-      
-      // LineUserを非アクティブ化
-      lineUser.isActive = false;
-      lineUser.lastActiveAt = new Date();
-      await lineUser.save();
-      
-      // 家族情報も更新
-      const elderly = await Elderly.findById(elderlyId).populate('userId');
-      if (elderly) {
-        elderly.hasGenKiButton = false;
-        await elderly.save();
+      if (lineUser) {
+        console.log('ユーザーがブロックしている可能性があります:', lineUser.userId);
         
-        console.log(`通知: ${elderly.name}さんがLINEをブロックしている可能性があります（管理者: ${elderly.userId}）`);
+        // LineUserを非アクティブ化
+        lineUser.isActive = false;
+        lineUser.lastActiveAt = new Date();
+        await lineUser.save();
+        
+        // 家族情報も更新
+        const elderly = await Elderly.findById(elderlyId).populate('userId');
+        if (elderly) {
+          elderly.hasGenKiButton = false;
+          await elderly.save();
+          
+          console.log(`通知: ${elderly.name}さんがLINEをブロックしている可能性があります（管理者: ${elderly.userId}）`);
+        }
       }
     }
   }
