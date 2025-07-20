@@ -343,10 +343,10 @@ export function NotificationSettingsPage() {
                 onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
                 disabled={!settings.timing.morning.enabled}
               >
-                <SelectTrigger className="w-24">
+                <SelectTrigger className="w-24 bg-peach-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {timeOptions.map(time => (
                     <SelectItem key={time} value={time}>{time}</SelectItem>
                   ))}
@@ -373,10 +373,10 @@ export function NotificationSettingsPage() {
                 onValueChange={(value) => updateTimingSetting('evening', 'time', value)}
                 disabled={!settings.timing.evening.enabled}
               >
-                <SelectTrigger className="w-24">
+                <SelectTrigger className="w-24 bg-peach-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {timeOptions.map(time => (
                     <SelectItem key={time} value={time}>{time}</SelectItem>
                   ))}
