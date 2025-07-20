@@ -8,7 +8,6 @@ import {
   MessageSquare, 
   Clock, 
   AlertCircle,
-  Settings,
   RotateCcw,
   Crown,
   ArrowUp,
@@ -895,19 +894,9 @@ export function NotificationSettingsPage() {
           onClick={handleSaveSettings} 
           size="lg"
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-3 text-base font-medium"
+          className="px-8"
         >
-          {isSaving ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              保存中...
-            </>
-          ) : (
-            <>
-              <Settings className="w-5 h-5" />
-              設定を保存
-            </>
-          )}
+          {isSaving ? '保存中...' : '設定を保存'}
         </Button>
       </div>
     </div>
