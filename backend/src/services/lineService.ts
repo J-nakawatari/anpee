@@ -10,6 +10,11 @@ const client = new Client({
   channelSecret: process.env.LINE_CHANNEL_SECRET || '',
 });
 
+console.log('LINE環境変数チェック:', {
+  hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+  hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+});
+
 // 署名検証
 export const validateSignature = (body: string, signature: string): boolean => {
   const channelSecret = process.env.LINE_CHANNEL_SECRET || '';

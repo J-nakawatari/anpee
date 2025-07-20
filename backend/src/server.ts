@@ -45,14 +45,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }))
-// LINE Webhook用の条件付きミドルウェア設定
-app.use((req, res, next) => {
-  if (req.path === '/api/v1/line/webhook') {
-    express.raw({ type: 'application/json' })(req, res, next);
-  } else {
-    express.json()(req, res, next);
-  }
-});
+// ボディパーサー設定
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
