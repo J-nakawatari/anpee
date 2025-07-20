@@ -268,3 +268,15 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--peach-400);
 }
+
+/* Radix UI Selectコンポーネントのボーダースタイルをオーバーライド */
+[data-radix-popper-content-wrapper] {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* SelectContentのボーダーとシャドウをカスタマイズ */
+[data-slot="select-content"] {
+  border: 1px solid #e5e7eb !important; /* gray-200 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
