@@ -1,5 +1,6 @@
 import { ClientLayout } from "@/components/ClientLayout";
 import { HistoryPage } from "@/components/HistoryPage";
+import { Suspense } from "react";
 
 export default function History() {
   return (
@@ -8,7 +9,9 @@ export default function History() {
       subtitle="過去の記録確認"
       showAddButton={false}
     >
-      <HistoryPage />
+      <Suspense fallback={<div>読み込み中...</div>}>
+        <HistoryPage />
+      </Suspense>
     </ClientLayout>
   );
 }

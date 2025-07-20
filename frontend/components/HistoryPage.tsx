@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Search, Phone, Heart, Calendar, Clock, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, Edit3, Loader2 } from "lucide-react";
+import { Search, Phone, Heart, Calendar, Clock, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, Edit3, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { apiClient } from "@/services/apiClient";
 import { toast } from "@/lib/toast";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Response {
   _id: string;
@@ -71,6 +72,9 @@ const typeIcons = {
 };
 
 export function HistoryPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
   const [elderlyList, setElderlyList] = useState<Elderly[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
@@ -86,9 +90,28 @@ export function HistoryPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // 選択された家族の情報
   const selectedFamily = elderlyList.find(elderly => elderly._id === selectedFamilyId);
+  
+  // URLパラメータから初期値を設定
+  useEffect(() => {
+    const familyId = searchParams.get('family');
+    if (familyId) {
+      setSelectedFamilyId(familyId);
+    }
+  }, [searchParams]);
+  
+  // 選択された家族が変更されたらURLを更新
+  const updateSelectedFamily = (familyId: string | null) => {
+    setSelectedFamilyId(familyId);
+    if (familyId) {
+      router.push(`/user/history?family=${familyId}`);
+    } else {
+      router.push('/user/history');
+    }
+  };
   
   // 家族リストを取得
   useEffect(() => {
@@ -121,6 +144,14 @@ export function HistoryPage() {
     } finally {
       setIsLoadingElderly(false);
     }
+  };
+  
+  // 更新ボタンのハンドラ
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchResponses();
+    setIsRefreshing(false);
+    toast.success('最新の状態に更新しました');
   };
 
   // 履歴データを取得
@@ -369,7 +400,7 @@ export function HistoryPage() {
             <Label htmlFor="family-select" className="mb-2">
               履歴を確認する家族を選択
             </Label>
-            <Select value={selectedFamilyId || ''} onValueChange={setSelectedFamilyId}>
+            <Select value={selectedFamilyId || ''} onValueChange={updateSelectedFamily}>
               <SelectTrigger className="w-full !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
                 <SelectValue placeholder="家族を選択..." />
               </SelectTrigger>
@@ -481,6 +512,18 @@ export function HistoryPage() {
                   <SelectItem value="auto_call">自動架電</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="ml-auto">
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                className="h-9 px-3 border-gray-300 hover:bg-gray-50"
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                更新
+              </Button>
             </div>
           </div>
 
