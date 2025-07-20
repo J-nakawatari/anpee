@@ -6,10 +6,14 @@ const router = Router();
 
 // LINE Webhook エンドポイント
 router.post('/webhook', async (req, res) => {
+  console.log('LINE Webhook受信 - Headers:', req.headers);
+  console.log('LINE Webhook受信 - Body:', req.body);
+  
   try {
     // 署名検証
     const signature = req.headers['x-line-signature'] as string;
     if (!signature) {
+      console.error('署名がありません');
       return res.status(400).json({ error: 'No signature' });
     }
 
@@ -18,8 +22,11 @@ router.post('/webhook', async (req, res) => {
     
     // 署名を検証
     if (!validateSignature(body, signature)) {
+      console.error('署名が無効です');
       return res.status(401).json({ error: 'Invalid signature' });
     }
+
+    console.log('署名検証成功');
 
     // Webhookイベントを処理
     const webhookBody = req.body as WebhookRequestBody;

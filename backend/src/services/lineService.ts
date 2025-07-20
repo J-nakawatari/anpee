@@ -22,6 +22,7 @@ export const validateSignature = (body: string, signature: string): boolean => {
 
 // Webhookイベント処理
 export const handleWebhook = async (events: WebhookEvent[]): Promise<void> => {
+  console.log('Webhook受信:', JSON.stringify(events, null, 2));
   await Promise.all(events.map(handleEvent));
 };
 
@@ -43,10 +44,12 @@ const handleEvent = async (event: WebhookEvent): Promise<MessageAPIResponseBase 
   if (event.type === 'message' && event.message.type === 'text' && event.source.type === 'user') {
     const userId = event.source.userId;
     const text = event.message.text;
+    console.log('メッセージ受信:', { userId, text });
 
     // 登録コマンドの処理
     if (text.startsWith('登録:')) {
       const registrationCode = text.replace('登録:', '').trim();
+      console.log('登録コード処理開始:', { userId, registrationCode });
       await handleRegistration(userId, registrationCode);
       return;
     }

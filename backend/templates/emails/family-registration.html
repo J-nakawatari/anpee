@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家族の登録が完了しました</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Hiragino Sans', 'メイリオ', sans-serif; background-color: #f9fafb;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px 20px;">
+    <!-- ヘッダー -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <h1 style="color: #f97316; font-size: 28px; margin: 0;">あんぴーちゃん</h1>
+      <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">家族見守りサービス</p>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div style="background-color: #fff7ed; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+      <h2 style="color: #ea580c; font-size: 22px; margin: 0 0 20px 0;">家族の登録が完了しました</h2>
+      
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        {{userName}}様<br>
+        <strong>{{elderlyName}}</strong>さんの登録が完了しました。
+      </p>
+
+      <div style="background-color: #ffffff; border: 2px solid #fed7aa; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <p style="color: #ea580c; font-size: 18px; margin: 0 0 10px 0; font-weight: bold;">登録コード</p>
+        <p style="color: #dc2626; font-size: 32px; margin: 0; font-weight: bold; letter-spacing: 4px; text-align: center;">
+          {{registrationCode}}
+        </p>
+      </div>
+
+      <p style="color: #6b7280; font-size: 14px; margin: 0;">
+        この登録コードは{{elderlyName}}さんがLINE連携する際に必要となります。<br>
+        大切に保管してください。
+      </p>
+    </div>
+
+    <!-- LINE設定手順 -->
+    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+      <h3 style="color: #111827; font-size: 20px; margin: 0 0 20px 0;">LINE連携の設定手順</h3>
+      
+      <ol style="color: #374151; font-size: 16px; line-height: 1.8; padding-left: 20px;">
+        <li style="margin-bottom: 15px;">
+          <strong>{{elderlyName}}さんのスマートフォン</strong>で以下のURLにアクセス<br>
+          <a href="https://lin.ee/DwVFPvoY" style="color: #f97316; text-decoration: none;">https://lin.ee/DwVFPvoY</a>
+        </li>
+        <li style="margin-bottom: 15px;">
+          「あんぴーちゃん」公式アカウントを<strong>友だち追加</strong>
+        </li>
+        <li style="margin-bottom: 15px;">
+          自動で送られてくるメッセージの指示に従って進む
+        </li>
+        <li style="margin-bottom: 15px;">
+          登録コード <strong style="color: #dc2626;">{{registrationCode}}</strong> を入力
+        </li>
+        <li>
+          設定完了！毎日決まった時間に「元気ですボタン」が届きます
+        </li>
+      </ol>
+
+      <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 20px;">
+        <p style="color: #92400e; font-size: 14px; margin: 0;">
+          <strong>ご注意</strong><br>
+          ・1つの家族につき1つのLINEアカウントが必要です<br>
+          ・{{elderlyName}}さん本人のLINEアカウントで設定してください
+        </p>
+      </div>
+    </div>
+
+    <!-- QRコード -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
+        またはQRコードからも友だち追加できます
+      </p>
+      <img src="https://anpee.jp/line-qr.png" alt="LINE QRコード" style="width: 150px; height: 150px;">
+    </div>
+
+    <!-- フッター -->
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+      <p style="color: #6b7280; font-size: 12px; line-height: 1.6; margin: 0;">
+        このメールは「あんぴーちゃん」から自動送信されています。<br>
+        ご不明な点がございましたら、<a href="{{baseUrl}}/contact" style="color: #f97316;">お問い合わせ</a>ください。
+      </p>
+      <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">
+        © 2024 あんぴーちゃん All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
