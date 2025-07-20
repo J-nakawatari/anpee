@@ -584,13 +584,13 @@ export function NotificationSettingsPage() {
 
           {/* 利用手順 */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-900">利用手順</Label>
+            <Label className="text-sm font-medium text-gray-900">LINE連携の手順</Label>
             <div className="bg-blue-50 p-4 rounded-lg">
               <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-                <li>上記のQRコードまたはURLから公式LINEアカウントを友だち追加</li>
-                <li>下記の登録コードをLINEトーク画面で送信</li>
-                <li>アカウント連携の案内に従って設定完了</li>
-                <li>設定完了後、見守り通知がLINEで届きます</li>
+                <li>家族のスマートフォンで、上記のQRコードまたはURLから公式LINEアカウントを友だち追加</li>
+                <li>下記の家族一覧から、該当する家族の登録コード（例：登録:ABC123）をコピー</li>
+                <li>LINEのトーク画面で登録コードを送信</li>
+                <li>連携完了のメッセージが届いたら設定完了です</li>
               </ol>
             </div>
           </div>
@@ -662,7 +662,7 @@ export function NotificationSettingsPage() {
               <p className="text-sm text-amber-800 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>
-                  各家族のLINEアカウントから友だち追加後、上記の登録コードを送信してください。
+                  各家族のLINEアカウントから友だち追加後、それぞれの家族の登録コードを送信してください。
                   1つの家族につき1つのLINEアカウントが必要です。
                 </span>
               </p>
