@@ -75,7 +75,7 @@ export function NotificationSettingsPage() {
     retry: {
       enabled: true,
       maxCount: Math.min(2, currentPlan.features.maxRetryCount),
-      intervalMinutes: currentPlan.features.retryIntervals[0] || 60
+      intervalMinutes: 2 // 一時的に2分固定（元: currentPlan.features.retryIntervals[0] || 60）
     },
     methods: {
       email: {
@@ -101,7 +101,7 @@ export function NotificationSettingsPage() {
             retry: {
               enabled: loadedSettings.retrySettings?.maxRetries > 0,
               maxCount: loadedSettings.retrySettings?.maxRetries || 3,
-              intervalMinutes: loadedSettings.retrySettings?.retryInterval || 30
+              intervalMinutes: 2 // 一時的に2分固定（元: loadedSettings.retrySettings?.retryInterval || 30）
             },
             methods: {
               email: loadedSettings.methods?.email || { enabled: false, address: "" }
@@ -331,7 +331,7 @@ export function NotificationSettingsPage() {
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 5) {
+      for (let minute = 0; minute < 60; minute += 30) {
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         options.push(timeString);
       }
@@ -421,7 +421,7 @@ export function NotificationSettingsPage() {
           {/* 1回目の通知設定 */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-sm font-medium">1回目の通知</Label>
+              <Label className="text-sm font-medium">通知時間</Label>
               <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
             </div>
             <div className="flex items-center gap-4">
@@ -430,7 +430,7 @@ export function NotificationSettingsPage() {
                 onValueChange={(value) => updateTimingSetting('morning', 'time', value)}
                 disabled={!settings.timing.morning.enabled}
               >
-                <SelectTrigger className="w-24 bg-peach-100">
+                <SelectTrigger className="w-24 bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
@@ -446,35 +446,6 @@ export function NotificationSettingsPage() {
             </div>
           </div>
 
-          <Separator />
-
-          {/* 2回目の通知設定 */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">2回目の通知</Label>
-              <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Select
-                value={settings.timing.evening.time}
-                onValueChange={(value) => updateTimingSetting('evening', 'time', value)}
-                disabled={!settings.timing.evening.enabled}
-              >
-                <SelectTrigger className="w-24 bg-peach-100">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto bg-white border-gray-200">
-                  {timeOptions.map(time => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Switch
-                checked={settings.timing.evening.enabled}
-                onCheckedChange={(checked) => updateTimingSetting('evening', 'enabled', checked)}
-              />
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -519,10 +490,10 @@ export function NotificationSettingsPage() {
                       value={settings.retry.maxCount.toString()}
                       onValueChange={(value) => updateRetrySetting('maxCount', parseInt(value))}
                     >
-                      <SelectTrigger className="w-20">
+                      <SelectTrigger className="w-20 bg-white">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         {Array.from({length: currentPlan.features.maxRetryCount}, (_, i) => i + 1).map(count => (
                           <SelectItem key={count} value={count.toString()}>
                             {count}回
@@ -556,15 +527,21 @@ export function NotificationSettingsPage() {
                       value={settings.retry.intervalMinutes.toString()}
                       onValueChange={(value) => updateRetrySetting('intervalMinutes', parseInt(value))}
                     >
-                      <SelectTrigger className="w-24">
+                      <SelectTrigger className="w-24 bg-white">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
+                        {/* 一時的に2分固定 */}
+                        <SelectItem value="2">
+                          2分
+                        </SelectItem>
+                        {/* 元のコード（後で復元用）
                         {currentPlan.features.retryIntervals.map(interval => (
                           <SelectItem key={interval} value={interval.toString()}>
                             {formatRetryInterval(interval)}
                           </SelectItem>
                         ))}
+                        */}
                       </SelectContent>
                     </Select>
                   </div>
