@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import { toast } from '@/lib/toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { showToast, ToastComponent } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -47,13 +46,13 @@ export default function LoginPage() {
         localStorage.setItem('token', data.data.accessToken);
       }
 
-      showToast('ログインしました！', 'success');
+      toast.success('ログインしました！');
       setTimeout(() => {
         router.push('/user/dashboard');
       }, 1000);
     } catch (err: any) {
       const errorMessage = err.message || 'ログインに失敗しました。';
-      showToast(errorMessage, 'error');
+      toast.error(errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -167,7 +166,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      {ToastComponent}
     </div>
   );
 }

@@ -33,7 +33,7 @@ import {
   TableHeader, 
   TableRow 
 } from "./ui/table";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { 
   mockUserAccount, 
   mockSecurityLogs,

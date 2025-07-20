@@ -30,7 +30,7 @@ import { Separator } from "./ui/separator";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { getCurrentUserPlan, formatRetryInterval, getUpgradeInfo, type SubscriptionPlan } from "../data/subscriptionPlans";
 
 interface NotificationSettings {
@@ -238,10 +238,7 @@ export function NotificationSettingsPage() {
       
       await apiClient.put('/notifications/settings', { settings: settingsToSave });
       
-      toast.success('通知設定を保存しました', {
-        duration: 4000,
-        position: 'top-center',
-      });
+      toast.success('通知設定を保存しました');
     } catch (error) {
       console.error('設定保存エラー:', error);
       toast.error('設定の保存に失敗しました');

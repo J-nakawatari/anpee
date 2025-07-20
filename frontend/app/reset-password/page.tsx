@@ -4,12 +4,11 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Lock, Eye, EyeOff } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import { toast } from '@/lib/toast';
 
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { showToast, ToastComponent } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,12 +20,12 @@ function ResetPasswordContent() {
   useEffect(() => {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
-      showToast('無効なリンクです', 'error');
+      toast.error('無効なリンクです');
       router.push('/forgot-password');
     } else {
       setToken(tokenParam);
     }
-  }, [searchParams, router, showToast]);
+  }, [searchParams, router]);
 
   const validatePassword = () => {
     if (password.length < 8) {
@@ -73,13 +72,13 @@ function ResetPasswordContent() {
         throw new Error(data.message || 'パスワードのリセットに失敗しました');
       }
 
-      showToast('パスワードを再設定しました！', 'success');
+      toast.success('パスワードを再設定しました！');
       setTimeout(() => {
         router.push('/login');
       }, 1500);
     } catch (err: any) {
       const errorMessage = err.message || 'エラーが発生しました。時間をおいて再度お試しください。';
-      showToast(errorMessage, 'error');
+      toast.error(errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -185,7 +184,6 @@ function ResetPasswordContent() {
           </a>
         </div>
       </div>
-      {ToastComponent}
     </div>
   );
 }
