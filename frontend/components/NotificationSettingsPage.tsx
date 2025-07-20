@@ -195,7 +195,7 @@ export function NotificationSettingsPage() {
 
     try {
       await apiClient.post(`/elderly/${elderlyId}/unlink-line`);
-      toast.success('LINE連携を解除しました');
+      toast.success('LINE連携を解除しました。新しい登録コードが発行されました。');
       // 家族リストを再読み込み
       const updatedList = await apiClient.get('/elderly');
       setFamilyList(updatedList.data.data);
@@ -637,41 +637,40 @@ export function NotificationSettingsPage() {
                     key={person._id}
                     className="bg-gray-50 p-4 rounded-lg flex items-center justify-between"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <div className="font-medium text-gray-900">{person.name}さん</div>
-                        {person.lineUserId ? (
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 text-green-600 text-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              <span>LINE連携済み</span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleUnlinkLine(person._id || '', person.name)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs"
-                            >
-                              解除
-                            </Button>
+                    <div className="flex items-center gap-3">
+                      <div className="font-medium text-gray-900">{person.name}さん</div>
+                      {person.lineUserId ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 text-green-600 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>LINE連携済み</span>
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-gray-500 text-sm">
-                            <XCircle className="w-4 h-4" />
-                            <span>LINE未連携</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <code className="bg-white px-3 py-1 rounded text-sm font-mono">
-                          登録:{person.registrationCode || '未生成'}
-                        </code>
-                        {person.registrationCode ? (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={async () => {
-                              await navigator.clipboard.writeText(`登録:${person.registrationCode}`);
+                            onClick={() => handleUnlinkLine(person._id || '', person.name)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs"
+                          >
+                            解除
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-gray-500 text-sm">
+                          <XCircle className="w-4 h-4" />
+                          <span>LINE未連携</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="bg-white px-3 py-1 rounded text-sm font-mono">
+                        登録:{person.registrationCode || '未生成'}
+                      </code>
+                      {person.registrationCode ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(`登録:${person.registrationCode}`);
                               toast.success('登録コードをコピーしました');
                             }}
                             className="h-7 px-2"
@@ -683,7 +682,6 @@ export function NotificationSettingsPage() {
                             家族管理画面で再保存してください
                           </span>
                         )}
-                      </div>
                     </div>
                   </div>
                 ))}

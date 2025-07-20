@@ -187,13 +187,15 @@ export const unlinkLine = async (req, res) => {
             lineUser.lastActiveAt = new Date();
             await lineUser.save();
         }
-        // 家族情報を更新
+        // 家族情報を更新し、新しい登録コードを生成
         elderly.hasGenKiButton = false;
         elderly.lineUserId = undefined;
+        // 新しい登録コードを生成（pre-saveフックで自動生成）
+        elderly.registrationCode = undefined;
         await elderly.save();
         res.json({
             success: true,
-            message: 'LINE連携を解除しました',
+            message: 'LINE連携を解除しました。新しい登録コードが発行されました。',
             data: elderly,
         });
     }
