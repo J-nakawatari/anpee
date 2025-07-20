@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, ChevronUp, ChevronDown, MessageCircle } from "lucide-react";
+import { Search, Edit, Trash2, Phone, MapPin, Heart, Clock, User, Plus, X, ChevronUp, ChevronDown, MessageCircle, ExternalLink } from "lucide-react";
 import { elderlyService, ElderlyData } from "../services/elderlyService";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -40,7 +40,13 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
-import { LineSettingsDialog } from "./LineSettingsDialog";
+import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -141,8 +147,8 @@ export function FamilyManagementPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lineSettingsPerson, setLineSettingsPerson] = useState<ElderlyData | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   // 新規登録用の空のフォームデータ
   const emptyFormData: Omit<ElderlyData, '_id' | 'createdAt' | 'updatedAt'> = {
@@ -593,18 +599,32 @@ export function FamilyManagementPage() {
                       {person.lastResponseAt ? new Date(person.lastResponseAt).toLocaleDateString('ja-JP') : '-'}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setLineSettingsPerson(person)}
-                        className={`${
-                          person.hasGenKiButton
-                            ? "text-green-600 hover:text-green-700"
-                            : "text-gray-600 hover:text-gray-700"
-                        }`}
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => router.push('/user/notifications')}
+                              className="p-1"
+                            >
+                              {person.lineUserId ? (
+                                <MessageCircle className="w-5 h-5 text-green-600" />
+                              ) : (
+                                <MessageCircle className="w-5 h-5 text-gray-400" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-sm">
+                              {person.lineUserId 
+                                ? 'LINE連携済み' 
+                                : 'LINE未連携 - クリックして設定'
+                              }
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
                     <TableCell className="text-right text-base">
                       <div className="flex justify-end gap-2">
@@ -716,15 +736,6 @@ export function FamilyManagementPage() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* LINE設定ダイアログ */}
-      {lineSettingsPerson && (
-        <LineSettingsDialog
-          open={!!lineSettingsPerson}
-          onOpenChange={(open) => !open && setLineSettingsPerson(null)}
-          person={lineSettingsPerson}
-        />
-      )}
     </>
   );
 }

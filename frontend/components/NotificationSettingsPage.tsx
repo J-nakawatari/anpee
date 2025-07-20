@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiClient } from "@/services/apiClient";
+import { elderlyService, ElderlyData } from "@/services/elderlyService";
 import { 
   Mail, 
   MessageSquare, 
@@ -16,7 +17,10 @@ import {
   ExternalLink,
   Phone,
   FlaskConical,
-  Send
+  Send,
+  Users,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -91,6 +95,8 @@ export function NotificationSettingsPage() {
   const [isTestingSendingEmail, setIsTestingSendingEmail] = useState(false);
   const [isTestingPhone, setIsTestingPhone] = useState(false);
   const [isTestingLineNotification, setIsTestingLineNotification] = useState(false);
+  const [familyList, setFamilyList] = useState<ElderlyData[]>([]);
+  const [isLoadingFamily, setIsLoadingFamily] = useState(false);
 
   // LINE友だち追加URL
   const lineAddUrl = "https://lin.ee/DwVFPvoY";
@@ -240,6 +246,24 @@ export function NotificationSettingsPage() {
   };
 
   const timeOptions = generateTimeOptions();
+
+  // 家族リストの取得
+  useEffect(() => {
+    fetchFamilyList();
+  }, []);
+
+  const fetchFamilyList = async () => {
+    try {
+      setIsLoadingFamily(true);
+      const data = await elderlyService.getList();
+      setFamilyList(data);
+    } catch (error) {
+      console.error('家族リスト取得エラー:', error);
+      toast.error('家族リストの取得に失敗しました');
+    } finally {
+      setIsLoadingFamily(false);
+    }
+  };
 
   const getPlanBadgeColor = (planId: string) => {
     switch (planId) {
@@ -564,10 +588,84 @@ export function NotificationSettingsPage() {
             <div className="bg-blue-50 p-4 rounded-lg">
               <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
                 <li>上記のQRコードまたはURLから公式LINEアカウントを友だち追加</li>
-                <li>LINEで「通知開始」メッセージを送信</li>
+                <li>下記の登録コードをLINEトーク画面で送信</li>
                 <li>アカウント連携の案内に従って設定完了</li>
                 <li>設定完了後、見守り通知がLINEで届きます</li>
               </ol>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* 家族の登録コード一覧 */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-900 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              家族の登録コード一覧
+            </Label>
+            
+            {isLoadingFamily ? (
+              <div className="text-center py-4 text-gray-500">
+                読み込み中...
+              </div>
+            ) : familyList.length === 0 ? (
+              <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                まだ家族が登録されていません
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {familyList.map((person) => (
+                  <div
+                    key={person._id}
+                    className="bg-gray-50 p-4 rounded-lg flex items-center justify-between"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="font-medium text-gray-900">{person.name}さん</div>
+                        {person.lineUserId ? (
+                          <div className="flex items-center gap-1 text-green-600 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>LINE連携済み</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-gray-500 text-sm">
+                            <XCircle className="w-4 h-4" />
+                            <span>LINE未連携</span>
+                          </div>
+                        )}
+                      </div>
+                      {person.registrationCode && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <code className="bg-white px-3 py-1 rounded text-sm font-mono">
+                            登録:{person.registrationCode}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(`登録:${person.registrationCode}`);
+                              toast.success('登録コードをコピーしました');
+                            }}
+                            className="h-7 px-2"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  各家族のLINEアカウントから友だち追加後、上記の登録コードを送信してください。
+                  1つの家族につき1つのLINEアカウントが必要です。
+                </span>
+              </p>
             </div>
           </div>
         </CardContent>
