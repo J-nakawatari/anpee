@@ -2,15 +2,22 @@ import Stripe from 'stripe';
 import Subscription from '../models/Subscription.js';
 import User from '../models/User.js';
 import logger from '../utils/logger.js';
-// Stripe初期化
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-06-30.basil'
-});
 export class StripeService {
+    stripe;
+    constructor() {
+        // コンストラクタ内で初期化することで、環境変数が読み込まれた後に実行される
+        if (!process.env.STRIPE_SECRET_KEY) {
+            logger.error('STRIPE_SECRET_KEY is not defined in environment variables');
+            throw new Error('STRIPE_SECRET_KEY is required');
+        }
+        this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2025-06-30.basil'
+        });
+    }
     // Stripeカスタマーを作成
     async createCustomer(userId, email) {
         try {
-            const customer = await stripe.customers.create({
+            const customer = await this.stripe.customers.create({
                 email,
                 metadata: {
                     userId
@@ -38,7 +45,7 @@ export class StripeService {
             if (!customerId) {
                 customerId = await this.createCustomer(userId, user.email);
             }
-            const session = await stripe.checkout.sessions.create({
+            const session = await this.stripe.checkout.sessions.create({
                 customer: customerId,
                 payment_method_types: ['card'],
                 line_items: [{
@@ -66,7 +73,7 @@ export class StripeService {
             if (!user || !user.stripeCustomerId) {
                 throw new Error('Stripe customer not found');
             }
-            const session = await stripe.billingPortal.sessions.create({
+            const session = await this.stripe.billingPortal.sessions.create({
                 customer: user.stripeCustomerId,
                 return_url: returnUrl
             });
@@ -95,7 +102,7 @@ export class StripeService {
             if (!user || !user.stripeCustomerId) {
                 return [];
             }
-            const invoices = await stripe.invoices.list({
+            const invoices = await this.stripe.invoices.list({
                 customer: user.stripeCustomerId,
                 limit
             });
@@ -130,12 +137,12 @@ export class StripeService {
             if (!user || !user.stripeCustomerId) {
                 return [];
             }
-            const paymentMethods = await stripe.paymentMethods.list({
+            const paymentMethods = await this.stripe.paymentMethods.list({
                 customer: user.stripeCustomerId,
                 type: 'card'
             });
             // デフォルトの支払い方法を取得
-            const customer = await stripe.customers.retrieve(user.stripeCustomerId);
+            const customer = await this.stripe.customers.retrieve(user.stripeCustomerId);
             const defaultPaymentMethodId = customer.invoice_settings?.default_payment_method;
             return paymentMethods.data.map(pm => ({
                 id: pm.id,
