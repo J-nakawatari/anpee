@@ -4,25 +4,31 @@ import Response from '../models/Response.js';
 import Elderly from '../models/Elderly.js';
 import { LineUser } from '../models/LineUser.js';
 
-// LINE環境変数チェック
-const hasLineConfig = !!(process.env.LINE_CHANNEL_ACCESS_TOKEN && 
-                        process.env.LINE_CHANNEL_SECRET &&
-                        process.env.LINE_CHANNEL_ACCESS_TOKEN !== 'dummy-access-token-for-testing');
-
-console.log('LINE環境変数チェック:', {
-  hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
-  hasSecret: !!process.env.LINE_CHANNEL_SECRET,
-  isValidConfig: hasLineConfig,
-});
-
-// LINE Bot SDK クライアントの初期化（環境変数が設定されている場合のみ）
+// LINE Bot SDK クライアントの初期化（遅延初期化）
 let client: Client | null = null;
-if (hasLineConfig) {
-  client = new Client({
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
-    channelSecret: process.env.LINE_CHANNEL_SECRET!,
-  });
-}
+
+// LINE設定の確認（関数として定義）
+const checkLineConfig = (): boolean => {
+  return !!(process.env.LINE_CHANNEL_ACCESS_TOKEN && 
+           process.env.LINE_CHANNEL_SECRET &&
+           process.env.LINE_CHANNEL_ACCESS_TOKEN !== 'dummy-access-token-for-testing');
+};
+
+// クライアントの初期化（必要時に実行）
+const initializeClient = (): Client | null => {
+  if (!client && checkLineConfig()) {
+    console.log('LINEクライアント初期化:', {
+      hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+      hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+      tokenLength: process.env.LINE_CHANNEL_ACCESS_TOKEN?.length
+    });
+    client = new Client({
+      channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN!,
+      channelSecret: process.env.LINE_CHANNEL_SECRET!,
+    });
+  }
+  return client;
+};
 
 // 署名検証
 export const validateSignature = (body: string, signature: string): boolean => {
@@ -42,10 +48,12 @@ export const handleWebhook = async (events: WebhookEvent[]): Promise<void> => {
 
 // 汎用的なLINEメッセージ送信関数
 export const sendLineMessage = async (userId: string, messages: any[]): Promise<MessageAPIResponseBase> => {
-  if (!client || !hasLineConfig) {
+  const lineClient = initializeClient();
+  
+  if (!lineClient || !checkLineConfig()) {
     console.error('LINE設定エラー:', {
-      hasClient: !!client,
-      hasLineConfig,
+      hasClient: !!lineClient,
+      hasLineConfig: checkLineConfig(),
       accessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN ? '設定済み' : '未設定',
       secret: process.env.LINE_CHANNEL_SECRET ? '設定済み' : '未設定'
     });
@@ -59,7 +67,7 @@ export const sendLineMessage = async (userId: string, messages: any[]): Promise<
       messageTypes: messages.map(m => m.type)
     });
     
-    const result = await client.pushMessage(userId, messages);
+    const result = await lineClient.pushMessage(userId, messages);
     console.log('LINEメッセージ送信成功:', result);
     return result;
   } catch (error: any) {
@@ -142,8 +150,9 @@ const handleFollow = async (userId: string): Promise<void> => {
       }
       
       // 再登録メッセージ
-      if (client) {
-        await client.pushMessage(userId, {
+          const lineClient = initializeClient();
+    if (lineClient) {
+        await lineClient.pushMessage(userId, {
           type: 'text',
           text: `おかえりなさい！あんぴーちゃんです🌸\n\n${elderly?.name || ''}さんの見守りを再開します。`,
         });
@@ -200,8 +209,9 @@ const sendWelcomeMessage = async (userId: string): Promise<void> => {
 ご不明な点がございましたら、ご家族の方にお問い合わせください。`,
   };
 
-  if (client) {
-    await client.pushMessage(userId, welcomeMessage);
+      const lineClient = initializeClient();
+    if (lineClient) {
+    await lineClient.pushMessage(userId, welcomeMessage);
   }
 };
 
@@ -212,8 +222,9 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
 
     if (!elderly) {
-      if (client) {
-        await client.pushMessage(userId, {
+          const lineClient = initializeClient();
+    if (lineClient) {
+        await lineClient.pushMessage(userId, {
           type: 'text',
           text: '登録コードが見つかりません。正しいコードか確認してください。',
         });
@@ -236,8 +247,9 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
         elderly.lineUserId = userId;
         await elderly.save();
         
-        if (client) {
-          await client.pushMessage(userId, {
+            const lineClient = initializeClient();
+    if (lineClient) {
+          await lineClient.pushMessage(userId, {
             type: 'text',
             text: `${elderly.name}さん、再登録が完了しました！✨\n\n見守りを再開します。`,
           });
@@ -245,8 +257,9 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
         return;
       } else if (existingUser.isActive) {
         // 別のユーザーがアクティブに使用中
-        if (client) {
-          await client.pushMessage(userId, {
+            const lineClient = initializeClient();
+    if (lineClient) {
+          await lineClient.pushMessage(userId, {
             type: 'text',
             text: 'このコードは既に別の方が使用中です。',
           });
@@ -260,9 +273,10 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
 
     // LINEユーザー情報を取得
     let profile: { displayName: string; pictureUrl?: string } = { displayName: '未設定' };
-    if (client) {
+    const lineClient = initializeClient();
+    if (lineClient) {
       try {
-        const lineProfile = await client.getProfile(userId);
+        const lineProfile = await lineClient.getProfile(userId);
         profile = lineProfile;
       } catch (profileError: any) {
         console.error('プロファイル取得エラー:', profileError.response?.status);
@@ -284,8 +298,8 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     elderly.lineUserId = userId;
     await elderly.save();
 
-    if (client) {
-      await client.pushMessage(userId, {
+    if (lineClient) {
+      await lineClient.pushMessage(userId, {
         type: 'text',
         text: `${elderly.name}さん、登録が完了しました！✨
 
@@ -352,8 +366,9 @@ ${genkiUrl}
 ご家族が${elderly.name}さんの元気を待っています💝`,
     };
 
-    if (client) {
-      await client.pushMessage(lineUser.userId, message);
+        const lineClient = initializeClient();
+    if (lineClient) {
+      await lineClient.pushMessage(lineUser.userId, message);
     }
 
   } catch (error: any) {
