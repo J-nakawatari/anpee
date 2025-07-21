@@ -56,20 +56,27 @@ export function DashboardPage() {
   };
 
   // 見守り対象者データを実際のデータから生成
-  const elderlyPeople = elderlyList.map((elderly, index) => ({
-    id: elderly._id || `${index}`,
-    name: getHonorific(elderly.gender),
-    realName: elderly.name,
-    age: elderly.age,
-    gender: elderly.gender,
-    status: "安全",
-    lastLineResponse: elderly.lastResponseAt ? new Date(elderly.lastResponseAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : "未応答",
-    lastPhoneResponse: "昨日 19:00",
-    todayLineResponse: elderly.lastResponseAt ? new Date(elderly.lastResponseAt).toDateString() === new Date().toDateString() : false,
-    todayPhoneResponse: false,
-    avatar: getAvatar(elderly.gender),
-    statusColor: "bg-green-100 text-green-700"
-  }));
+  const elderlyPeople = elderlyList.map((elderly, index) => {
+    // 本日のLINE応答があるかチェック
+    const today = new Date();
+    const hasResponseToday = elderly.lastResponseAt && 
+      new Date(elderly.lastResponseAt).toDateString() === today.toDateString();
+    
+    return {
+      id: elderly._id || `${index}`,
+      name: getHonorific(elderly.gender),
+      realName: elderly.name,
+      age: elderly.age,
+      gender: elderly.gender,
+      status: "安全",
+      lastLineResponse: hasResponseToday && elderly.lastResponseAt ? 
+        new Date(elderly.lastResponseAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : 
+        "未応答",
+      todayLineResponse: hasResponseToday,
+      avatar: getAvatar(elderly.gender),
+      statusColor: "bg-green-100 text-green-700"
+    };
+  });
 
   // 統計データ（1-2人向け）
   const stats = [
@@ -90,14 +97,6 @@ export function DashboardPage() {
       changeColor: elderlyPeople.every(p => p.todayLineResponse) ? "text-green-600" : "text-orange-600"
     },
     {
-      title: "今日の電話応答",
-      value: `${elderlyPeople.filter(p => p.todayPhoneResponse).length}/${elderlyPeople.length}`,
-      icon: Phone,
-      color: "bg-blue-100 text-blue-700",
-      change: elderlyPeople.every(p => p.todayPhoneResponse) ? "全員応答済み" : "一部未応答",
-      changeColor: elderlyPeople.every(p => p.todayPhoneResponse) ? "text-green-600" : "text-orange-600"
-    },
-    {
       title: "連続安全日数",
       value: "7日",
       icon: Shield,
@@ -109,13 +108,13 @@ export function DashboardPage() {
 
   // 今週の応答データ
   const weeklyData = [
-    { day: "月", line: 2, phone: 1 },
-    { day: "火", line: 2, phone: 2 },
-    { day: "水", line: 2, phone: 1 },
-    { day: "木", line: 2, phone: 2 },
-    { day: "金", line: 2, phone: 1 },
-    { day: "土", line: 2, phone: 2 },
-    { day: "日", line: 2, phone: 1 }
+    { day: "月", line: elderlyPeople.length },
+    { day: "火", line: elderlyPeople.length },
+    { day: "水", line: elderlyPeople.length },
+    { day: "木", line: elderlyPeople.length },
+    { day: "金", line: elderlyPeople.length },
+    { day: "土", line: elderlyPeople.length },
+    { day: "日", line: elderlyPeople.length }
   ];
 
   // 最新の応答記録（実際のデータから生成）
@@ -136,19 +135,6 @@ export function DashboardPage() {
       });
     }
     
-    // 電話応答データ（モック）
-    if (Math.random() > 0.3) { // 70%の確率で電話応答あり
-      responses.push({
-        id: `${person.id}-phone`,
-        person: person.name || person.realName,
-        type: "電話",
-        action: "安否確認電話",
-        status: "応答",
-        time: "17:30",
-        icon: Phone,
-        color: "text-green-600"
-      });
-    }
     
     return responses;
   }).sort((a, b) => {
@@ -263,28 +249,6 @@ export function DashboardPage() {
                   </div>
                 </div>
 
-                {/* 電話応答状況 */}
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-700">電話</span>
-                  </div>
-                  <div className="text-right">
-                    {person.todayPhoneResponse ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-green-600 inline mr-1" />
-                        <span className="text-sm text-green-700">応答済み</span>
-                        <p className="text-xs text-green-600">{person.lastPhoneResponse}</p>
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="w-4 h-4 text-gray-600 inline mr-1" />
-                        <span className="text-sm text-gray-700">今日はまだ</span>
-                        <p className="text-xs text-gray-600">最後: {person.lastPhoneResponse}</p>
-                      </>
-                    )}
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -324,7 +288,7 @@ export function DashboardPage() {
             今週の応答状況
           </CardTitle>
           <CardDescription className="text-orange-600">
-            LINEと電話の応答数推移
+            LINEの応答数推移
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -339,10 +303,9 @@ export function DashboardPage() {
                   border: '1px solid #fed7aa',
                   borderRadius: '8px'
                 }}
-                formatter={(value, name) => [value, name === 'line' ? 'LINE応答' : '電話応答']}
+                formatter={(value) => [value, 'LINE応答']}
               />
               <Bar dataKey="line" fill="#22c55e" radius={[2, 2, 0, 0]} name="LINE応答" />
-              <Bar dataKey="phone" fill="#3b82f6" radius={[2, 2, 0, 0]} name="電話応答" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -356,7 +319,7 @@ export function DashboardPage() {
             最新の応答記録
           </CardTitle>
           <CardDescription className="text-orange-600">
-            LINEと電話の安否確認履歴
+            LINEの安否確認履歴
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -409,13 +372,6 @@ export function DashboardPage() {
                 <span className="text-blue-700 font-medium">LINE元気ですボタン</span>
               </div>
               <span className="text-blue-600 text-sm">明日 07:00</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-blue-600" />
-                <span className="text-blue-700 font-medium">安否確認電話</span>
-              </div>
-              <span className="text-blue-600 text-sm">明日 18:00</span>
             </div>
           </div>
         </CardContent>

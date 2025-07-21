@@ -564,11 +564,16 @@ export function NotificationSettingsPage() {
       </Card>
 
       {/* 電話通知設定 */}
-      <Card>
+      <Card className={!settings.methods.phone.enabled ? "opacity-75" : ""}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="w-5 h-5 text-orange-600" />
             電話通知設定
+            {!settings.methods.phone.enabled && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                無効
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             応答がない場合に自動で電話をかけて安否確認を行います
@@ -588,28 +593,34 @@ export function NotificationSettingsPage() {
             />
           </div>
 
-          {settings.methods.phone.enabled && (
-            <Alert className="bg-amber-50 border-amber-200">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-700">
-                <strong>ご注意:</strong> 電話通知機能は現在準備中です。
-                サービス開始時に別途ご案内いたします。
-              </AlertDescription>
-            </Alert>
-          )}
+          {settings.methods.phone.enabled ? (
+            <>
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-700">
+                  <strong>ご注意:</strong> 電話通知機能は現在準備中です。
+                  サービス開始時に別途ご案内いたします。
+                </AlertDescription>
+              </Alert>
 
-          <Alert className="bg-blue-50 border-blue-200">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-700">
-              <strong>電話通知の仕組み:</strong>
-              <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
-                <li>LINE通知に応答がない場合、設定した時間後に自動で電話をかけます</li>
-                <li>電話に出ていただければ、それだけで安否確認となります</li>
-                <li>電話番号は家族管理画面で登録された番号を使用します</li>
-                <li>通話料金は別途かかりません（プラン料金に含まれます）</li>
-              </ul>
-            </AlertDescription>
-          </Alert>
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-700">
+                  <strong>電話通知の仕組み:</strong>
+                  <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
+                    <li>LINE通知に応答がない場合、設定した時間後に自動で電話をかけます</li>
+                    <li>電話に出ていただければ、それだけで安否確認となります</li>
+                    <li>電話番号は家族管理画面で登録された番号を使用します</li>
+                    <li>通話料金は別途かかりません（プラン料金に含まれます）</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </>
+          ) : (
+            <div className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
+              電話通知は現在無効になっています。有効にすると、LINE通知に応答がない場合に自動で電話による安否確認を行います。
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -844,8 +855,9 @@ export function NotificationSettingsPage() {
             <Button
               variant="outline"
               onClick={handleTestPhoneCall}
-              disabled={isTestingPhone}
+              disabled={isTestingPhone || !settings.methods.phone.enabled}
               className="flex items-center justify-center gap-2 h-12"
+              title={!settings.methods.phone.enabled ? "電話通知を有効にしてください" : ""}
             >
               <Phone className="w-4 h-4 text-orange-600" />
               {isTestingPhone ? '架電中...' : '電話テスト発信'}
