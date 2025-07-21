@@ -60,6 +60,13 @@ interface NotificationSettings {
   };
 }
 
+// 時間を30分間隔に正規化する関数
+const normalizeTimeToHalfHour = (time: string): string => {
+  const [hour, minute] = time.split(':').map(Number);
+  const normalizedMinute = minute < 30 ? '00' : '30';
+  return `${hour.toString().padStart(2, '0')}:${normalizedMinute}`;
+};
+
 export function NotificationSettingsPage() {
   const [currentPlan] = useState<SubscriptionPlan>(getCurrentUserPlan());
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
@@ -68,7 +75,7 @@ export function NotificationSettingsPage() {
     timing: {
       morning: {
         enabled: true,
-        time: "07:00"
+        time: "08:00"
       },
       evening: {
         enabled: true,
@@ -101,8 +108,14 @@ export function NotificationSettingsPage() {
         if (loadedSettings) {
           setSettings({
             timing: {
-              morning: loadedSettings.timing?.morning || { enabled: true, time: "08:00" },
-              evening: loadedSettings.timing?.evening || { enabled: false, time: "20:00" }
+              morning: {
+                enabled: loadedSettings.timing?.morning?.enabled ?? true,
+                time: normalizeTimeToHalfHour(loadedSettings.timing?.morning?.time || "08:00")
+              },
+              evening: {
+                enabled: loadedSettings.timing?.evening?.enabled ?? false,
+                time: normalizeTimeToHalfHour(loadedSettings.timing?.evening?.time || "20:00")
+              }
             },
             retry: {
               enabled: loadedSettings.retrySettings?.maxRetries > 0,
