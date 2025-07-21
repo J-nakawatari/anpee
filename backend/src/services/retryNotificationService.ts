@@ -182,28 +182,40 @@ class RetryNotificationService {
         }
       ]
 
-      await sendLineMessage(elderly.lineUserId || '', messages)
-      
-      // 履歴を更新または作成
-      if (latestHistory) {
-        latestHistory.retryCount = retryCount
-        latestHistory.lastNotificationTime = now
-        await latestHistory.save()
-      } else {
-        // 履歴がない場合は新規作成（通常は発生しないはず）
-        await ResponseHistory.create({
-          elderlyId: elderly._id,
-          userId: user._id,
-          type: 'line_button',
-          responseAt: now,
-          date: now,
-          retryCount: 1,
-          lastNotificationTime: now,
-          status: 'pending'
-        })
-      }
+      try {
+        await sendLineMessage(elderly.lineUserId || '', messages)
+        logger.info(`LINE送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`)
+        
+        // 履歴を更新または作成
+        if (latestHistory) {
+          latestHistory.retryCount = retryCount
+          latestHistory.lastNotificationTime = now
+          await latestHistory.save()
+        } else {
+          // 履歴がない場合は新規作成（通常は発生しないはず）
+          await ResponseHistory.create({
+            elderlyId: elderly._id,
+            userId: user._id,
+            type: 'line_button',
+            responseAt: now,
+            date: now,
+            retryCount: 1,
+            lastNotificationTime: now,
+            status: 'pending'
+          })
+        }
 
-      logger.info(`再通知送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`)
+        logger.info(`再通知送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`)
+      } catch (lineError: any) {
+        logger.error(`LINE送信エラー: ${elderly.name}さん`, {
+          elderlyId: elderly._id,
+          lineUserId: elderly.lineUserId,
+          error: lineError.message,
+          statusCode: lineError.statusCode || lineError.response?.status
+        })
+        // エラーがあっても履歴の更新は続行しない（再試行されるように）
+        throw lineError
+      }
       
     } catch (error) {
       logger.error(`再通知送信エラー: ${elderly.name}さん`, error)

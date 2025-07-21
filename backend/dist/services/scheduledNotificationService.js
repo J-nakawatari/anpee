@@ -109,7 +109,20 @@ class ScheduledNotificationService {
                             text: `${greeting}、${elderly.name}さん！${emoji}\n\n今日は${dateStr}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
                         }
                     ];
-                    await sendLineMessage(elderly.lineUserId || '', messages);
+                    try {
+                        await sendLineMessage(elderly.lineUserId || '', messages);
+                        logger.info(`LINE送信成功: ${elderly.name}さん (${elderly._id})`);
+                    }
+                    catch (lineError) {
+                        logger.error(`LINE送信エラー: ${elderly.name}さん`, {
+                            elderlyId: elderly._id,
+                            lineUserId: elderly.lineUserId,
+                            error: lineError.message,
+                            statusCode: lineError.statusCode || lineError.response?.status,
+                            details: lineError.response?.data
+                        });
+                        throw lineError;
+                    }
                     logger.info(`通知送信成功: ${elderly.name}さん (${elderly._id})`);
                     // 通知履歴を作成
                     const todayStart = new Date();

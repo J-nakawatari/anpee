@@ -155,27 +155,40 @@ class RetryNotificationService {
                     text: `${greeting}、${elderly.name}さん！${emoji}${urgencyMessage}\n\n今日（${dateStr}）の元気確認がまだです。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
                 }
             ];
-            await sendLineMessage(elderly.lineUserId || '', messages);
-            // 履歴を更新または作成
-            if (latestHistory) {
-                latestHistory.retryCount = retryCount;
-                latestHistory.lastNotificationTime = now;
-                await latestHistory.save();
+            try {
+                await sendLineMessage(elderly.lineUserId || '', messages);
+                logger.info(`LINE送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`);
+                // 履歴を更新または作成
+                if (latestHistory) {
+                    latestHistory.retryCount = retryCount;
+                    latestHistory.lastNotificationTime = now;
+                    await latestHistory.save();
+                }
+                else {
+                    // 履歴がない場合は新規作成（通常は発生しないはず）
+                    await ResponseHistory.create({
+                        elderlyId: elderly._id,
+                        userId: user._id,
+                        type: 'line_button',
+                        responseAt: now,
+                        date: now,
+                        retryCount: 1,
+                        lastNotificationTime: now,
+                        status: 'pending'
+                    });
+                }
+                logger.info(`再通知送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`);
             }
-            else {
-                // 履歴がない場合は新規作成（通常は発生しないはず）
-                await ResponseHistory.create({
+            catch (lineError) {
+                logger.error(`LINE送信エラー: ${elderly.name}さん`, {
                     elderlyId: elderly._id,
-                    userId: user._id,
-                    type: 'line_button',
-                    responseAt: now,
-                    date: now,
-                    retryCount: 1,
-                    lastNotificationTime: now,
-                    status: 'pending'
+                    lineUserId: elderly.lineUserId,
+                    error: lineError.message,
+                    statusCode: lineError.statusCode || lineError.response?.status
                 });
+                // エラーがあっても履歴の更新は続行しない（再試行されるように）
+                throw lineError;
             }
-            logger.info(`再通知送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`);
         }
         catch (error) {
             logger.error(`再通知送信エラー: ${elderly.name}さん`, error);

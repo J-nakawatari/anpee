@@ -43,9 +43,34 @@ export const handleWebhook = async (events: WebhookEvent[]): Promise<void> => {
 // 汎用的なLINEメッセージ送信関数
 export const sendLineMessage = async (userId: string, messages: any[]): Promise<MessageAPIResponseBase> => {
   if (!client || !hasLineConfig) {
+    console.error('LINE設定エラー:', {
+      hasClient: !!client,
+      hasLineConfig,
+      accessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN ? '設定済み' : '未設定',
+      secret: process.env.LINE_CHANNEL_SECRET ? '設定済み' : '未設定'
+    });
     throw new Error('LINE設定が不完全です。環境変数を確認してください。');
   }
-  return await client.pushMessage(userId, messages);
+  
+  try {
+    console.log('LINEメッセージ送信試行:', {
+      userId,
+      messageCount: messages.length,
+      messageTypes: messages.map(m => m.type)
+    });
+    
+    const result = await client.pushMessage(userId, messages);
+    console.log('LINEメッセージ送信成功:', result);
+    return result;
+  } catch (error: any) {
+    console.error('LINEメッセージ送信エラー:', {
+      userId,
+      error: error.message,
+      statusCode: error.statusCode || error.response?.status,
+      details: error.response?.data || error.originalError
+    });
+    throw error;
+  }
 };
 
 // 個別イベント処理

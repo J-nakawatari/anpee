@@ -130,7 +130,19 @@ class ScheduledNotificationService {
             }
           ]
 
-          await sendLineMessage(elderly.lineUserId || '', messages)
+          try {
+            await sendLineMessage(elderly.lineUserId || '', messages)
+            logger.info(`LINE送信成功: ${elderly.name}さん (${elderly._id})`)
+          } catch (lineError: any) {
+            logger.error(`LINE送信エラー: ${elderly.name}さん`, {
+              elderlyId: elderly._id,
+              lineUserId: elderly.lineUserId,
+              error: lineError.message,
+              statusCode: lineError.statusCode || lineError.response?.status,
+              details: lineError.response?.data
+            })
+            throw lineError
+          }
           logger.info(`通知送信成功: ${elderly.name}さん (${elderly._id})`)
           
           // 通知履歴を作成
