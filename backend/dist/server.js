@@ -81,6 +81,7 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
         if (req.path === '/api/v1/csrf-token' ||
             req.path === '/api/v1/line/webhook' ||
             req.path === '/api/v1/webhook/stripe' ||
+            req.path === '/webhook/stripe' ||
             req.path.startsWith('/api/v1/test/')) {
             return next();
         }
@@ -102,6 +103,8 @@ app.use('/api/v1/scheduled-notifications', scheduledNotificationRoutes);
 app.use('/api/v1/billing', billingRoutes);
 // Stripe Webhook
 app.use('/api/v1/webhook', stripeWebhookRoutes);
+// Stripe Webhook用の特別なルート（charactier-ai.com用）
+app.use('/webhook', stripeWebhookRoutes);
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {
     res.json({
