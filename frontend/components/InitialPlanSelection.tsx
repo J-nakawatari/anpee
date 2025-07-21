@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { toast } from "@/lib/toast";
 import billingService from "@/services/billingService";
 import { Plan } from "@/types/billing";
+import { apiClient } from "@/services/apiClient";
 
 export function InitialPlanSelection() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function InitialPlanSelection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [userInfo, setUserInfo] = useState<any>(null);
   
   // 利用可能なプラン
   const availablePlans: Plan[] = [
@@ -55,16 +57,60 @@ export function InitialPlanSelection() {
 
   // サブスクリプションの確認
   useEffect(() => {
+    // ローカルストレージからユーザー情報を取得
+    const storedUser = localStorage.getItem('user');
+    console.log('ユーザー情報:', storedUser);
+    
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      console.log('hasSelectedInitialPlan:', user.hasSelectedInitialPlan);
+      setUserInfo(user);
+      // ユーザーが既に初回プラン選択を完了している場合はチェックをスキップ
+      if (user.hasSelectedInitialPlan === true) {
+        console.log('既にプラン選択済み、非表示にします');
+        setHasSubscription(true);
+        setCheckingSubscription(false);
+        return;
+      }
+    }
+    
+    console.log('サブスクリプション状態を確認します');
     checkSubscriptionStatus();
   }, []);
 
   const checkSubscriptionStatus = async () => {
     try {
+      // まずサブスクリプションを確認
       const subscription = await billingService.getSubscription();
       if (subscription && subscription.status === 'active') {
         setHasSubscription(true);
-        // 既にプランがある場合はダッシュボードへ
-        router.push('/user/dashboard');
+        // フラグを更新
+        await apiClient.post('/auth/initial-plan-selected');
+        // ユーザー情報を更新
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          user.hasSelectedInitialPlan = true;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+        return;
+      }
+      
+      // サブスクリプションがない場合は請求履歴を確認
+      const invoices = await billingService.getInvoices(1);
+      if (invoices.length > 0 && invoices[0].status === 'paid') {
+        // 支払済みの請求書がある場合もプランありとみなす
+        setHasSubscription(true);
+        // フラグを更新
+        await apiClient.post('/auth/initial-plan-selected');
+        // ユーザー情報を更新
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          user.hasSelectedInitialPlan = true;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+        return;
       }
     } catch (error) {
       console.error('サブスクリプション確認エラー:', error);
@@ -84,6 +130,15 @@ export function InitialPlanSelection() {
 
     try {
       setIsProcessing(true);
+      // フラグを更新
+      await apiClient.post('/auth/initial-plan-selected');
+      // ユーザー情報を更新
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.hasSelectedInitialPlan = true;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       const checkoutUrl = await billingService.createCheckoutSession(plan.stripePriceId);
       window.location.href = checkoutUrl;
     } catch (error) {

@@ -75,4 +75,61 @@ router.post(
 // メールアドレス確認
 router.get('/verify-email/:token', verifyEmail)
 
+// 初回プラン選択済みフラグ更新
+router.post('/initial-plan-selected', authenticate, async (req, res) => {
+  try {
+    const { Request, Response } = await import('express')
+    const User = (await import('../models/User.js')).default
+    const userId = (req as any).user.userId
+    
+    await User.findByIdAndUpdate(userId, {
+      hasSelectedInitialPlan: true
+    })
+    
+    res.json({
+      success: true,
+      message: '初回プラン選択が完了しました'
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'フラグ更新エラー'
+    })
+  }
+})
+
+// 現在のユーザー情報を取得
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const User = (await import('../models/User.js')).default
+    const userId = (req as any).user.userId
+    
+    const user = await User.findById(userId).select('-password')
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'ユーザーが見つかりません'
+      })
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        subscriptionStatus: user.subscriptionStatus,
+        currentPlan: user.currentPlan,
+        hasSelectedInitialPlan: user.hasSelectedInitialPlan
+      }
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'ユーザー情報取得エラー'
+    })
+  }
+})
+
 export default router

@@ -8,28 +8,66 @@ export const getSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    const subscription = await getStripeService().getSubscription(userId)
-    
-    if (!subscription) {
-      return res.json({
-        subscription: null,
-        message: 'No active subscription'
-      })
-    }
-
-    res.json({
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        currentPlan: subscription.planId,
-        stripePriceId: subscription.stripePriceId,
-        startDate: subscription.createdAt,
-        nextBillingDate: subscription.currentPeriodEnd,
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-        trialEnd: subscription.trialEnd,
-        stripeCustomerId: subscription.stripeCustomerId,
-        stripeSubscriptionId: subscription.stripeSubscriptionId
+    try {
+      const subscription = await getStripeService().getSubscription(userId)
+      
+      if (subscription) {
+        return res.json({
+          subscription: {
+            id: subscription._id || subscription.stripeSubscriptionId,
+            status: subscription.status,
+            currentPlan: subscription.planId,
+            stripePriceId: subscription.stripePriceId,
+            startDate: subscription.createdAt,
+            nextBillingDate: subscription.currentPeriodEnd,
+            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+            trialEnd: subscription.trialEnd,
+            stripeCustomerId: subscription.stripeCustomerId,
+            stripeSubscriptionId: subscription.stripeSubscriptionId
+          }
+        })
       }
+    } catch (stripeError) {
+      logger.warn('Stripeからのサブスクリプション取得に失敗、請求履歴から推測します:', stripeError)
+    }
+    
+    // Stripeエラーの場合は請求履歴から推測
+    try {
+      const invoices = await getStripeService().getInvoices(userId, 1)
+      
+      if (invoices.length > 0 && invoices[0].status === 'paid') {
+        const latestInvoice = invoices[0]
+        
+        // planIdまたはpriceIdからプランを判定
+        let planId = latestInvoice.planId || 'standard'
+        let stripePriceId = latestInvoice.priceId || 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt'
+        
+        // priceIdが設定されている場合は、それに基づいてplanIdを確定
+        if (latestInvoice.priceId === 'price_1RnLJC1qmMqgQ3qQc9t1lemY') {
+          planId = 'family'
+        }
+        
+        return res.json({
+          subscription: {
+            id: 'inferred-from-invoice',
+            status: 'active',
+            currentPlan: planId,
+            stripePriceId: stripePriceId,
+            startDate: latestInvoice.period.start,
+            nextBillingDate: latestInvoice.period.end,
+            cancelAtPeriodEnd: false,
+            stripeCustomerId: null,
+            stripeSubscriptionId: null
+          }
+        })
+      }
+    } catch (invoiceError) {
+      logger.error('請求履歴取得エラー:', invoiceError)
+    }
+    
+    return res.json({
+      subscription: null,
+      message: 'No active subscription'
     })
   } catch (error) {
     logger.error('サブスクリプション取得エラー:', error)

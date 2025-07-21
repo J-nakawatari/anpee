@@ -8,6 +8,8 @@ export interface IUser extends Document {
   role: 'user' | 'admin' | 'super_admin'
   stripeCustomerId?: string
   subscriptionStatus: 'active' | 'canceled' | 'past_due' | 'none'
+  currentPlan?: 'standard' | 'family' | 'none'
+  hasSelectedInitialPlan?: boolean
   emailVerified: boolean
   emailVerificationToken?: string
   passwordResetToken?: string
@@ -67,6 +69,15 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ['active', 'canceled', 'past_due', 'none'],
       default: 'none',
+    },
+    currentPlan: {
+      type: String,
+      enum: ['standard', 'family', 'none'],
+      default: 'none',
+    },
+    hasSelectedInitialPlan: {
+      type: Boolean,
+      default: false,
     },
     emailVerified: {
       type: Boolean,

@@ -101,10 +101,52 @@ export class StripeService {
   // サブスクリプション情報を取得
   async getSubscription(userId: string): Promise<ISubscription | null> {
     try {
+      // まずMongoDBから取得を試みる
       const subscription = await Subscription.findOne({ userId })
-      return subscription
+      if (subscription) {
+        return subscription
+      }
+
+      // MongoDBにない場合は、Stripeから直接取得
+      const user = await User.findById(userId)
+      if (!user || !user.stripeCustomerId) {
+        return null
+      }
+
+      // Stripeからサブスクリプションを取得
+      const subscriptions = await this.stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: 'active',
+        limit: 1
+      })
+
+      if (subscriptions.data.length === 0) {
+        return null
+      }
+
+      const stripeSubscription = subscriptions.data[0]
+      
+      // 仮想的なサブスクリプションオブジェクトを返す
+      return {
+        _id: stripeSubscription.id,
+        userId,
+        stripeCustomerId: user.stripeCustomerId,
+        stripeSubscriptionId: stripeSubscription.id,
+        stripePriceId: stripeSubscription.items.data[0].price.id,
+        planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
+        status: stripeSubscription.status,
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        createdAt: new Date(stripeSubscription.created * 1000),
+        updatedAt: new Date()
+      } as any
     } catch (error) {
       logger.error('サブスクリプション取得エラー:', error)
+      // Stripe APIエラーの場合はnullを返す
+      if ((error as any).type === 'StripeError') {
+        return null
+      }
       throw error
     }
   }
@@ -122,24 +164,33 @@ export class StripeService {
         limit
       })
 
-      return invoices.data.map(invoice => ({
-        id: invoice.id,
-        invoiceNumber: invoice.number,
-        date: new Date(invoice.created * 1000).toISOString(),
-        amount: invoice.amount_paid / 100, // 円に変換
-        status: this.mapInvoiceStatus(invoice.status),
-        planName: invoice.lines.data[0]?.description || '',
-        period: {
-          start: new Date(invoice.period_start * 1000).toISOString(),
-          end: new Date(invoice.period_end * 1000).toISOString()
-        },
-        paymentMethod: {
-          type: 'card',
-          last4: '****',
-          brand: 'unknown'
-        },
-        downloadUrl: invoice.invoice_pdf
-      }))
+      return invoices.data.map(invoice => {
+        // 価格IDからプランIDを取得
+        const lineItem = invoice.lines.data[0]
+        const priceId = (lineItem as any)?.price?.id || ''
+        const planId = this.getPlanIdFromPriceId(priceId)
+        
+        return {
+          id: invoice.id,
+          invoiceNumber: invoice.number,
+          date: new Date(invoice.created * 1000).toISOString(),
+          amount: invoice.amount_paid, // 日本円はそのまま（100で割らない）
+          status: this.mapInvoiceStatus(invoice.status),
+          planName: invoice.lines.data[0]?.description || '',
+          planId: planId, // プランIDを追加
+          priceId: priceId, // 価格IDを追加
+          period: {
+            start: new Date(invoice.period_start * 1000).toISOString(),
+            end: new Date(invoice.period_end * 1000).toISOString()
+          },
+          paymentMethod: {
+            type: 'card',
+            last4: '****',
+            brand: 'unknown'
+          },
+          downloadUrl: invoice.invoice_pdf
+        }
+      })
     } catch (error) {
       logger.error('請求履歴取得エラー:', error)
       throw error
@@ -207,15 +258,23 @@ export class StripeService {
   }
 
   // サブスクリプション更新処理
-  private async handleSubscriptionUpdate(subscription: Stripe.Subscription): Promise<void> {
-    const userId = subscription.metadata.userId
+  async handleSubscriptionUpdate(subscription: Stripe.Subscription): Promise<void> {
+    let userId = subscription.metadata.userId
+    
+    // メタデータにuserIdがない場合は、カスタマーIDから検索
     if (!userId) {
-      logger.warn('サブスクリプションにuserIdがありません')
-      return
+      const user = await User.findOne({ stripeCustomerId: subscription.customer as string })
+      if (!user) {
+        logger.error('サブスクリプションのユーザーが見つかりません', { customerId: subscription.customer })
+        return
+      }
+      userId = (user._id as any).toString()
+      logger.info('カスタマーIDからユーザーを特定しました', { userId, customerId: subscription.customer })
     }
 
     const planId = this.getPlanIdFromPriceId(subscription.items.data[0].price.id)
     
+    // Subscriptionコレクションを更新
     await Subscription.findOneAndUpdate(
       { stripeSubscriptionId: subscription.id },
       {
@@ -232,14 +291,30 @@ export class StripeService {
       },
       { upsert: true }
     )
+    
+    // Userモデルも更新
+    await User.findByIdAndUpdate(userId, {
+      subscriptionStatus: subscription.status,
+      currentPlan: planId,
+      hasSelectedInitialPlan: true
+    })
   }
 
   // サブスクリプション削除処理
   private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
-    await Subscription.findOneAndUpdate(
+    const sub = await Subscription.findOneAndUpdate(
       { stripeSubscriptionId: subscription.id },
-      { status: 'canceled' }
+      { status: 'canceled' },
+      { new: true }
     )
+    
+    // Userモデルも更新
+    if (sub?.userId) {
+      await User.findByIdAndUpdate(sub.userId, {
+        subscriptionStatus: 'canceled',
+        currentPlan: 'none'
+      })
+    }
   }
 
   // 請求書支払い成功処理

@@ -14,6 +14,7 @@ import responseRoutes from './routes/responseRoutesV2.js'  // V2に変更
 import notificationRoutes from './routes/notificationRoutes.js'
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js'
 import billingRoutes from './routes/billingRoutes.js'
+import stripeWebhookRoutes from './routes/stripeWebhook.js'
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
@@ -49,11 +50,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }))
-// LINE Webhook用の条件付きミドルウェア設定
+// Webhook用の条件付きミドルウェア設定
 app.use((req, res, next) => {
-  // LINE Webhookは生のボディが必要
-  if (req.path === '/api/v1/line/webhook') {
-    next();
+  // LINE WebhookとStripe Webhookは生のボディが必要
+  if (req.path === '/api/v1/line/webhook' || req.path === '/webhook/stripe') {
+    express.raw({ type: 'application/json' })(req, res, next);
   } else {
     express.json()(req, res, next);
   }
@@ -82,9 +83,11 @@ app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
 // CSRF保護を適用（開発環境では無効化可能）
 const enableCsrf = process.env.ENABLE_CSRF === 'true';
 if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
-  // CSRFトークンエンドポイントとLINE Webhookは除外
+  // CSRFトークンエンドポイントとWebhookは除外
   app.use((req, res, next) => {
-    if (req.path === '/api/v1/csrf-token' || req.path === '/api/v1/line/webhook') {
+    if (req.path === '/api/v1/csrf-token' || 
+        req.path === '/api/v1/line/webhook' || 
+        req.path === '/webhook/stripe') {
       return next();
     }
     csrfProtection(req, res, next);
@@ -105,6 +108,9 @@ app.use('/api/v1/responses', responseRoutes)
 app.use('/api/v1/notifications', notificationRoutes)
 app.use('/api/v1/scheduled-notifications', scheduledNotificationRoutes)
 app.use('/api/v1/billing', billingRoutes)
+
+// Stripe Webhook（/api/v1プレフィックスなし）
+app.use('/webhook', stripeWebhookRoutes)
 
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {

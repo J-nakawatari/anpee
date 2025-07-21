@@ -41,9 +41,12 @@ export default function LoginPage() {
         throw new Error(data.message || 'ログインに失敗しました');
       }
 
-      // アクセストークンを保存
+      // アクセストークンとユーザー情報を保存
       if (data.data?.accessToken) {
         localStorage.setItem('token', data.data.accessToken);
+      }
+      if (data.data?.user) {
+        localStorage.setItem('user', JSON.stringify(data.data.user));
       }
 
       toast.success('ログインしました！');

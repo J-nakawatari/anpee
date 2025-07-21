@@ -65,6 +65,37 @@ export const createElderly = async (req: Request, res: Response) => {
       notes,
     } = req.body
 
+    // ユーザー情報とプランを確認
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'ユーザーが見つかりません'
+      })
+    }
+
+    // 現在の家族数を確認
+    const currentCount = await Elderly.countDocuments({ userId, status: 'active' })
+    
+    // プランによる制限をチェック
+    const planLimits = {
+      standard: 1,
+      family: 3,
+      none: 0
+    }
+    
+    const limit = planLimits[user.currentPlan || 'none']
+    
+    if (currentCount >= limit) {
+      return res.status(400).json({
+        success: false,
+        message: `現在のプラン（${user.currentPlan || 'なし'}）では、最大${limit}人までしか登録できません。`,
+        currentCount,
+        limit
+      })
+    }
+
     // 必須項目のバリデーション
     const missingFields = []
     if (!name) missingFields.push('name')

@@ -43,6 +43,7 @@ export function BillingPageV2() {
   const [showPlanDetailDialog, setShowPlanDetailDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // 利用可能なプラン
   const availablePlans: Plan[] = [
@@ -100,6 +101,30 @@ export function BillingPageV2() {
       if (subscriptionData) {
         const plan = billingService.getPlanDisplayInfo(subscriptionData.currentPlan);
         setCurrentPlan(plan || null);
+      } else {
+        // 請求履歴から現在のプランを推測
+        if (invoicesData.length > 0) {
+          const latestInvoice = invoicesData[0];
+          
+          // planIdが含まれている場合（最も確実）
+          if (latestInvoice.planId) {
+            const plan = availablePlans.find(p => p.id === latestInvoice.planId);
+            setCurrentPlan(plan || null);
+          } else if (latestInvoice.priceId) {
+            // 価格IDから判定
+            const plan = availablePlans.find(p => p.stripePriceId === latestInvoice.priceId);
+            setCurrentPlan(plan || null);
+          } else if (latestInvoice.planName) {
+            // プラン名で判定（フォールバック）
+            if (latestInvoice.planName.toLowerCase().includes('standard') || 
+                latestInvoice.planName.includes('スタンダード')) {
+              setCurrentPlan(availablePlans.find(p => p.id === 'standard') || null);
+            } else if (latestInvoice.planName.toLowerCase().includes('family') || 
+                       latestInvoice.planName.includes('ファミリー')) {
+              setCurrentPlan(availablePlans.find(p => p.id === 'family') || null);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('請求データの取得に失敗しました:', error);
@@ -145,6 +170,28 @@ export function BillingPageV2() {
     }
     window.open(downloadUrl, '_blank');
     toast.success('請求書をダウンロードしました');
+  };
+
+  const handleSyncSubscription = async () => {
+    try {
+      setIsSyncing(true);
+      const { apiClient } = await import('@/services/apiClient');
+      const response = await apiClient.post('/test/sync-stripe-subscription');
+      
+      if (response.data.success) {
+        toast.success('サブスクリプション情報を同期しました');
+        // データを再取得
+        await loadBillingData();
+      } else {
+        toast.error(response.data.message || 'サブスクリプションの同期に失敗しました');
+      }
+    } catch (error: any) {
+      console.error('同期エラー:', error);
+      const message = error.response?.data?.message || 'サブスクリプションの同期に失敗しました';
+      toast.error(message);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const getPlanBadgeColor = (planId: string) => {
@@ -245,7 +292,7 @@ export function BillingPageV2() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {subscription && currentPlan ? (
+          {currentPlan ? (
             <>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -256,7 +303,7 @@ export function BillingPageV2() {
                     <p className="font-medium text-gray-900">
                       月額 ¥{currentPlan.price.toLocaleString()}
                     </p>
-                    {subscription.nextBillingDate && (
+                    {subscription?.nextBillingDate && (
                       <p className="text-sm text-gray-500">
                         次回請求日: {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}
                       </p>
@@ -290,27 +337,49 @@ export function BillingPageV2() {
                     ))}
                   </ul>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900">契約情報</h4>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>契約開始日: {new Date(subscription.startDate).toLocaleDateString('ja-JP')}</p>
-                    <p>ステータス: <span className={subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}>
-                      {subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み'}
-                    </span></p>
-                    {subscription.cancelAtPeriodEnd && (
-                      <p className="text-red-600">期間終了時にキャンセル予定</p>
-                    )}
+                {subscription && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900">契約情報</h4>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>契約開始日: {new Date(subscription.startDate).toLocaleDateString('ja-JP')}</p>
+                      <p>ステータス: <span className={subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}>
+                        {subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み'}
+                      </span></p>
+                      {subscription.cancelAtPeriodEnd && (
+                        <p className="text-red-600">期間終了時にキャンセル予定</p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </>
           ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                現在有効なサブスクリプションがありません。プランを選択して契約してください。
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  現在有効なサブスクリプションがありません。プランを選択して契約してください。
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSyncSubscription}
+                  disabled={isSyncing}
+                >
+                  {isSyncing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      同期中...
+                    </>
+                  ) : (
+                    '契約情報を同期'
+                  )}
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

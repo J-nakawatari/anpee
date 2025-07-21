@@ -138,6 +138,7 @@ export const login = async (req: Request, res: Response) => {
           name: user.name,
           role: user.role,
           subscriptionStatus: user.subscriptionStatus,
+          hasSelectedInitialPlan: user.hasSelectedInitialPlan,
         },
       },
     })

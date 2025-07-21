@@ -205,7 +205,7 @@ export function DashboardPage() {
 
   return (
     <>
-      {/* 初回プラン選択モーダル */}
+      {/* 初回プラン選択モーダル（内部でサブスクリプション状態を確認） */}
       <InitialPlanSelection />
       
       <div className="space-y-6">

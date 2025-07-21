@@ -22,6 +22,8 @@ export interface Invoice {
   amount: number
   status: 'paid' | 'pending' | 'failed'
   planName: string
+  planId?: 'standard' | 'family'
+  priceId?: string
   period: {
     start: string
     end: string
