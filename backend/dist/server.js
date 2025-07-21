@@ -93,11 +93,7 @@ logger.info(`Environment: ${process.env.NODE_ENV}`);
 logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anpee.jp' : 'localhost'}`);
 // ルート設定
 app.use('/api/v1/auth', authRoutes);
-// テストルートは開発環境またはENABLE_TEST_ROUTESがtrueの場合のみ
-if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_TEST_ROUTES === 'true') {
-    app.use('/api/v1/test', testRoutes);
-    logger.warn('⨆ TEST ROUTES ARE ENABLED - セキュリティリスクあり');
-}
+app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/elderly', elderlyRoutes);
 app.use('/api/v1/line', lineRoutes);
 app.use('/api/v1/responses', responseRoutes);
