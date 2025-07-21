@@ -95,6 +95,7 @@ export class NotificationServiceV2 {
     // 再通知をチェックして送信
     async checkAndSendRetryNotifications() {
         try {
+            logger.info('再通知チェック開始');
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             // 今日の未応答レコードを取得
@@ -103,6 +104,7 @@ export class NotificationServiceV2 {
                 response: { $exists: false },
                 adminNotifiedAt: { $exists: false }
             }).populate('userId elderlyId');
+            logger.info(`チェック対象履歴数: ${pendingRecords.length}`);
             for (const record of pendingRecords) {
                 const user = await User.findById(record.userId);
                 if (!user?.notificationSettings?.retrySettings?.maxRetries)
@@ -114,16 +116,20 @@ export class NotificationServiceV2 {
                 if (!lastNotification)
                     continue;
                 const minutesSinceLastNotification = Math.floor((Date.now() - lastNotification.sentAt.getTime()) / (1000 * 60));
+                // 現在の再通知回数を計算（retryタイプの通知数をカウント）
+                const retryCount = record.notifications.filter(n => n.type.startsWith('retry')).length;
+                logger.info(`再通知チェック: ${elderly.name}さん - 最後の通知から${minutesSinceLastNotification}分経過, 再通知回数: ${retryCount}`);
                 // 再通知が必要かチェック
                 if (minutesSinceLastNotification >= retrySettings.retryInterval) {
-                    const retryCount = record.retryCount || 0;
                     if (retryCount < retrySettings.maxRetries) {
                         // 再通知を送信
                         const retryType = `retry${retryCount + 1}`;
+                        logger.info(`再通知送信: ${elderly.name}さん - タイプ: ${retryType}`);
                         await this.sendNotificationToElderly(elderly, user._id.toString(), today, retryType);
                     }
                     else if (!record.adminNotifiedAt && minutesSinceLastNotification >= 30) {
                         // 管理者通知を送信
+                        logger.info(`管理者通知条件満たす: ${elderly.name}さん`);
                         await this.notifyAdmin(user, elderly, record);
                     }
                 }
