@@ -7,15 +7,18 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { elderlyService, ElderlyData } from "@/services/elderlyService";
+import { apiClient } from "@/services/apiClient";
 import { toast } from "@/lib/toast";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
   const [elderlyList, setElderlyList] = useState<ElderlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [nextNotificationTime, setNextNotificationTime] = useState<string | null>(null);
 
   useEffect(() => {
     fetchElderlyData();
+    fetchNotificationSettings();
   }, []);
 
   const fetchElderlyData = async () => {
@@ -28,6 +31,20 @@ export function DashboardPage() {
       toast.error("家族データの取得に失敗しました");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchNotificationSettings = async () => {
+    try {
+      const response = await apiClient.get('/notifications/settings');
+      const settings = response.data.settings;
+      if (settings?.timing?.morning?.enabled) {
+        setNextNotificationTime(settings.timing.morning.time);
+      } else if (settings?.timing?.evening?.enabled) {
+        setNextNotificationTime(settings.timing.evening.time);
+      }
+    } catch (error) {
+      console.error("通知設定の取得に失敗しました:", error);
     }
   };
 
@@ -371,7 +388,7 @@ export function DashboardPage() {
                 <MessageSquare className="w-4 h-4 text-green-600" />
                 <span className="text-blue-700 font-medium">LINE元気ですボタン</span>
               </div>
-              <span className="text-blue-600 text-sm">明日 07:00</span>
+              <span className="text-blue-600 text-sm">明日 {nextNotificationTime || '未設定'}</span>
             </div>
           </div>
         </CardContent>
