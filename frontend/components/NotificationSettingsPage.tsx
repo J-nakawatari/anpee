@@ -120,7 +120,12 @@ export function NotificationSettingsPage() {
             retry: {
               enabled: loadedSettings.retrySettings?.maxRetries > 0,
               maxCount: loadedSettings.retrySettings?.maxRetries || 3,
-              intervalMinutes: loadedSettings.retrySettings?.retryInterval || 30
+              // 再通知間隔を30分または60分に正規化
+              intervalMinutes: (() => {
+                const interval = loadedSettings.retrySettings?.retryInterval || 30;
+                // 30分未満は30分に、30分以上は60分に正規化
+                return interval < 30 ? 30 : (interval < 60 ? 30 : 60);
+              })()
             },
             methods: {
               email: loadedSettings.methods?.email || { enabled: false, address: "" },
