@@ -4,8 +4,9 @@ import Elderly from '../models/Elderly.js'
 import DailyNotification from '../models/DailyNotification.js'
 import emailService from './emailService.js'
 import logger from '../utils/logger.js'
-import { format, startOfDay, endOfDay } from 'date-fns'
-import { ja } from 'date-fns/locale'
+// date-fnsのインポートを一時的にコメントアウト
+// import { format, startOfDay, endOfDay } from 'date-fns'
+// import { ja } from 'date-fns/locale/ja/index.js'
 
 // 日次サマリー通知サービス
 class DailySummaryService {
@@ -51,9 +52,11 @@ class DailySummaryService {
   private async sendUserSummary(user: any) {
     try {
       const today = new Date()
-      const todayStart = startOfDay(today)
-      const todayEnd = endOfDay(today)
-      const dateStr = format(today, 'yyyy年M月d日', { locale: ja })
+      const todayStart = new Date(today)
+      todayStart.setHours(0, 0, 0, 0)
+      const todayEnd = new Date(today)
+      todayEnd.setHours(23, 59, 59, 999)
+      const dateStr = today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
       
       // ユーザーの家族リストを取得
       const elderlyList = await Elderly.find({
@@ -78,7 +81,7 @@ class DailySummaryService {
             name: elderly.name,
             hasResponded: !!todayRecord?.response,
             responseTime: todayRecord?.response ? 
-              format(todayRecord.response.respondedAt, 'HH:mm', { locale: ja }) : null,
+              new Date(todayRecord.response.respondedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : null,
             notificationCount: todayRecord?.notifications.length || 0,
             status: todayRecord?.response ? 'responded' : 
                    (todayRecord ? 'pending' : 'not_sent')
