@@ -238,11 +238,15 @@ class RetryNotificationService {
         // メールサービスを使用してお知らせメールを送信
         const emailAddress = userDoc.notificationSettings.methods.email.address || userDoc.email
         
-        // 最後の応答時刻を取得
+        // 本日の最後の応答時刻を取得
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
         const lastResponse = await Response.findOne({
           elderlyId: elderly._id,
           type: 'genki_button',
-          status: 'success'
+          status: 'success',
+          respondedAt: { $gte: today }
         }).sort({ respondedAt: -1 })
         
         await emailService.sendSafetyCheckNotification(
