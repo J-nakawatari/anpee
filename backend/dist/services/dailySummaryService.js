@@ -1,8 +1,7 @@
 import * as cron from 'node-cron';
 import User from '../models/User.js';
 import Elderly from '../models/Elderly.js';
-import Response from '../models/Response.js';
-import ResponseHistory from '../models/ResponseHistory.js';
+import DailyNotification from '../models/DailyNotification.js';
 import emailService from './emailService.js';
 import logger from '../utils/logger.js';
 import { format, startOfDay, endOfDay } from 'date-fns';
@@ -57,24 +56,19 @@ class DailySummaryService {
             }
             // 各家族の今日の応答状況を集計
             const summaryData = await Promise.all(elderlyList.map(async (elderly) => {
-                // 今日の応答を確認
-                const todayResponse = await Response.findOne({
+                // 今日の通知記録を確認
+                const todayRecord = await DailyNotification.findOne({
                     elderlyId: elderly._id,
-                    type: 'genki_button',
-                    status: 'success',
-                    respondedAt: { $gte: todayStart, $lte: todayEnd }
-                }).sort({ respondedAt: -1 });
-                // 今日の通知履歴を確認
-                const todayHistory = await ResponseHistory.findOne({
-                    elderlyId: elderly._id,
-                    date: { $gte: todayStart, $lte: todayEnd }
-                }).sort({ createdAt: -1 });
+                    date: todayStart
+                });
                 return {
                     name: elderly.name,
-                    hasResponded: !!todayResponse,
-                    responseTime: todayResponse ? format(todayResponse.respondedAt, 'HH:mm', { locale: ja }) : null,
-                    notificationCount: todayHistory?.retryCount || 0,
-                    status: todayResponse ? 'responded' : (todayHistory ? 'pending' : 'not_sent')
+                    hasResponded: !!todayRecord?.response,
+                    responseTime: todayRecord?.response ?
+                        format(todayRecord.response.respondedAt, 'HH:mm', { locale: ja }) : null,
+                    notificationCount: todayRecord?.notifications.length || 0,
+                    status: todayRecord?.response ? 'responded' :
+                        (todayRecord ? 'pending' : 'not_sent')
                 };
             }));
             // サマリーHTMLを生成

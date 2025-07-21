@@ -1,6 +1,6 @@
 import { Client } from '@line/bot-sdk';
 import crypto from 'crypto';
-import Response from '../models/Response.js';
+import DailyNotification from '../models/DailyNotification.js';
 import Elderly from '../models/Elderly.js';
 import { LineUser } from '../models/LineUser.js';
 // LINE Bot SDK クライアントの初期化（遅延初期化）
@@ -305,15 +305,27 @@ export const sendDailyGenkiMessage = async (elderlyId) => {
         // ワンタイムトークンを生成
         const token = crypto.randomBytes(32).toString('hex');
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24時間有効
-        // トークンを保存（Responseモデルに仮保存）
-        await Response.create({
+        // トークンを保存（DailyNotificationモデルに保存）
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        await DailyNotification.findOneAndUpdate({
             elderlyId: elderly._id,
-            type: 'genki_button',
-            status: 'pending',
-            token,
-            tokenExpiresAt: expiresAt,
-            createdAt: new Date(),
-        });
+            date: today
+        }, {
+            $setOnInsert: {
+                userId: elderly.userId,
+                elderlyId: elderly._id,
+                date: today
+            },
+            $push: {
+                notifications: {
+                    sentAt: new Date(),
+                    type: 'test',
+                    token,
+                    tokenExpiresAt: expiresAt
+                }
+            }
+        }, { upsert: true });
         // 元気ですボタンのURL
         const genkiUrl = `${process.env.FRONTEND_URL}/genki/${token}`;
         // メッセージ送信

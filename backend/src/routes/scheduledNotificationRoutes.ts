@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { authenticate } from '../middleware/auth.js'
-import scheduledNotificationService from '../services/scheduledNotificationService.js'
+import notificationServiceV2 from '../services/notificationServiceV2.js'
 import Elderly from '../models/Elderly.js'
 import logger from '../utils/logger.js'
 
@@ -37,8 +37,8 @@ router.post('/trigger/morning', authenticate, async (req: any, res) => {
     
     logger.info('デバッグ情報:', {
       userId,
-      serviceExists: !!scheduledNotificationService,
-      hasMethod: typeof (scheduledNotificationService as any).sendMorningNotification === 'function',
+      serviceExists: !!notificationServiceV2,
+      hasMethod: typeof notificationServiceV2.sendScheduledNotification === 'function',
       elderlyCount: elderlyList.length,
       elderlyList: elderlyList.map(e => ({
         id: e._id,
@@ -47,8 +47,8 @@ router.post('/trigger/morning', authenticate, async (req: any, res) => {
       }))
     })
     
-    // scheduledNotificationServiceのプライベートメソッドを呼び出すために一時的な対応
-    await (scheduledNotificationService as any).sendMorningNotification(userId)
+    // 通知サービスV2の定時通知を呼び出す
+    await notificationServiceV2.sendScheduledNotification(userId)
     
     logger.info('朝の通知送信完了:', { userId })
     
@@ -72,7 +72,8 @@ router.post('/trigger/evening', authenticate, async (req: any, res) => {
     const userId = req.user.userId
     logger.info('手動夜通知トリガー:', { userId })
     
-    await (scheduledNotificationService as any).sendEveningNotification(userId)
+    // V2では朝夜の区別がないため、同じメソッドを使用
+    await notificationServiceV2.sendScheduledNotification(userId)
     
     res.json({
       success: true,
@@ -90,15 +91,10 @@ router.post('/trigger/evening', authenticate, async (req: any, res) => {
 // スケジュール状態を取得
 router.get('/status', authenticate, async (_req, res) => {
   try {
-    const tasks = (scheduledNotificationService as any).tasks
-    const status = {
-      totalTasks: tasks.size,
-      tasks: Array.from(tasks.keys())
-    }
-    
+    // V2ではスケジュール管理がscheduledNotificationServiceV2に移動
     res.json({
       success: true,
-      ...status
+      message: 'Notification service is running'
     })
   } catch (error) {
     logger.error('スケジュール状態取得エラー:', error)

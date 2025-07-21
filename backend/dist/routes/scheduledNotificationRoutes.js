@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
-import scheduledNotificationService from '../services/scheduledNotificationService.js';
+import notificationServiceV2 from '../services/notificationServiceV2.js';
 import Elderly from '../models/Elderly.js';
 import logger from '../utils/logger.js';
 const router = Router();
@@ -33,8 +33,8 @@ router.post('/trigger/morning', authenticate, async (req, res) => {
         });
         logger.info('デバッグ情報:', {
             userId,
-            serviceExists: !!scheduledNotificationService,
-            hasMethod: typeof scheduledNotificationService.sendMorningNotification === 'function',
+            serviceExists: !!notificationServiceV2,
+            hasMethod: typeof notificationServiceV2.sendScheduledNotification === 'function',
             elderlyCount: elderlyList.length,
             elderlyList: elderlyList.map(e => ({
                 id: e._id,
@@ -42,8 +42,8 @@ router.post('/trigger/morning', authenticate, async (req, res) => {
                 hasLineUserId: !!e.lineUserId
             }))
         });
-        // scheduledNotificationServiceのプライベートメソッドを呼び出すために一時的な対応
-        await scheduledNotificationService.sendMorningNotification(userId);
+        // 通知サービスV2の定時通知を呼び出す
+        await notificationServiceV2.sendScheduledNotification(userId);
         logger.info('朝の通知送信完了:', { userId });
         res.json({
             success: true,
@@ -64,7 +64,8 @@ router.post('/trigger/evening', authenticate, async (req, res) => {
     try {
         const userId = req.user.userId;
         logger.info('手動夜通知トリガー:', { userId });
-        await scheduledNotificationService.sendEveningNotification(userId);
+        // V2では朝夜の区別がないため、同じメソッドを使用
+        await notificationServiceV2.sendScheduledNotification(userId);
         res.json({
             success: true,
             message: '夜の通知を送信しました'
@@ -81,14 +82,10 @@ router.post('/trigger/evening', authenticate, async (req, res) => {
 // スケジュール状態を取得
 router.get('/status', authenticate, async (_req, res) => {
     try {
-        const tasks = scheduledNotificationService.tasks;
-        const status = {
-            totalTasks: tasks.size,
-            tasks: Array.from(tasks.keys())
-        };
+        // V2ではスケジュール管理がscheduledNotificationServiceV2に移動
         res.json({
             success: true,
-            ...status
+            message: 'Notification service is running'
         });
     }
     catch (error) {

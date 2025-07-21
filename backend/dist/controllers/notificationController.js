@@ -211,27 +211,21 @@ export const updateNotificationSettings = async (req, res) => {
             oldSettings?.timing?.evening?.time !== settings.timing?.evening?.time;
         // 通知時間が変更された場合の処理
         if (timeChanged) {
-            const ResponseHistory = (await import('../models/ResponseHistory.js')).default;
-            const Response = (await import('../models/Response.js')).default;
+            const DailyNotification = (await import('../models/DailyNotification.js')).default;
             const Elderly = (await import('../models/Elderly.js')).default;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            // 本日の履歴を削除（再通知回数をリセット）
-            await ResponseHistory.deleteMany({
+            // 本日の通知設定をリセット（応答済みは維持）
+            await DailyNotification.updateMany({
                 userId: userId,
-                date: { $gte: today }
+                date: { $gte: today },
+                response: { $exists: false } // 未応答のもののみ
+            }, {
+                $set: {
+                    adminNotifiedAt: null,
+                    notifications: [] // 通知履歴をクリア
+                }
             });
-            // ユーザーの家族を取得
-            const elderlyList = await Elderly.find({ userId });
-            // 本日のpending状態のResponseのみを期限切れ(expired)に変更
-            // 成功応答（success）は維持する
-            for (const elderly of elderlyList) {
-                await Response.updateMany({
-                    elderlyId: elderly._id,
-                    createdAt: { $gte: today },
-                    status: 'pending' // pending状態のもののみ対象
-                }, { status: 'expired' });
-            }
             logger.info(`通知時間変更により本日の履歴をリセット、未応答のみ期限切れに変更: ユーザー ${userId}`);
         }
         const user = await User.findByIdAndUpdate(userId, { notificationSettings: settings }, { new: true, runValidators: true }).select('notificationSettings');
