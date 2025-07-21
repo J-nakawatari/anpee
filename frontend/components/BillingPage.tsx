@@ -106,57 +106,39 @@ export function BillingPage() {
   // プラン詳細のダミーデータ
   const getPlanDetails = (planId: string) => {
     const planFeatures = {
-      basic: {
-        features: [
-          '登録者数: 最大3人',
-          '再通知: 1回まで',
-          '通知間隔: 1時間のみ',
-          '基本サポート',
-          'メール通知',
-          'LINE通知'
-        ],
-        limitations: [
-          '詳細分析機能なし',
-          '優先サポートなし',
-          'API連携なし'
-        ],
-        bestFor: '1〜2人の見守りに最適'
-      },
       standard: {
         features: [
-          '登録者数: 最大10人',
+          '登録者数: 1人',
+          '1日1回の安否確認',
+          '電話＋LINE対応',
           '再通知: 3回まで',
-          '通知間隔: 30分/1時間/2時間',
-          '標準サポート',
-          'メール通知',
-          'LINE通知',
-          'SMS通知'
+          '通知間隔: 30分/1時間',
+          '通話応答記録',
+          'メール通知'
         ],
         limitations: [
-          '詳細分析機能なし',
-          '優先サポートなし'
+          '複数人の登録不可'
         ],
-        bestFor: '家族全体の見守りに最適'
+        bestFor: '一人暮らしの高齢者の見守りに最適'
       },
-      premium: {
+      family: {
         features: [
-          '登録者数: 無制限',
-          '再通知: 5回まで',
-          '通知間隔: 15分/30分/1時間/2時間/3時間',
-          '優先サポート',
+          '登録者数: 最大3人',
+          '1日1回×3人分の安否確認',
+          '電話＋LINE対応',
+          '再通知: 3回まで',
+          '通知間隔: 30分/1時間',
+          '通話応答記録',
           'メール通知',
-          'LINE通知',
-          'SMS通知',
-          '詳細分析機能',
-          'API連携',
-          'カスタムアラート'
+          '優先サポート',
+          '詳細分析機能'
         ],
         limitations: [],
-        bestFor: '大規模な見守りサービスに最適'
+        bestFor: '兄弟・親子など複数人の見守りに最適'
       }
     };
 
-    return planFeatures[planId as keyof typeof planFeatures] || planFeatures.basic;
+    return planFeatures[planId as keyof typeof planFeatures] || planFeatures.standard;
   };
 
   const selectedPlanData = selectedPlan ? availablePlans.find(p => p.id === selectedPlan) : null;
@@ -466,7 +448,7 @@ export function BillingPage() {
               )}
 
               {/* 現在のプランとの比較 */}
-              {selectedPlan !== currentPlan.id && (
+              {currentPlan && selectedPlan !== currentPlan.id && (
                 <div className="border-t pt-4">
                   <h4 className="font-medium text-gray-900 mb-2">現在のプランとの比較</h4>
                   <div className="bg-gray-50 p-3 rounded-lg text-sm">
@@ -474,10 +456,12 @@ export function BillingPage() {
                       現在: {currentPlan.displayName} (¥{currentPlan.price.toLocaleString()}/月)
                       → {selectedPlanData?.displayName} (¥{selectedPlanData?.price.toLocaleString()}/月)
                     </p>
-                    <p className="text-gray-600 mt-1">
-                      月額差額: {selectedPlanData && selectedPlanData.price > currentPlan.price ? '+' : ''}
-                      ¥{selectedPlanData ? (selectedPlanData.price - currentPlan.price).toLocaleString() : 0}
-                    </p>
+                    {selectedPlanData && (
+                      <p className="text-gray-600 mt-1">
+                        月額差額: {selectedPlanData.price > currentPlan.price ? '+' : ''}
+                        ¥{(selectedPlanData.price - currentPlan.price).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -488,7 +472,7 @@ export function BillingPage() {
             <Button variant="outline" onClick={() => setShowPlanDetailDialog(false)}>
               キャンセル
             </Button>
-            {selectedPlan !== currentPlan.id && (
+            {currentPlan && selectedPlan !== currentPlan.id && (
               <Button onClick={confirmPlanChange}>
                 このプランに変更
               </Button>

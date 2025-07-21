@@ -13,6 +13,7 @@ import lineRoutes from './routes/lineRoutes.js';
 import responseRoutes from './routes/responseRoutesV2.js'; // V2に変更
 import notificationRoutes from './routes/notificationRoutes.js';
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js';
+import billingRoutes from './routes/billingRoutes.js';
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'; // V2に変更
 import dailySummaryService from './services/dailySummaryService.js';
 import csrf from 'csurf'; // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
@@ -94,6 +95,7 @@ app.use('/api/v1/line', lineRoutes);
 app.use('/api/v1/responses', responseRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/scheduled-notifications', scheduledNotificationRoutes);
+app.use('/api/v1/billing', billingRoutes);
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {
     res.json({

@@ -4,6 +4,7 @@ export interface SubscriptionPlan {
   name: string;
   displayName: string;
   price: number;
+  stripePriceId: string;  // Stripe価格ID
   features: {
     maxElderlyUsers: number;
     maxRetryCount: number;
@@ -18,43 +19,31 @@ export interface SubscriptionPlan {
 // 利用可能なプラン
 export const availablePlans: SubscriptionPlan[] = [
   {
-    id: 'basic',
-    name: 'basic',
-    displayName: 'ベーシック',
-    price: 980,
-    features: {
-      maxElderlyUsers: 3,
-      maxRetryCount: 1,
-      retryIntervals: [60], // 1時間のみ
-      prioritySupport: false,
-      advancedAnalytics: false,
-      customNotifications: false
-    }
-  },
-  {
     id: 'standard',
     name: 'standard',
-    displayName: 'スタンダード',
-    price: 1980,
+    displayName: '🐥 スタンダードプラン',
+    price: 1480,
+    stripePriceId: 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt',
     features: {
-      maxElderlyUsers: 10,
+      maxElderlyUsers: 1,
       maxRetryCount: 3,
-      retryIntervals: [30, 60, 120], // 30分、1時間、2時間
+      retryIntervals: [30, 60], // 30分、1時間
       prioritySupport: false,
-      advancedAnalytics: true,
+      advancedAnalytics: false,
       customNotifications: true
     },
     isPopular: true
   },
   {
-    id: 'premium',
-    name: 'premium',
-    displayName: 'プレミアム',
-    price: 2980,
+    id: 'family',
+    name: 'family',
+    displayName: '🦉 ファミリープラン',
+    price: 2480,
+    stripePriceId: 'price_1RnLJC1qmMqgQ3qQc9t1lemY',
     features: {
-      maxElderlyUsers: -1, // 無制限
-      maxRetryCount: 5,
-      retryIntervals: [15, 30, 60, 120, 180], // 15分、30分、1時間、2時間、3時間
+      maxElderlyUsers: 3,
+      maxRetryCount: 3,
+      retryIntervals: [30, 60], // 30分、1時間
       prioritySupport: true,
       advancedAnalytics: true,
       customNotifications: true
@@ -65,7 +54,7 @@ export const availablePlans: SubscriptionPlan[] = [
 // 現在のユーザープラン（実際の実装では外部APIから取得）
 export const getCurrentUserPlan = (): SubscriptionPlan => {
   // デモ用にスタンダードプランを返す
-  return availablePlans[1];
+  return availablePlans[0];
 };
 
 // 間隔の表示用フォーマット
