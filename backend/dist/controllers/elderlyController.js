@@ -61,19 +61,21 @@ export const createElderly = async (req, res) => {
         // 現在の家族数を確認
         const currentCount = await Elderly.countDocuments({ userId, status: 'active' });
         // プランによる制限をチェック
-        const planLimits = {
-            standard: 1,
-            family: 3,
-            none: 0
-        };
-        const limit = planLimits[user.currentPlan || 'none'];
-        if (currentCount >= limit) {
-            return res.status(400).json({
-                success: false,
-                message: `現在のプラン（${user.currentPlan || 'なし'}）では、最大${limit}人までしか登録できません。`,
-                currentCount,
-                limit
-            });
+        // TODO: Stripe WebhookでcurrentPlanが更新されるまでの一時的な対応
+        if (user.currentPlan && user.currentPlan !== 'none') {
+            const planLimits = {
+                standard: 1,
+                family: 3
+            };
+            const limit = planLimits[user.currentPlan];
+            if (currentCount >= limit) {
+                return res.status(400).json({
+                    success: false,
+                    message: `現在のプラン（${user.currentPlan}）では、最大${limit}人までしか登録できません。`,
+                    currentCount,
+                    limit
+                });
+            }
         }
         // 必須項目のバリデーション
         const missingFields = [];

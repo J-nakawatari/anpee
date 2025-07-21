@@ -87,7 +87,7 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
   app.use((req, res, next) => {
     if (req.path === '/api/v1/csrf-token' || 
         req.path === '/api/v1/line/webhook' || 
-        req.path === '/webhook/stripe') {
+        req.path === '/api/v1/webhook/stripe') {
       return next();
     }
     csrfProtection(req, res, next);
@@ -109,8 +109,8 @@ app.use('/api/v1/notifications', notificationRoutes)
 app.use('/api/v1/scheduled-notifications', scheduledNotificationRoutes)
 app.use('/api/v1/billing', billingRoutes)
 
-// Stripe Webhook（/api/v1プレフィックスなし）
-app.use('/webhook', stripeWebhookRoutes)
+// Stripe Webhook
+app.use('/api/v1/webhook', stripeWebhookRoutes)
 
 // ヘルスチェック
 app.get('/api/v1/health', (_req, res) => {

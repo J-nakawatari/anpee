@@ -138,6 +138,55 @@ router.post('/check-retry-notifications', async (req: Request, res: Response) =>
 });
 
 /**
+ * ユーザーのプランを手動設定
+ * 開発・検証用のエンドポイント
+ */
+router.post('/set-user-plan/:email/:plan', async (req: Request, res: Response) => {
+  try {
+    const { email, plan } = req.params;
+    const User = (await import('../models/User.js')).default;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'ユーザーが見つかりません'
+      });
+    }
+    
+    // プランを設定
+    if (plan === 'standard' || plan === 'family') {
+      user.currentPlan = plan;
+      user.hasSelectedInitialPlan = true;
+      user.subscriptionStatus = 'active';
+      await user.save();
+      
+      res.json({
+        success: true,
+        message: `プランを${plan}に設定しました`,
+        user: {
+          id: user._id,
+          email: user.email,
+          currentPlan: user.currentPlan,
+          subscriptionStatus: user.subscriptionStatus
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'プランはstandardまたはfamilyを指定してください'
+      });
+    }
+  } catch (error) {
+    logger.error('プラン設定エラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'プラン設定に失敗しました'
+    });
+  }
+});
+
+/**
  * ユーザーのプラン情報をリセット
  * 開発・検証用のエンドポイント
  */
