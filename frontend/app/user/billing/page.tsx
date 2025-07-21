@@ -1,5 +1,5 @@
 import { ClientLayout } from "@/components/ClientLayout";
-import { BillingPage } from "@/components/BillingPage";
+import { BillingPageV2 } from "@/components/BillingPageV2";
 
 export default function Billing() {
   return (
@@ -8,7 +8,7 @@ export default function Billing() {
       subtitle="契約情報の管理"
       showAddButton={false}
     >
-      <BillingPage />
+      <BillingPageV2 />
     </ClientLayout>
   );
 }
