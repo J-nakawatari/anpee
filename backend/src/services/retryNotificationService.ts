@@ -36,7 +36,10 @@ class RetryNotificationService {
     
     // 1分ごとに未応答をチェック
     this.checkInterval = cron.schedule('* * * * *', async () => {
-      await this.checkAndSendRetryNotifications()
+      // 非同期でエラーハンドリング
+      this.checkAndSendRetryNotifications().catch(error => {
+        logger.error('再通知チェック実行エラー:', error)
+      })
     }, {
       timezone: 'Asia/Tokyo'
     })
@@ -45,66 +48,80 @@ class RetryNotificationService {
   // 未応答チェックと再通知送信
   private async checkAndSendRetryNotifications() {
     try {
-      // 再通知が有効なユーザーを取得
-      const users = await User.find({
-        'notificationSettings.retrySettings.maxRetries': { $gt: 0 }
-      }).select('_id notificationSettings')
-
-      for (const user of users) {
-        await this.checkUserResponses(user)
+      logger.info('再通知チェック開始')
+      
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      // 本日の履歴で再通知が必要なものを直接取得（効率化）
+      const histories = await ResponseHistory.find({
+        date: { $gte: today },
+        $or: [
+          { status: 'pending' },
+          { adminNotified: { $ne: true } }
+        ]
+      }).populate('userId elderlyId')
+      
+      logger.info(`チェック対象履歴数: ${histories.length}`)
+      
+      // 履歴をユーザーごとにグループ化
+      const userHistories = new Map<string, any[]>()
+      
+      for (const history of histories) {
+        const userId = (history.userId as any)._id.toString()
+        if (!userHistories.has(userId)) {
+          userHistories.set(userId, [])
+        }
+        userHistories.get(userId)!.push(history)
+      }
+      
+      // 各ユーザーの履歴をチェック
+      for (const [userId, userHistory] of userHistories) {
+        const user = await User.findById(userId).select('notificationSettings')
+        if (!user || !user.notificationSettings?.retrySettings?.maxRetries) continue
+        
+        for (const history of userHistory) {
+          await this.checkHistoryAndSendNotification(history, user)
+        }
       }
     } catch (error) {
       logger.error('再通知チェックエラー:', error)
     }
   }
 
-  // 特定ユーザーの未応答をチェック
-  private async checkUserResponses(user: any) {
+  // 履歴をチェックして通知を送信
+  private async checkHistoryAndSendNotification(history: any, user: any) {
     try {
       const { retrySettings } = user.notificationSettings || {}
       if (!retrySettings || retrySettings.maxRetries === 0) return
-
-      // ユーザーの家族を取得
-      const elderlyList = await Elderly.find({
-        userId: user._id,
-        status: 'active',
-        lineUserId: { $exists: true, $ne: null }
-      })
-
-      for (const elderly of elderlyList) {
-        // 本日の最新の応答を確認
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        
-        const latestResponse = await Response.findOne({
-          elderlyId: elderly._id,
-          type: 'genki_button',
-          status: 'success',
-          respondedAt: { $gte: today }
-        }).sort({ respondedAt: -1 })
-
-        // 最新の履歴を確認
-        const latestHistory = await ResponseHistory.findOne({
-          elderlyId: elderly._id,
-          date: { $gte: today }
-        }).sort({ createdAt: -1 })
-
-        // 未応答または再通知が必要な場合
-        if (this.shouldSendRetry(latestResponse, latestHistory, retrySettings)) {
-          await this.sendRetryNotification(elderly, user, latestHistory)
-        }
-        // 最大再通知回数に達していて、2分経過した場合、管理者に通知（テスト用）
-        else if (this.shouldNotifyAdmin(latestResponse, latestHistory, retrySettings)) {
-          await this.notifyAdmin(user, elderly)
-          // 管理者通知済みフラグを設定
-          if (latestHistory) {
-            latestHistory.adminNotified = true
-            await latestHistory.save()
-          }
-        }
+      
+      const elderly = history.elderlyId
+      if (!elderly || elderly.status !== 'active' || !elderly.lineUserId) return
+      
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      // 本日の成功応答を確認（効率化のため必要な場合のみ）
+      const latestResponse = await Response.findOne({
+        elderlyId: elderly._id,
+        type: 'genki_button',
+        status: 'success',
+        respondedAt: { $gte: today }
+      }).sort({ respondedAt: -1 })
+      
+      // 再通知が必要かチェック
+      if (this.shouldSendRetry(latestResponse, history, retrySettings)) {
+        await this.sendRetryNotification(elderly, user, history)
+      }
+      // 管理者通知が必要かチェック
+      else if (this.shouldNotifyAdmin(latestResponse, history, retrySettings)) {
+        await this.notifyAdmin(user, elderly)
+        // 管理者通知済みフラグを設定
+        history.adminNotified = true
+        await history.save()
       }
     } catch (error) {
-      logger.error(`ユーザー ${user._id} の再通知チェックエラー:`, error)
+      logger.error(`履歴 ${history._id} の再通知チェックエラー:`, error)
     }
   }
 
@@ -177,6 +194,8 @@ class RetryNotificationService {
         await ResponseHistory.create({
           elderlyId: elderly._id,
           userId: user._id,
+          type: 'line_button',
+          responseAt: now,
           date: now,
           retryCount: 1,
           lastNotificationTime: now,
