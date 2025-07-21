@@ -83,12 +83,11 @@ app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
 // CSRF保護を適用（開発環境では無効化可能）
 const enableCsrf = process.env.ENABLE_CSRF === 'true';
 if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
-  // CSRFトークンエンドポイント、Webhook、テストエンドポイントは除外
+  // CSRFトークンエンドポイントとWebhookは除外
   app.use((req, res, next) => {
     if (req.path === '/api/v1/csrf-token' || 
         req.path === '/api/v1/line/webhook' || 
-        req.path === '/webhook/stripe' ||
-        req.path.startsWith('/api/v1/test/')) {
+        req.path === '/webhook/stripe') {
       return next();
     }
     csrfProtection(req, res, next);
