@@ -223,15 +223,15 @@ export const updateNotificationSettings = async (req, res) => {
             });
             // ユーザーの家族を取得
             const elderlyList = await Elderly.find({ userId });
-            // 確認待ち(pending)のResponseを期限切れ(expired)に変更
+            // 本日のすべてのResponseを期限切れ(expired)に変更（成功応答も含む）
             for (const elderly of elderlyList) {
                 await Response.updateMany({
                     elderlyId: elderly._id,
-                    status: 'pending',
-                    createdAt: { $gte: today }
+                    createdAt: { $gte: today },
+                    status: { $in: ['pending', 'success'] }
                 }, { status: 'expired' });
             }
-            logger.info(`通知時間変更により本日の履歴をリセット、確認待ちを期限切れに変更: ユーザー ${userId}`);
+            logger.info(`通知時間変更により本日の履歴をリセット、すべての応答を期限切れに変更: ユーザー ${userId}`);
         }
         const user = await User.findByIdAndUpdate(userId, { notificationSettings: settings }, { new: true, runValidators: true }).select('notificationSettings');
         if (!user) {
