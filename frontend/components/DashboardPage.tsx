@@ -48,6 +48,19 @@ export function DashboardPage() {
     }
   };
 
+  // 次回の通知が今日か明日かを判定
+  const getNextNotificationDay = () => {
+    if (!nextNotificationTime) return "";
+    
+    const now = new Date();
+    const [hours, minutes] = nextNotificationTime.split(':').map(Number);
+    const todayNotificationTime = new Date();
+    todayNotificationTime.setHours(hours, minutes, 0, 0);
+    
+    // 現在時刻が今日の通知時刻より前なら「今日」、後なら「明日」
+    return now < todayNotificationTime ? "今日" : "明日";
+  };
+
   // 性別に基づいて敬称を取得
   const getHonorific = (gender: 'male' | 'female' | 'other') => {
     switch (gender) {
@@ -388,7 +401,7 @@ export function DashboardPage() {
                 <MessageSquare className="w-4 h-4 text-green-600" />
                 <span className="text-blue-700 font-medium">LINE元気ですボタン</span>
               </div>
-              <span className="text-blue-600 text-sm">明日 {nextNotificationTime || '未設定'}</span>
+              <span className="text-blue-600 text-sm">{getNextNotificationDay()} {nextNotificationTime || '未設定'}</span>
             </div>
           </div>
         </CardContent>
