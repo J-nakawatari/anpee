@@ -274,4 +274,14 @@ export class StripeService {
   }
 }
 
-export default new StripeService()
+// シングルトンインスタンスを遅延初期化
+let stripeServiceInstance: StripeService | null = null
+
+export const getStripeService = (): StripeService => {
+  if (!stripeServiceInstance) {
+    stripeServiceInstance = new StripeService()
+  }
+  return stripeServiceInstance
+}
+
+export default { getStripeService }

@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { AuthRequest } from '../middleware/auth.js'
-import stripeService from '../services/stripeService.js'
+import { getStripeService } from '../services/stripeService.js'
 import logger from '../utils/logger.js'
 
 // サブスクリプション情報を取得
@@ -8,7 +8,7 @@ export const getSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    const subscription = await stripeService.getSubscription(userId)
+    const subscription = await getStripeService().getSubscription(userId)
     
     if (!subscription) {
       return res.json({
@@ -43,7 +43,7 @@ export const getInvoices = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId
     const limit = parseInt(req.query.limit as string) || 10
     
-    const invoices = await stripeService.getInvoices(userId, limit)
+    const invoices = await getStripeService().getInvoices(userId, limit)
     
     res.json({ invoices })
   } catch (error) {
@@ -57,7 +57,7 @@ export const getPaymentMethods = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    const paymentMethods = await stripeService.getPaymentMethods(userId)
+    const paymentMethods = await getStripeService().getPaymentMethods(userId)
     
     res.json({ paymentMethods })
   } catch (error) {
@@ -89,7 +89,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
     const successUrl = `${process.env.FRONTEND_URL}/user/billing?session_id={CHECKOUT_SESSION_ID}&success=true`
     const cancelUrl = `${process.env.FRONTEND_URL}/user/billing?canceled=true`
     
-    const sessionUrl = await stripeService.createCheckoutSession(
+    const sessionUrl = await getStripeService().createCheckoutSession(
       userId,
       priceId,
       successUrl,
@@ -109,7 +109,7 @@ export const createPortalSession = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId
     
     const returnUrl = `${process.env.FRONTEND_URL}/user/billing`
-    const portalUrl = await stripeService.createPortalSession(userId, returnUrl)
+    const portalUrl = await getStripeService().createPortalSession(userId, returnUrl)
     
     res.json({ url: portalUrl })
   } catch (error) {
