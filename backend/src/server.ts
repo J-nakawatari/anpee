@@ -10,11 +10,10 @@ import authRoutes from './routes/auth.js'
 import testRoutes from './routes/test.js'
 import elderlyRoutes from './routes/elderly.js'
 import lineRoutes from './routes/lineRoutes.js'
-import responseRoutes from './routes/responseRoutes.js'
+import responseRoutes from './routes/responseRoutesV2.js'  // V2に変更
 import notificationRoutes from './routes/notificationRoutes.js'
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js'
-import scheduledNotificationService from './services/scheduledNotificationService.js'
-import retryNotificationService from './services/retryNotificationService.js'
+import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 
@@ -139,14 +138,11 @@ const startServer = async () => {
     logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`)
     
     // 定時通知サービスを開始
-    scheduledNotificationService.start().catch(error => {
-      logger.error('定時通知サービスの開始に失敗しました:', error)
+    scheduledNotificationServiceV2.start().catch(error => {
+      logger.error('定時通知サービスV2の開始に失敗しました:', error)
     })
     
-    // 再通知サービスを開始
-    retryNotificationService.start().catch(error => {
-      logger.error('再通知サービスの開始に失敗しました:', error)
-    })
+    // 再通知サービスはV2に統合されたため削除
     
     // 日次サマリーサービスを開始
     dailySummaryService.start().catch(error => {
@@ -159,11 +155,8 @@ const startServer = async () => {
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM signal received: closing HTTP server')
   
-  // 定時通知サービスを停止
-  scheduledNotificationService.stopAll()
-  
-  // 再通知サービスを停止
-  retryNotificationService.stop()
+  // 定時通知サービスV2を停止
+  scheduledNotificationServiceV2.stopAll()
   
   // 日次サマリーサービスを停止
   dailySummaryService.stop()
