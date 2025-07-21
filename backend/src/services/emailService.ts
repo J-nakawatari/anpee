@@ -312,6 +312,8 @@ class EmailService {
       timeInfo = `最後の応答から${hours}時間が経過しています`;
     }
 
+    const text = `${elderlyName}さんから「元気ですボタン」の応答がありません。\n${timeInfo}\n\nご家族の安否をご確認ください。\n\n詳細はこちら: https://anpee.jp/user/dashboard`;
+
     const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #f97316;">安否確認のお知らせ</h2>
@@ -333,7 +335,7 @@ class EmailService {
       </div>
     `;
 
-    await this.sendDirectEmail({ to, subject, html });
+    await this.sendDirectEmail({ to, subject, text, html });
   }
 
 }
