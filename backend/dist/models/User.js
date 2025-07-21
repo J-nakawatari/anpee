@@ -35,6 +35,15 @@ const userSchema = new Schema({
         enum: ['active', 'canceled', 'past_due', 'none'],
         default: 'none',
     },
+    currentPlan: {
+        type: String,
+        enum: ['standard', 'family', 'none'],
+        default: 'none',
+    },
+    hasSelectedInitialPlan: {
+        type: Boolean,
+        default: false,
+    },
     emailVerified: {
         type: Boolean,
         default: false,

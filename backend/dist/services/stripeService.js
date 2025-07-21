@@ -243,6 +243,7 @@ export class StripeService {
             logger.info('カスタマーIDからユーザーを特定しました', { userId, customerId: subscription.customer });
         }
         const planId = this.getPlanIdFromPriceId(subscription.items.data[0].price.id);
+        // Subscriptionコレクションを更新
         await Subscription.findOneAndUpdate({ stripeSubscriptionId: subscription.id }, {
             userId,
             stripeCustomerId: subscription.customer,
@@ -255,10 +256,23 @@ export class StripeService {
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
         }, { upsert: true });
+        // Userモデルも更新
+        await User.findByIdAndUpdate(userId, {
+            subscriptionStatus: subscription.status,
+            currentPlan: planId,
+            hasSelectedInitialPlan: true
+        });
     }
     // サブスクリプション削除処理
     async handleSubscriptionDeleted(subscription) {
-        await Subscription.findOneAndUpdate({ stripeSubscriptionId: subscription.id }, { status: 'canceled' });
+        const sub = await Subscription.findOneAndUpdate({ stripeSubscriptionId: subscription.id }, { status: 'canceled' }, { new: true });
+        // Userモデルも更新
+        if (sub?.userId) {
+            await User.findByIdAndUpdate(sub.userId, {
+                subscriptionStatus: 'canceled',
+                currentPlan: 'none'
+            });
+        }
     }
     // 請求書支払い成功処理
     async handleInvoicePaymentSucceeded(invoice) {

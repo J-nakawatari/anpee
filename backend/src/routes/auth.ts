@@ -78,7 +78,6 @@ router.get('/verify-email/:token', verifyEmail)
 // 初回プラン選択済みフラグ更新
 router.post('/initial-plan-selected', authenticate, async (req, res) => {
   try {
-    const { Request, Response } = await import('express')
     const User = (await import('../models/User.js')).default
     const userId = (req as any).user.userId
     
@@ -99,10 +98,10 @@ router.post('/initial-plan-selected', authenticate, async (req, res) => {
 })
 
 // 現在のユーザー情報を取得
-router.get('/me', authenticate, async (req, res) => {
+router.get('/me', authenticate, async (req: any, res) => {
   try {
     const User = (await import('../models/User.js')).default
-    const userId = (req as any).user.userId
+    const userId = req.user.userId
     
     const user = await User.findById(userId).select('-password')
     if (!user) {

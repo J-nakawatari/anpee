@@ -124,6 +124,44 @@ router.post('/check-retry-notifications', async (req, res) => {
     }
 });
 /**
+ * ユーザーのプラン情報をリセット
+ * 開発・検証用のエンドポイント
+ */
+router.post('/reset-user-plan/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        const User = (await import('../models/User.js')).default;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'ユーザーが見つかりません'
+            });
+        }
+        // プラン情報をリセット
+        user.hasSelectedInitialPlan = false;
+        user.currentPlan = 'none';
+        await user.save();
+        res.json({
+            success: true,
+            message: 'ユーザーのプラン情報をリセットしました',
+            user: {
+                id: user._id,
+                email: user.email,
+                hasSelectedInitialPlan: user.hasSelectedInitialPlan,
+                currentPlan: user.currentPlan
+            }
+        });
+    }
+    catch (error) {
+        logger.error('ユーザープランリセットエラー:', error);
+        res.status(500).json({
+            success: false,
+            message: 'プラン情報のリセットに失敗しました'
+        });
+    }
+});
+/**
  * Stripeサブスクリプションを手動同期
  * 開発・検証用のエンドポイント
  */
