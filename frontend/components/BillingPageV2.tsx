@@ -110,6 +110,7 @@ export function BillingPageV2() {
   };
 
   const handlePlanChange = (planId: string) => {
+    console.log('プラン変更クリック:', planId);
     setSelectedPlan(planId);
     setShowPlanDetailDialog(true);
   };
@@ -423,7 +424,7 @@ export function BillingPageV2() {
                     <p className="text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
                   </div>
                   <Button 
-                    variant={isCurrentPlan ? "secondary" : "outline"}
+                    variant={isCurrentPlan ? "secondary" : "default"}
                     size="sm"
                     disabled={!!isCurrentPlan}
                     onClick={() => handlePlanChange(plan.id)}
@@ -493,7 +494,10 @@ export function BillingPageV2() {
       </Dialog>
 
       {/* プラン詳細ダイアログ */}
-      <Dialog open={showPlanDetailDialog} onOpenChange={setShowPlanDetailDialog}>
+      <Dialog open={showPlanDetailDialog} onOpenChange={(open) => {
+        console.log('ダイアログ状態変更:', open);
+        setShowPlanDetailDialog(open);
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
