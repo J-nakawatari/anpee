@@ -145,6 +145,9 @@ class ScheduledNotificationService {
           }
           logger.info(`通知送信成功: ${elderly.name}さん (${elderly._id})`)
           
+          // Response（元の応答管理）も作成
+          const Response = (await import('../models/Response.js')).default
+          
           // 通知履歴を作成
           const todayStart = new Date()
           todayStart.setHours(0, 0, 0, 0)
@@ -167,6 +170,15 @@ class ScheduledNotificationService {
               retryCount: 0,
               date: new Date(),
               lastNotificationTime: new Date()
+            })
+            
+            // Responseモデルにも作成（履歴表示用）
+            await Response.create({
+              elderlyId: elderly._id,
+              type: 'genki_button',
+              status: 'pending',
+              token: token,
+              tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24時間有効
             })
           } else {
             // 既存の履歴を更新（再通知の場合）

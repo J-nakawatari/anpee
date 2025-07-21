@@ -186,6 +186,16 @@ class RetryNotificationService {
         await sendLineMessage(elderly.lineUserId || '', messages)
         logger.info(`LINE送信成功: ${elderly.name}さん (${elderly._id}), ${retryCount}回目`)
         
+        // 再通知の場合も新しいResponseを作成（履歴表示用）
+        const Response = (await import('../models/Response.js')).default
+        await Response.create({
+          elderlyId: elderly._id,
+          type: 'genki_button',
+          status: 'pending',
+          token: token,
+          tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24時間有効
+        })
+        
         // 履歴を更新または作成
         if (latestHistory) {
           latestHistory.retryCount = retryCount
@@ -202,6 +212,16 @@ class RetryNotificationService {
             retryCount: 1,
             lastNotificationTime: now,
             status: 'pending'
+          })
+          
+          // Responseモデルにも作成（履歴表示用）
+          const Response = (await import('../models/Response.js')).default
+          await Response.create({
+            elderlyId: elderly._id,
+            type: 'genki_button',
+            status: 'pending',
+            token: token,
+            tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24時間有効
           })
         }
 
