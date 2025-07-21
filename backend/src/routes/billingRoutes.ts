@@ -5,7 +5,8 @@ import {
   getInvoices,
   getPaymentMethods,
   createCheckoutSession,
-  createPortalSession
+  createPortalSession,
+  handlePaymentSuccess
 } from '../controllers/billingController.js'
 
 const router = Router()
@@ -27,5 +28,8 @@ router.post('/checkout', createCheckoutSession)
 
 // カスタマーポータルセッションを作成
 router.post('/portal', createPortalSession)
+
+// 支払い成功時の処理
+router.post('/payment-success', handlePaymentSuccess)
 
 export default router

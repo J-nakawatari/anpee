@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   Download, 
   Calendar, 
@@ -34,6 +35,7 @@ import billingService, { SubscriptionData } from "@/services/billingService";
 import { Plan, Invoice, PaymentMethod } from "@/types/billing";
 
 export function BillingPageV2() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [currentPlan, setCurrentPlan] = useState<Plan | null>(null);
@@ -80,7 +82,15 @@ export function BillingPageV2() {
   // データの取得
   useEffect(() => {
     loadBillingData();
-  }, []);
+    
+    // 支払い成功後の処理
+    const sessionId = searchParams.get('session_id');
+    const success = searchParams.get('success');
+    
+    if (sessionId && success === 'true') {
+      handlePaymentSuccess(sessionId);
+    }
+  }, [searchParams]);
 
   const loadBillingData = async () => {
     try {
@@ -138,6 +148,28 @@ export function BillingPageV2() {
     console.log('プラン変更クリック:', planId);
     setSelectedPlan(planId);
     setShowPlanDetailDialog(true);
+  };
+
+  const handlePaymentSuccess = async (sessionId: string) => {
+    try {
+      // 支払い成功をバックエンドに通知
+      const response = await fetch('/api/v1/billing/payment-success', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ sessionId })
+      });
+      
+      if (response.ok) {
+        toast.success('プランの設定が完了しました！');
+        // データを再読み込み
+        await loadBillingData();
+      }
+    } catch (error) {
+      console.error('支払い成功処理エラー:', error);
+    }
   };
 
   const confirmPlanChange = async () => {

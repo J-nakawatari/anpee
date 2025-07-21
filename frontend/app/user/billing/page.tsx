@@ -1,5 +1,6 @@
 import { ClientLayout } from "@/components/ClientLayout";
 import { BillingPageV2 } from "@/components/BillingPageV2";
+import { Suspense } from "react";
 
 export default function Billing() {
   return (
@@ -8,7 +9,9 @@ export default function Billing() {
       subtitle="契約情報の管理"
       showAddButton={false}
     >
-      <BillingPageV2 />
+      <Suspense fallback={<div>読み込み中...</div>}>
+        <BillingPageV2 />
+      </Suspense>
     </ClientLayout>
   );
 }
