@@ -415,25 +415,19 @@ export function NotificationSettingsPage() {
     <div className="space-y-6">
       {/* 現在のプラン表示 */}
       <Card className="border-blue-200 bg-blue-50/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardContent className="py-4">
+          <div className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-blue-600" />
-            現在のプラン
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Badge className={getPlanBadgeColor(currentPlan.id)}>
-                {currentPlan.displayName}
-              </Badge>
-              <span className="text-sm text-gray-600">
-                月額 ¥{currentPlan.price.toLocaleString()}
-              </span>
-            </div>
-            <Button variant="outline" size="sm">
-              プラン変更
-            </Button>
+            <span className="text-sm font-medium">現在のプラン:</span>
+            <Badge className={getPlanBadgeColor(currentPlan.id)}>
+              {currentPlan.displayName}
+            </Badge>
+            <span className="text-sm text-gray-600">
+              月額 ¥{currentPlan.price.toLocaleString()}
+            </span>
+            <span className="text-xs text-gray-500 ml-auto">
+              プラン変更は<a href="/user/billing" className="text-blue-600 underline">こちら</a>
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -673,7 +667,7 @@ export function NotificationSettingsPage() {
                       className="flex-1 text-sm bg-gray-50"
                     />
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={handleCopyUrl}
                       className="flex items-center gap-1"
@@ -705,7 +699,7 @@ export function NotificationSettingsPage() {
                         className={`flex-1 ${inviteEmailError ? 'border-red-500' : ''}`}
                       />
                       <Button
-                        variant="outline"
+                        variant="default"
                         onClick={handleSendInvite}
                         disabled={isInviteSending || !!inviteEmailError}
                         className="flex items-center gap-1"
@@ -842,7 +836,7 @@ export function NotificationSettingsPage() {
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
             {/* LINE通知テスト */}
             <Button
-              variant="outline"
+              variant="default"
               onClick={handleTestLineNotification}
               disabled={isTestingLineNotification}
               className="flex items-center justify-center gap-2 h-12"
@@ -853,7 +847,7 @@ export function NotificationSettingsPage() {
 
             {/* 電話通知テスト */}
             <Button
-              variant="outline"
+              variant="default"
               onClick={handleTestPhoneCall}
               disabled={isTestingPhone || !settings.methods.phone.enabled}
               className="flex items-center justify-center gap-2 h-12"
@@ -871,7 +865,7 @@ export function NotificationSettingsPage() {
             <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
               {/* 朝の通知テスト */}
               <Button
-                variant="outline"
+                variant="default"
                 onClick={handleTestMorningNotification}
                 disabled={isTestingMorningNotification}
                 className="flex items-center justify-center gap-2 h-12"
