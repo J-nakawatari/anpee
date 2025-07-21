@@ -4,6 +4,18 @@ import notificationServiceV2 from '../services/notificationServiceV2.js';
 import { authenticate } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
 
+// 管理者権限チェックミドルウェア
+const requireAdmin = async (req: Request, res: Response, next: Function) => {
+  const user = (req as any).user;
+  if (!user || user.role !== 'admin' && user.role !== 'super_admin') {
+    return res.status(403).json({
+      success: false,
+      message: '管理者権限が必要です'
+    });
+  }
+  next();
+};
+
 const router = Router();
 
 /**
@@ -138,10 +150,48 @@ router.post('/check-retry-notifications', async (req: Request, res: Response) =>
 });
 
 /**
- * ユーザーのプラン情報をリセット
- * 開発・検証用のエンドポイント
+ * ユーザーのプラン情報をリセット（一時的な緊急対応用）
+ * TODO: 2025-07-22までに削除または認証を追加
  */
-router.post('/reset-user-plan/:email', async (req: Request, res: Response) => {
+router.post('/emergency-reset-plan/:email', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    const User = (await import('../models/User.js')).default;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'ユーザーが見つかりません'
+      });
+    }
+    
+    // プラン情報をリセット
+    user.hasSelectedInitialPlan = false;
+    user.currentPlan = 'none';
+    await user.save();
+    
+    logger.warn(`緊急プランリセット実行: ${email}`);
+    
+    res.json({
+      success: true,
+      message: 'ユーザーのプラン情報をリセットしました',
+      warning: 'このエンドポイントは一時的なものです'
+    });
+  } catch (error) {
+    logger.error('緊急プランリセットエラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'プラン情報のリセットに失敗しました'
+    });
+  }
+});
+
+/**
+ * ユーザーのプラン情報をリセット
+ * 開発・検証用のエンドポイント（管理者権限必要）
+ */
+router.post('/reset-user-plan/:email', authenticate, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { email } = req.params;
     const User = (await import('../models/User.js')).default;
