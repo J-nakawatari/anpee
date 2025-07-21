@@ -498,7 +498,7 @@ export function BillingPageV2() {
         console.log('ダイアログ状態変更:', open);
         setShowPlanDetailDialog(open);
       }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedPlanData && (
@@ -534,12 +534,15 @@ export function BillingPageV2() {
               </div>
 
               {/* 機能一覧 */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-3">含まれる機能</h4>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
+                  <Check className="w-5 h-5" />
+                  含まれる機能
+                </h4>
                 <div className="space-y-2">
                   {selectedPlanDetails.features.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <div key={index} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
                       <span className="text-sm text-gray-700">{feature}</span>
                     </div>
                   ))}
@@ -548,12 +551,15 @@ export function BillingPageV2() {
 
               {/* 制限事項 */}
               {selectedPlanDetails.limitations.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">制限事項</h4>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2">
+                    <X className="w-5 h-5" />
+                    制限事項
+                  </h4>
                   <div className="space-y-2">
                     {selectedPlanDetails.limitations.map((limitation, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <div key={index} className="flex items-start gap-2">
+                        <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                         <span className="text-sm text-gray-600">{limitation}</span>
                       </div>
                     ))}

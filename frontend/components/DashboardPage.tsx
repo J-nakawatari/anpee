@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { elderlyService, ElderlyData } from "@/services/elderlyService";
 import { apiClient } from "@/services/apiClient";
 import { toast } from "@/lib/toast";
+import { InitialPlanSelection } from "./InitialPlanSelection";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
@@ -203,7 +204,11 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* 初回プラン選択モーダル */}
+      <InitialPlanSelection />
+      
+      <div className="space-y-6">
       {/* ウェルカムメッセージ */}
       <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow">
         <div className="flex items-center gap-4">
@@ -407,5 +412,6 @@ export function DashboardPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
