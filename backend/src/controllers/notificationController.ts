@@ -264,19 +264,20 @@ export const updateNotificationSettings = async (req: AuthRequest, res: Response
       // ユーザーの家族を取得
       const elderlyList = await Elderly.find({ userId })
       
-      // 本日のすべてのResponseを期限切れ(expired)に変更（成功応答も含む）
+      // 本日のpending状態のResponseのみを期限切れ(expired)に変更
+      // 成功応答（success）は維持する
       for (const elderly of elderlyList) {
         await Response.updateMany(
           { 
             elderlyId: elderly._id,
             createdAt: { $gte: today },
-            status: { $in: ['pending', 'success'] }
+            status: 'pending'  // pending状態のもののみ対象
           },
           { status: 'expired' }
         )
       }
       
-      logger.info(`通知時間変更により本日の履歴をリセット、すべての応答を期限切れに変更: ユーザー ${userId}`)
+      logger.info(`通知時間変更により本日の履歴をリセット、未応答のみ期限切れに変更: ユーザー ${userId}`)
     }
 
     const user = await User.findByIdAndUpdate(
