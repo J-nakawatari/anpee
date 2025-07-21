@@ -80,7 +80,8 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
     app.use((req, res, next) => {
         if (req.path === '/api/v1/csrf-token' ||
             req.path === '/api/v1/line/webhook' ||
-            req.path === '/api/v1/webhook/stripe') {
+            req.path === '/api/v1/webhook/stripe' ||
+            req.path.startsWith('/api/v1/test/')) {
             return next();
         }
         csrfProtection(req, res, next);

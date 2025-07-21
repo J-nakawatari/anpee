@@ -5,8 +5,7 @@ import { sendLineMessage } from './lineService.js';
 import { generateResponseToken } from './tokenService.js';
 import emailService from './emailService.js';
 import logger from '../utils/logger.js';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+// date-fnsの代わりにネイティブのDateメソッドを使用
 // 時間帯に応じた挨拶を取得
 function getGreeting(hour) {
     if (hour >= 5 && hour < 10) {
@@ -51,7 +50,9 @@ export class NotificationServiceV2 {
             const responseUrl = `${process.env.FRONTEND_URL || 'https://anpee.jp'}/genki/${token}`;
             // メッセージ作成
             const now = new Date();
-            const dateStr = format(now, 'M月d日', { locale: ja });
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const dateStr = `${month}月${day}日`;
             const { greeting, emoji } = getGreeting(now.getHours());
             let urgencyMessage = '';
             if (notificationType === 'retry1')

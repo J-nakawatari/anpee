@@ -130,3 +130,47 @@ export const createPortalSession = async (req, res) => {
         res.status(500).json({ error: 'Failed to create portal session' });
     }
 };
+// 支払い成功時の処理
+export const handlePaymentSuccess = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { sessionId } = req.body;
+        if (!sessionId) {
+            return res.status(400).json({ error: 'Session ID is required' });
+        }
+        // Stripeからセッション情報を取得
+        const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2025-06-30.basil'
+        });
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status === 'paid' && session.mode === 'subscription') {
+            // サブスクリプションIDを取得
+            const subscriptionId = session.subscription;
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            // プランIDを取得
+            const priceId = subscription.items.data[0].price.id;
+            const planId = priceId === 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt' ? 'standard' :
+                priceId === 'price_1RnLJC1qmMqgQ3qQc9t1lemY' ? 'family' : 'standard';
+            // ユーザー情報を更新
+            const User = (await import('../models/User.js')).default;
+            await User.findByIdAndUpdate(userId, {
+                currentPlan: planId,
+                subscriptionStatus: 'active',
+                hasSelectedInitialPlan: true
+            });
+            logger.info(`支払い成功後のプラン更新: userId=${userId}, plan=${planId}`);
+            res.json({
+                success: true,
+                message: 'プランが正常に設定されました',
+                plan: planId
+            });
+        }
+        else {
+            res.status(400).json({ error: 'Payment not completed' });
+        }
+    }
+    catch (error) {
+        logger.error('支払い成功処理エラー:', error);
+        res.status(500).json({ error: 'Failed to process payment success' });
+    }
+};
