@@ -125,7 +125,7 @@ export function DashboardPage() {
     if (person.lastLineResponse !== "未応答") {
       responses.push({
         id: `${person.id}-line`,
-        person: person.name || person.realName,
+        person: person.realName,  // 実際の名前を使用
         type: "LINE",
         action: "元気ですボタン",
         status: "応答",
