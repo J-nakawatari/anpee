@@ -78,7 +78,7 @@ export function NotificationSettingsPage() {
     retry: {
       enabled: true,
       maxCount: Math.min(2, currentPlan.features.maxRetryCount),
-      intervalMinutes: 2 // 一時的に2分固定（元: currentPlan.features.retryIntervals[0] || 60）
+      intervalMinutes: 30 // デフォルト30分
     },
     methods: {
       email: {
@@ -107,7 +107,7 @@ export function NotificationSettingsPage() {
             retry: {
               enabled: loadedSettings.retrySettings?.maxRetries > 0,
               maxCount: loadedSettings.retrySettings?.maxRetries || 3,
-              intervalMinutes: 2 // 一時的に2分固定（元: loadedSettings.retrySettings?.retryInterval || 30）
+              intervalMinutes: loadedSettings.retrySettings?.retryInterval || 30
             },
             methods: {
               email: loadedSettings.methods?.email || { enabled: false, address: "" },
@@ -531,17 +531,8 @@ export function NotificationSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-white">
-                        {/* 一時的に2分固定 */}
-                        <SelectItem value="2">
-                          2分
-                        </SelectItem>
-                        {/* 元のコード（後で復元用）
-                        {currentPlan.features.retryIntervals.map(interval => (
-                          <SelectItem key={interval} value={interval.toString()}>
-                            {formatRetryInterval(interval)}
-                          </SelectItem>
-                        ))}
-                        */}
+                        <SelectItem value="30">30分</SelectItem>
+                        <SelectItem value="60">1時間</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -292,8 +292,8 @@ class RetryNotificationService {
       (now.getTime() - new Date(lastNotificationTime).getTime()) / (1000 * 60)
     )
 
-    // 最後の通知から2分経過していれば管理者に通知（テスト用に一時的に2分）
-    return minutesSinceLastNotification >= 2
+    // 最後の通知から30分経過していれば管理者に通知
+    return minutesSinceLastNotification >= 30
   }
 
   // サービス停止
