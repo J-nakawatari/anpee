@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import emailService from '../services/emailService.js';
+import notificationServiceV2 from '../services/notificationServiceV2.js';
 import { authenticate } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
 
@@ -54,6 +55,28 @@ router.get('/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
+});
+
+/**
+ * 再通知チェックを手動実行
+ * 開発・検証用のエンドポイント
+ */
+router.post('/check-retry-notifications', async (req: Request, res: Response) => {
+  try {
+    logger.info('手動で再通知チェックを開始');
+    await notificationServiceV2.checkAndSendRetryNotifications();
+    
+    res.json({
+      success: true,
+      message: '再通知チェックを実行しました'
+    });
+  } catch (error) {
+    logger.error('再通知チェックエラー:', error);
+    res.status(500).json({
+      success: false,
+      message: '再通知チェックに失敗しました'
+    });
+  }
 });
 
 export default router;

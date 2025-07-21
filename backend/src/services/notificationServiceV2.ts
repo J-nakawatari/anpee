@@ -117,14 +117,61 @@ export class NotificationServiceV2 {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      // 今日の未応答レコードを取得
-      const pendingRecords = await DailyNotification.find({
+      // デバッグ用：すべてのレコードを取得して確認
+      const allTodayRecords = await DailyNotification.find({
+        date: { $gte: today }
+      })
+      logger.info(`本日の全レコード数: ${allTodayRecords.length}`)
+      
+      for (const record of allTodayRecords) {
+        logger.info(`レコード詳細: ID=${record._id}, response=${record.response ? 'あり' : 'なし'}, adminNotifiedAt=${record.adminNotifiedAt || 'なし'}`)
+      }
+
+      // 今日の未応答レコードを取得（複数のクエリ方法で確認）
+      const query1 = await DailyNotification.find({
         date: { $gte: today },
         response: { $exists: false },
         adminNotifiedAt: { $exists: false }
+      })
+      logger.info(`クエリ1 (response: {$exists: false}): ${query1.length}件`)
+
+      const query2 = await DailyNotification.find({
+        date: { $gte: today },
+        response: null,
+        adminNotifiedAt: null
+      })
+      logger.info(`クエリ2 (response: null): ${query2.length}件`)
+
+      const query3 = await DailyNotification.find({
+        date: { $gte: today },
+        $and: [
+          {
+            $or: [
+              { response: null },
+              { response: { $exists: false } }
+            ]
+          },
+          {
+            $or: [
+              { adminNotifiedAt: null },
+              { adminNotifiedAt: { $exists: false } }
+            ]
+          }
+        ]
+      })
+      logger.info(`クエリ3 ($orを使用): ${query3.length}件`)
+
+      const pendingRecordsWithoutPopulate = query2  // nullチェックを使用
+      logger.info(`populate前のチェック対象履歴数: ${pendingRecordsWithoutPopulate.length}`)
+
+      // populateありで取得（nullチェックを使用）
+      const pendingRecords = await DailyNotification.find({
+        date: { $gte: today },
+        response: null,
+        adminNotifiedAt: null
       }).populate('userId elderlyId')
       
-      logger.info(`チェック対象履歴数: ${pendingRecords.length}`)
+      logger.info(`populate後のチェック対象履歴数: ${pendingRecords.length}`)
 
       for (const record of pendingRecords) {
         const user = await User.findById(record.userId)
