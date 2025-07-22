@@ -310,4 +310,44 @@ router.post('/sync-stripe-subscription/:userId', async (req: Request, res: Respo
   }
 });
 
+/**
+ * ユーザーの詳細情報を確認
+ * 開発・検証用のエンドポイント
+ */
+router.get('/user-details/:email', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    const User = (await import('../models/User.js')).default;
+    
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'ユーザーが見つかりません'
+      });
+    }
+    
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        currentPlan: user.currentPlan,
+        hasSelectedInitialPlan: user.hasSelectedInitialPlan,
+        subscriptionStatus: user.subscriptionStatus,
+        stripeCustomerId: user.stripeCustomerId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+    });
+  } catch (error) {
+    logger.error('ユーザー詳細確認エラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ユーザー詳細の確認に失敗しました'
+    });
+  }
+});
+
 export default router;
