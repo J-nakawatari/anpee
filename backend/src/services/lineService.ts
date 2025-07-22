@@ -183,6 +183,7 @@ const handleUnfollow = async (userId: string): Promise<void> => {
       const elderly = await Elderly.findById(lineUser.elderlyId).populate('userId');
       if (elderly) {
         elderly.hasGenKiButton = false;
+        elderly.lineUserId = undefined; // LINE連携を解除
         await elderly.save();
         
         // 管理者に通知（将来的にメール通知実装）
@@ -230,6 +231,32 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
         });
       }
       return;
+    }
+
+    // 同じLINEユーザーが既に他の家族に登録されているかチェック
+    const existingLineUserElsewhere = await LineUser.findOne({ userId, isActive: true });
+    if (existingLineUserElsewhere && existingLineUserElsewhere.elderlyId.toString() !== elderly._id.toString()) {
+      const lineClient = initializeClient();
+      if (lineClient) {
+        await lineClient.pushMessage(userId, {
+          type: 'text',
+          text: '申し訳ございません。既に別の家族に登録されています。\n一度に登録できるのは1人の家族のみです。',
+        });
+      }
+      return;
+    }
+
+    // Elderlyテーブルでも重複チェック
+    const existingElderlyWithSameLineId = await Elderly.findOne({ 
+      lineUserId: userId, 
+      _id: { $ne: elderly._id } 
+    });
+    if (existingElderlyWithSameLineId) {
+      console.log(`LINE ID重複エラー: ${userId}は既に${existingElderlyWithSameLineId.name}に登録されています`);
+      // 古い登録を解除
+      existingElderlyWithSameLineId.lineUserId = undefined;
+      existingElderlyWithSameLineId.hasGenKiButton = false;
+      await existingElderlyWithSameLineId.save();
     }
 
     // 既に登録済みかチェック
