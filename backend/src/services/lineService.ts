@@ -233,17 +233,22 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
       return;
     }
 
-    // 同じLINEユーザーが既に他の家族に登録されているかチェック
+    // 同じLINEユーザーが既に他の家族にアクティブに登録されているかチェック
     const existingLineUserElsewhere = await LineUser.findOne({ userId, isActive: true });
     if (existingLineUserElsewhere && existingLineUserElsewhere.elderlyId.toString() !== (elderly._id as any).toString()) {
-      const lineClient = initializeClient();
-      if (lineClient) {
-        await lineClient.pushMessage(userId, {
-          type: 'text',
-          text: '申し訳ございません。既に別の家族に登録されています。\n一度に登録できるのは1人の家族のみです。',
-        });
+      // 古い登録を非アクティブ化
+      console.log(`既存のLINE登録を非アクティブ化: userId=${userId}, elderlyId=${existingLineUserElsewhere.elderlyId}`);
+      existingLineUserElsewhere.isActive = false;
+      existingLineUserElsewhere.lastActiveAt = new Date();
+      await existingLineUserElsewhere.save();
+      
+      // 古い家族のLINE連携も解除
+      const oldElderly = await Elderly.findById(existingLineUserElsewhere.elderlyId);
+      if (oldElderly) {
+        oldElderly.lineUserId = undefined;
+        oldElderly.hasGenKiButton = false;
+        await oldElderly.save();
       }
-      return;
     }
 
     // Elderlyテーブルでも重複チェック
