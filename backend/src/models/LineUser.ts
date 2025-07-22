@@ -14,7 +14,6 @@ const lineUserSchema = new Schema<ILineUser>({
   userId: {
     type: String,
     required: true,
-    unique: true,
     index: true,
   },
   elderlyId: {
