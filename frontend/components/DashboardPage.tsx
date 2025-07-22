@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar } from "lucide-react";
+import { Heart, Users, AlertTriangle, CheckCircle, Clock, Phone, MessageSquare, TrendingUp, Shield, Activity, Calendar, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -315,34 +315,66 @@ export function DashboardPage() {
         })}
       </div>
 
-      {/* 今週の応答状況グラフ */}
+      {/* 今週の応答状況 */}
       <Card className="cute-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-800">
-            <TrendingUp className="w-5 h-5 watching-icon" />
+            <Calendar className="w-5 h-5 watching-icon" />
             今週の応答状況
           </CardTitle>
           <CardDescription className="text-orange-600">
-            LINEの応答数推移
+            応答があった日は「済」マークが付きます
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#fed7aa" />
-              <XAxis dataKey="day" stroke="#c2410c" />
-              <YAxis stroke="#c2410c" />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: '#fff7ed',
-                  border: '1px solid #fed7aa',
-                  borderRadius: '8px'
-                }}
-                formatter={(value) => [value, 'LINE応答']}
-              />
-              <Bar dataKey="line" fill="#22c55e" radius={[2, 2, 0, 0]} name="LINE応答" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {weeklyData.map((data, index) => {
+              const hasResponse = data.line > 0;
+              const today = new Date();
+              const dayOfWeek = today.getDay();
+              // 日曜日を0から6に変換（月曜始まりの場合）
+              const todayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+              const isToday = index === todayIndex;
+              
+              return (
+                <div key={data.day} className="text-center">
+                  <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
+                    isToday ? 'text-blue-700 font-bold' : 'text-orange-700'
+                  }`}>
+                    {data.day}
+                  </div>
+                  <div className={`
+                    relative w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-lg border-2
+                    ${hasResponse 
+                      ? 'bg-green-50 border-green-300' 
+                      : isToday 
+                        ? 'bg-blue-50 border-blue-300'
+                        : 'bg-gray-50 border-gray-200'
+                    }
+                    flex items-center justify-center transition-all duration-200
+                    ${hasResponse ? 'shadow-sm' : ''}
+                    ${isToday ? 'ring-2 ring-blue-400 ring-offset-1' : ''}
+                  `}>
+                    {hasResponse ? (
+                      <div className="text-green-600">
+                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
+                        <span className="absolute -bottom-5 sm:-bottom-6 left-0 right-0 text-xs font-bold text-green-600">
+                          済
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-gray-400">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-6 sm:mt-8 text-xs text-gray-600">
+                    {hasResponse ? `${data.line}回` : '-'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
