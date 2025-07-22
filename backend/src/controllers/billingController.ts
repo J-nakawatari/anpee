@@ -162,7 +162,7 @@ export const handlePaymentSuccess = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId
     const { sessionId } = req.body
     
-    logger.info(`handlePaymentSuccess開始: userId=${userId}, sessionId=${sessionId}`)
+    logger.info(`handlePaymentSuccess開始: userId=${userId}, sessionId=${sessionId}, timestamp=${new Date().toISOString()}`)
     
     if (!sessionId) {
       logger.warn('Session IDが提供されていません')
@@ -201,7 +201,7 @@ export const handlePaymentSuccess = async (req: AuthRequest, res: Response) => {
         hasSelectedInitialPlan: true
       }, { new: true })
       
-      logger.info(`ユーザー更新完了: userId=${userId}, plan=${planId}, updateResult=${JSON.stringify({
+      logger.info(`ユーザー更新完了: userId=${userId}, plan=${planId}, timestamp=${new Date().toISOString()}, updateResult=${JSON.stringify({
         currentPlan: updateResult?.currentPlan,
         subscriptionStatus: updateResult?.subscriptionStatus,
         hasSelectedInitialPlan: updateResult?.hasSelectedInitialPlan

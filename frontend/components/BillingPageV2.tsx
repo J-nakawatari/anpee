@@ -156,9 +156,15 @@ export function BillingPageV2() {
       
       // apiClientを使って認証トークンを含めてリクエスト
       const { apiClient } = await import('@/services/apiClient');
+      console.log('APIクライアント取得完了');
+      
       const response = await apiClient.post('/billing/payment-success', { sessionId });
       
-      console.log('支払い成功APIレスポンス:', response.data);
+      console.log('支払い成功APIレスポンス:', {
+        status: response.status,
+        data: response.data,
+        success: response.data?.success
+      });
       
       if (response.data.success) {
         toast.success('プランの設定が完了しました！');

@@ -135,42 +135,64 @@ export const handlePaymentSuccess = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { sessionId } = req.body;
+        logger.info(`handlePaymentSuccess開始: userId=${userId}, sessionId=${sessionId}`);
         if (!sessionId) {
+            logger.warn('Session IDが提供されていません');
             return res.status(400).json({ error: 'Session ID is required' });
         }
         // Stripeからセッション情報を取得
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
             apiVersion: '2025-06-30.basil'
         });
+        logger.info('Stripeセッション取得中...');
         const session = await stripe.checkout.sessions.retrieve(sessionId);
+        logger.info(`Stripeセッション取得完了: payment_status=${session.payment_status}, mode=${session.mode}`);
         if (session.payment_status === 'paid' && session.mode === 'subscription') {
             // サブスクリプションIDを取得
             const subscriptionId = session.subscription;
+            logger.info(`サブスクリプションID: ${subscriptionId}`);
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
             // プランIDを取得
             const priceId = subscription.items.data[0].price.id;
             const planId = priceId === 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt' ? 'standard' :
                 priceId === 'price_1RnLJC1qmMqgQ3qQc9t1lemY' ? 'family' : 'standard';
+            logger.info(`プラン判定: priceId=${priceId}, planId=${planId}`);
             // ユーザー情報を更新
             const User = (await import('../models/User.js')).default;
-            await User.findByIdAndUpdate(userId, {
+            const updateResult = await User.findByIdAndUpdate(userId, {
                 currentPlan: planId,
                 subscriptionStatus: 'active',
                 hasSelectedInitialPlan: true
-            });
-            logger.info(`支払い成功後のプラン更新: userId=${userId}, plan=${planId}`);
+            }, { new: true });
+            logger.info(`ユーザー更新完了: userId=${userId}, plan=${planId}, updateResult=${JSON.stringify({
+                currentPlan: updateResult?.currentPlan,
+                subscriptionStatus: updateResult?.subscriptionStatus,
+                hasSelectedInitialPlan: updateResult?.hasSelectedInitialPlan
+            })}`);
             res.json({
                 success: true,
-                message: 'プランが正常に設定されました',
-                plan: planId
+                data: {
+                    message: 'プランが正常に設定されました',
+                    plan: planId,
+                    user: {
+                        currentPlan: updateResult?.currentPlan,
+                        subscriptionStatus: updateResult?.subscriptionStatus,
+                        hasSelectedInitialPlan: updateResult?.hasSelectedInitialPlan
+                    }
+                }
             });
         }
         else {
+            logger.warn(`支払いが完了していません: payment_status=${session.payment_status}, mode=${session.mode}`);
             res.status(400).json({ error: 'Payment not completed' });
         }
     }
     catch (error) {
-        logger.error('支払い成功処理エラー:', error);
+        logger.error('支払い成功処理エラー:', {
+            error: error.message,
+            stack: error.stack,
+            userId: req.user?.userId
+        });
         res.status(500).json({ error: 'Failed to process payment success' });
     }
 };
