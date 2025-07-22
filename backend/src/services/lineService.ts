@@ -235,7 +235,7 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
 
     // 同じLINEユーザーが既に他の家族に登録されているかチェック
     const existingLineUserElsewhere = await LineUser.findOne({ userId, isActive: true });
-    if (existingLineUserElsewhere && existingLineUserElsewhere.elderlyId.toString() !== elderly._id.toString()) {
+    if (existingLineUserElsewhere && existingLineUserElsewhere.elderlyId.toString() !== (elderly._id as any).toString()) {
       const lineClient = initializeClient();
       if (lineClient) {
         await lineClient.pushMessage(userId, {
