@@ -152,23 +152,33 @@ export function BillingPageV2() {
 
   const handlePaymentSuccess = async (sessionId: string) => {
     try {
-      // 支払い成功をバックエンドに通知
-      const response = await fetch('/api/v1/billing/payment-success', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ sessionId })
-      });
+      console.log('支払い成功処理開始:', { sessionId });
       
-      if (response.ok) {
+      // apiClientを使って認証トークンを含めてリクエスト
+      const { apiClient } = await import('@/services/apiClient');
+      const response = await apiClient.post('/billing/payment-success', { sessionId });
+      
+      console.log('支払い成功APIレスポンス:', response.data);
+      
+      if (response.data.success) {
         toast.success('プランの設定が完了しました！');
         // データを再読み込み
         await loadBillingData();
+      } else {
+        // エラーの詳細を表示
+        console.error('支払い成功処理失敗:', response.data);
+        toast.error(response.data.error || 'プランの設定に失敗しました');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('支払い成功処理エラー:', error);
+      
+      if (error.response?.status === 401) {
+        toast.error('認証エラー: ログインし直してください');
+        // 認証エラーの場合、ログインページへリダイレクト
+        window.location.href = '/login';
+      } else {
+        toast.error(error.response?.data?.error || '通信エラーが発生しました');
+      }
     }
   };
 
