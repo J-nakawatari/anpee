@@ -557,66 +557,8 @@ export function NotificationSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 電話通知設定 */}
-      <Card className={!settings.methods.phone.enabled ? "opacity-75" : ""}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-orange-600" />
-            電話通知設定
-            {!settings.methods.phone.enabled && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                無効
-              </Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            応答がない場合に自動で電話をかけて安否確認を行います
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">電話通知を有効にする</Label>
-              <p className="text-sm text-gray-500">
-                LINE通知で応答がない場合、登録された電話番号に自動で電話をかけます
-              </p>
-            </div>
-            <Switch
-              checked={settings.methods.phone.enabled}
-              onCheckedChange={(checked) => updateMethodSetting('phone', 'enabled', checked)}
-            />
-          </div>
-
-          {settings.methods.phone.enabled ? (
-            <>
-              <Alert className="bg-amber-50 border-amber-200">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-700">
-                  <strong>ご注意:</strong> 電話通知機能は現在準備中です。
-                  サービス開始時に別途ご案内いたします。
-                </AlertDescription>
-              </Alert>
-
-              <Alert className="bg-blue-50 border-blue-200">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-700">
-                  <strong>電話通知の仕組み:</strong>
-                  <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
-                    <li>LINE通知に応答がない場合、設定した時間後に自動で電話をかけます</li>
-                    <li>電話に出ていただければ、それだけで安否確認となります</li>
-                    <li>電話番号は家族管理画面で登録された番号を使用します</li>
-                    <li>通話料金は別途かかりません（プラン料金に含まれます）</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            </>
-          ) : (
-            <div className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
-              電話通知は現在無効になっています。有効にすると、LINE通知に応答がない場合に自動で電話による安否確認を行います。
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* 電話通知設定（一時的に非表示） */}
+      {/* 法人化後に復活予定 - 機能自体は残しておく */}
 
       {/* LINE通知設定 */}
       <Card>
@@ -833,7 +775,7 @@ export function NotificationSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-1">
             {/* LINE通知テスト */}
             <Button
               variant="default"
@@ -845,17 +787,8 @@ export function NotificationSettingsPage() {
               {isTestingLineNotification ? 'LINE送信中...' : 'LINEテスト送信'}
             </Button>
 
-            {/* 電話通知テスト */}
-            <Button
-              variant="default"
-              onClick={handleTestPhoneCall}
-              disabled={isTestingPhone || !settings.methods.phone.enabled}
-              className="flex items-center justify-center gap-2 h-12"
-              title={!settings.methods.phone.enabled ? "電話通知を有効にしてください" : ""}
-            >
-              <Phone className="w-4 h-4 text-orange-600" />
-              {isTestingPhone ? '架電中...' : '電話テスト発信'}
-            </Button>
+            {/* 電話通知テスト（一時的に非表示） */}
+            {/* 法人化後に復活予定 */}
           </div>
 
           <Separator className="my-4" />
@@ -882,7 +815,7 @@ export function NotificationSettingsPage() {
               <strong>テスト通知について:</strong>
               <ul className="mt-2 space-y-1 text-sm">
                 <li>• LINE通知は登録されている家族のLINEに送信されます</li>
-                <li>• 電話通知は登録されている家族の電話番号に発信されます</li>
+                {/* <li>• 電話通知は登録されている家族の電話番号に発信されます</li> */}
                 <li>• テスト通知は即座に実行されます（時間設定は無視されます）</li>
                 <li>• 「元気確認を今すぐ送信」は家族に元気ですボタン付きのメッセージを送信します</li>
               </ul>
@@ -898,7 +831,7 @@ export function NotificationSettingsPage() {
           <strong>注意事項:</strong>
           <ul className="mt-2 space-y-1 text-sm">
             <li>• LINE通知を利用するには公式アカウントの友だち追加とアカウント連携が必要です</li>
-            <li>• 電話通知を利用するには家族管理画面で電話番号の登録が必要です</li>
+            {/* <li>• 電話通知を利用するには家族管理画面で電話番号の登録が必要です</li> */}
             <li>• 再通知設定はプランによって制限があります</li>
             <li>• 通知設定の変更は即座に反映されます</li>
           </ul>
