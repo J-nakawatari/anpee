@@ -5,8 +5,8 @@ import Stripe from 'stripe'
 
 const router = Router()
 
-// Stripe Webhookの検証とイベント処理
-router.post('/stripe', async (req: Request, res: Response) => {
+// Webhook処理の共通関数
+const webhookHandler = async (req: Request, res: Response) => {
   try {
     const sig = req.headers['stripe-signature']
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -41,6 +41,10 @@ router.post('/stripe', async (req: Request, res: Response) => {
     logger.error('Webhookエラー:', error)
     res.status(500).json({ error: 'Webhook処理に失敗しました' })
   }
-})
+}
+
+// L4L6互換のルート構成
+router.post('/webhook', webhookHandler);
+router.post('/stripe', webhookHandler);
 
 export default router

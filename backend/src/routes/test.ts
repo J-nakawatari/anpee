@@ -228,6 +228,28 @@ router.post('/reset-user-plan/:email', async (req: Request, res: Response) => {
 });
 
 /**
+ * Webhook動作確認用エンドポイント
+ * 開発・検証用のエンドポイント
+ */
+router.post('/webhook-test', async (req: Request, res: Response) => {
+  try {
+    console.log('Webhook test called:', req.headers, req.body);
+    res.json({
+      success: true,
+      message: 'Webhook endpoint is working',
+      headers: req.headers,
+      body: req.body
+    });
+  } catch (error) {
+    logger.error('Webhook test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Webhook test failed'
+    });
+  }
+});
+
+/**
  * Stripeサブスクリプションを手動同期
  * 開発・検証用のエンドポイント
  */
