@@ -83,9 +83,12 @@ export const sendLineMessage = async (userId: string, messages: any[]): Promise<
 
 // 個別イベント処理
 const handleEvent = async (event: WebhookEvent): Promise<MessageAPIResponseBase | void> => {
+  console.log('イベント処理開始:', { type: event.type, source: event.source });
+  
   // フォローイベント（友だち追加）
   if (event.type === 'follow' && event.source.type === 'user') {
     const userId = event.source.userId;
+    console.log('フォローイベント処理:', userId);
     await handleFollow(userId);
     return;
   }
@@ -101,22 +104,37 @@ const handleEvent = async (event: WebhookEvent): Promise<MessageAPIResponseBase 
   if (event.type === 'message' && event.message.type === 'text' && event.source.type === 'user') {
     const userId = event.source.userId;
     const text = event.message.text.trim();
-    console.log('メッセージ受信:', { userId, text });
+    console.log('メッセージ受信:', { userId, text, originalText: event.message.text });
 
-    // 登録コードの処理
-    // 「登録:」プレフィックス付きの場合
-    if (text.startsWith('登録:')) {
-      const registrationCode = text.replace('登録:', '').trim();
-      console.log('登録コード処理開始:', { userId, registrationCode });
-      await handleRegistration(userId, registrationCode);
-      return;
-    }
-    
-    // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
-    if (/^[A-Z0-9]{6}$/i.test(text)) {
-      console.log('登録コード処理開始:', { userId, registrationCode: text.toUpperCase() });
-      await handleRegistration(userId, text.toUpperCase());
-      return;
+    try {
+      // 登録コードの処理
+      // 「登録:」プレフィックス付きの場合
+      if (text.startsWith('登録:')) {
+        const registrationCode = text.replace('登録:', '').trim();
+        console.log('登録コード処理開始（プレフィックス付き）:', { userId, registrationCode });
+        await handleRegistration(userId, registrationCode);
+        return;
+      }
+      
+      // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
+      if (/^[A-Z0-9]{6}$/i.test(text)) {
+        console.log('登録コード処理開始（6文字パターン）:', { userId, registrationCode: text.toUpperCase() });
+        await handleRegistration(userId, text.toUpperCase());
+        return;
+      }
+
+      console.log('メッセージがパターンに一致しません:', { text, pattern: '/^[A-Z0-9]{6}$/i' });
+      
+      // デフォルトの応答
+      const lineClient = initializeClient();
+      if (lineClient) {
+        await lineClient.replyMessage(event.replyToken, {
+          type: 'text',
+          text: '登録コード（6文字の英数字）を送信してください。\n例：ABC123'
+        });
+      }
+    } catch (error) {
+      console.error('メッセージ処理エラー:', error);
     }
   }
 
@@ -219,8 +237,11 @@ const sendWelcomeMessage = async (userId: string): Promise<void> => {
 // 登録処理
 const handleRegistration = async (userId: string, registrationCode: string): Promise<void> => {
   try {
+    console.log('handleRegistration開始:', { userId, registrationCode });
+    
     // 登録コードから家族情報を検索
     const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
+    console.log('家族情報検索結果:', { found: !!elderly, registrationCode });
 
     if (!elderly) {
           const lineClient = initializeClient();
