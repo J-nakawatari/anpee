@@ -123,8 +123,21 @@ export class StripeService {
 
       const stripeSubscription = subscriptions.data[0]
       
-      // デバッグ用：Stripeから取得した実際のデータ構造を確認
-      logger.info(`Stripeサブスクリプション全体データ: ${JSON.stringify(stripeSubscription, null, 2)}`)
+      // デバッグ用：Stripeから取得した実際のデータ構造を確認（重要なフィールドのみ）
+      logger.info(`Stripeサブスクリプションデータ: ${JSON.stringify({
+        id: stripeSubscription.id,
+        status: stripeSubscription.status,
+        current_period_start: (stripeSubscription as any).current_period_start,
+        current_period_end: (stripeSubscription as any).current_period_end,
+        created: stripeSubscription.created,
+        items: stripeSubscription.items.data.map(item => ({
+          id: item.id,
+          price: {
+            id: item.price.id,
+            product: item.price.product
+          }
+        }))
+      })}`)
       
       // MongoDBのデータも確認
       if (mongoSubscription) {
@@ -139,16 +152,22 @@ export class StripeService {
       
       // 日付の取得優先順位：
       // 1. Stripeのcurrent_period_start/end（型アサーションを使用）
-      // 2. MongoDBのcurrentPeriodStart/End
+      // 2. MongoDBのcurrentPeriodStart/End（ただし同じ日付の場合は無視）
       // 3. デフォルト値（現在時刻と30日後）
       const stripeSubAny = stripeSubscription as any;
+      
+      // MongoDBの日付が同じ場合は無効と判断
+      const mongoStartValid = mongoSubscription?.currentPeriodStart && 
+        mongoSubscription?.currentPeriodEnd && 
+        mongoSubscription.currentPeriodStart.getTime() !== mongoSubscription.currentPeriodEnd.getTime();
+      
       let periodStart = stripeSubAny.current_period_start 
         ? new Date(stripeSubAny.current_period_start * 1000)
-        : mongoSubscription?.currentPeriodStart || new Date();
+        : (mongoStartValid ? mongoSubscription.currentPeriodStart : new Date());
         
       let periodEnd = stripeSubAny.current_period_end
         ? new Date(stripeSubAny.current_period_end * 1000)
-        : mongoSubscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        : (mongoStartValid ? mongoSubscription.currentPeriodEnd : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
       
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
@@ -303,8 +322,18 @@ export class StripeService {
     // 日付デバッグ情報
     const startTimestamp = (subscription as any).current_period_start
     const endTimestamp = (subscription as any).current_period_end
-    const startDate = new Date(startTimestamp * 1000)
-    const endDate = new Date(endTimestamp * 1000)
+    
+    if (!startTimestamp || !endTimestamp) {
+      logger.error('Webhookで期間情報が取得できません:', {
+        subscriptionId: subscription.id,
+        hasStart: !!startTimestamp,
+        hasEnd: !!endTimestamp,
+        subscriptionKeys: Object.keys(subscription)
+      })
+    }
+    
+    const startDate = startTimestamp ? new Date(startTimestamp * 1000) : new Date()
+    const endDate = endTimestamp ? new Date(endTimestamp * 1000) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     
     logger.info('Webhook日付処理デバッグ:', {
       startTimestamp,
@@ -324,8 +353,8 @@ export class StripeService {
         stripePriceId: subscription.items.data[0].price.id,
         planId,
         status: subscription.status,
-        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
-        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        currentPeriodStart: startDate,
+        currentPeriodEnd: endDate,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
       },
