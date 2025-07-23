@@ -376,14 +376,31 @@ export function BillingPageV2() {
     <div className="space-y-6">
       {/* 現在のプラン */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-blue-600" />
-            現在のプラン
-          </CardTitle>
-          <CardDescription>
-            ご契約中のプラン情報
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-blue-600" />
+              現在のプラン
+            </CardTitle>
+            <CardDescription>
+              ご契約中のプラン情報
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncSubscription}
+            disabled={isSyncing}
+          >
+            {isSyncing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                同期中...
+              </>
+            ) : (
+              '契約情報を同期'
+            )}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           {currentPlan ? (
