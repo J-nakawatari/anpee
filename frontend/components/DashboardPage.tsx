@@ -20,6 +20,7 @@ export function DashboardPage() {
   const [nextNotificationTime, setNextNotificationTime] = useState<string | null>(null);
   const [weeklyData, setWeeklyData] = useState<Array<{ day: string; line: number; phone: number }>>([]);
   const [recentResponsesData, setRecentResponsesData] = useState<Array<any>>([]);
+  const [safeDays, setSafeDays] = useState<number>(0);
   const { isExpired } = useDebugMode();
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function DashboardPage() {
     fetchNotificationSettings();
     fetchWeeklyResponses();
     fetchRecentResponses();
+    fetchSafeDays();
   }, []);
 
   const fetchElderlyData = async () => {
@@ -81,6 +83,16 @@ export function DashboardPage() {
       setRecentResponsesData(response.data.recentResponses);
     } catch (error) {
       console.error("最新の応答記録の取得に失敗しました:", error);
+    }
+  };
+
+  const fetchSafeDays = async () => {
+    try {
+      const response = await apiClient.get('/elderly/safe-days');
+      setSafeDays(response.data.safeDays);
+    } catch (error) {
+      console.error("連続安全日数の取得に失敗しました:", error);
+      setSafeDays(0);
     }
   };
 
@@ -164,11 +176,19 @@ export function DashboardPage() {
     },
     {
       title: "連続安全日数",
-      value: "7日",
+      value: `${safeDays}日`,
       icon: Shield,
       color: "bg-purple-100 text-purple-700",
-      change: "継続中",
-      changeColor: "text-purple-600"
+      change: safeDays > 0 ? "継続中" : "記録なし",
+      changeColor: safeDays > 0 ? "text-purple-600" : "text-gray-600"
+    },
+    {
+      title: "次回確認予定",
+      value: nextNotificationTime || "未設定",
+      icon: Calendar,
+      color: "bg-blue-100 text-blue-700",
+      change: getNextNotificationDay(),
+      changeColor: "text-blue-600"
     }
   ];
 
@@ -491,26 +511,6 @@ export function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* 次回確認予定 */}
-      <Card className="cute-card border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-700">
-            <Calendar className="w-5 h-5" />
-            次回の確認予定
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-              <div className="flex items-center gap-3">
-                <MessageSquare className="w-4 h-4 text-green-600" />
-                <span className="text-blue-700 font-medium">LINE元気ですボタン</span>
-              </div>
-              <span className="text-blue-600 text-sm">{getNextNotificationDay()} {nextNotificationTime || '未設定'}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
     </>
   );

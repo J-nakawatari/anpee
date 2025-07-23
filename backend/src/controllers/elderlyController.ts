@@ -379,3 +379,68 @@ export const getRecentResponses = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch recent responses' })
   }
 }
+
+// 連続安全日数を取得
+export const getSafeDays = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    
+    // アクティブな家族を取得
+    const elderlyList = await Elderly.find({ userId, status: 'active' })
+    
+    if (elderlyList.length === 0) {
+      return res.json({ safeDays: 0, message: '登録されている家族がいません' })
+    }
+    
+    // DailyNotificationから履歴を取得
+    const DailyNotification = (await import('../models/DailyNotification.js')).default
+    
+    // 今日から遡って、全員が応答した日が続いている日数を計算
+    let safeDays = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // 最大365日まで確認
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today)
+      checkDate.setDate(checkDate.getDate() - i)
+      
+      // その日の全家族の通知を取得
+      const dayNotifications = await DailyNotification.find({
+        userId,
+        elderlyId: { $in: elderlyList.map(e => e._id) },
+        date: {
+          $gte: checkDate,
+          $lt: new Date(checkDate.getTime() + 24 * 60 * 60 * 1000)
+        }
+      })
+      
+      // 全員が応答しているかチェック
+      let allResponded = true
+      
+      for (const elderly of elderlyList) {
+        const elderlyNotification = dayNotifications.find(
+          n => n.elderlyId.toString() === (elderly._id as any).toString()
+        )
+        
+        // その日の通知がないか、応答がない場合は連続記録が途切れる
+        if (!elderlyNotification || !elderlyNotification.response) {
+          allResponded = false
+          break
+        }
+      }
+      
+      if (allResponded) {
+        safeDays++
+      } else {
+        // 連続記録が途切れたら終了
+        break
+      }
+    }
+    
+    res.json({ safeDays })
+  } catch (error) {
+    logger.error('連続安全日数取得エラー:', error)
+    res.status(500).json({ error: 'Failed to fetch safe days' })
+  }
+}

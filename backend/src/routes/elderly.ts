@@ -8,6 +8,7 @@ import {
   unlinkLine,
   getWeeklyResponses,
   getRecentResponses,
+  getSafeDays,
 } from '../controllers/elderlyController.js'
 import { authenticate } from '../middleware/auth.js'
 
@@ -24,6 +25,9 @@ router.get('/weekly-responses', getWeeklyResponses)
 
 // 最新の応答記録の取得
 router.get('/recent-responses', getRecentResponses)
+
+// 連続安全日数の取得
+router.get('/safe-days', getSafeDays)
 
 // 家族の詳細取得
 router.get('/:id', getElderlyById)
