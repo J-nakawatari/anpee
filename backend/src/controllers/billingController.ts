@@ -14,16 +14,33 @@ export const getBillingInfo = async (req: AuthRequest, res: Response) => {
     logger.info(`getBillingInfo - ユーザー情報: userId=${userId}, currentPlan=${user?.currentPlan}, stripeCustomerId=${user?.stripeCustomerId}, hasSelectedInitialPlan=${user?.hasSelectedInitialPlan}`)
     
     // サブスクリプション情報を取得
-    const subscription = await getStripeService().getSubscription(userId)
+    const stripeService = getStripeService()
+    if (!stripeService) {
+      return res.status(503).json({ error: 'Billing service is temporarily unavailable' })
+    }
+    
+    const subscription = await stripeService.getSubscription(userId)
     
     // デバッグ用：サブスクリプション情報
     logger.info(`getBillingInfo - サブスクリプション情報: ${subscription ? JSON.stringify({
       id: subscription._id,
       status: subscription.status,
-      planId: subscription.planId
+      planId: subscription.planId,
+      currentPeriodStart: subscription.currentPeriodStart,
+      currentPeriodEnd: subscription.currentPeriodEnd
     }) : 'null'}`)
     
-    res.json({ subscription })
+    // フロントエンドが期待するフィールド名に変換
+    if (subscription) {
+      const formattedSubscription = {
+        ...subscription,
+        startDate: subscription.currentPeriodStart,
+        nextBillingDate: subscription.currentPeriodEnd
+      }
+      res.json({ subscription: formattedSubscription })
+    } else {
+      res.json({ subscription: null })
+    }
   } catch (error) {
     logger.error('請求情報取得エラー:', error)
     res.status(500).json({ error: 'Failed to fetch billing info' })
