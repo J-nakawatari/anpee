@@ -310,33 +310,33 @@ export const getWeeklyResponses = async (req: AuthRequest, res: Response) => {
     sunday.setDate(sunday.getDate() + 6)
     sunday.setHours(23, 59, 59, 999)
     
-    // アクティブな家族を取得
-    const elderlyList = await Elderly.find({ userId, status: 'active' })
-    
-    // ResponseHistoryから今週の応答を取得（テストメッセージを除外）
-    const ResponseHistory = (await import('../models/ResponseHistory.js')).default
-    const responses = await ResponseHistory.find({
-      elderlyId: { $in: elderlyList.map(e => e._id) },
-      timestamp: { $gte: monday, $lte: sunday },
-      message: { $not: /テスト/ } // テストメッセージを除外
-    })
+    // DailyNotificationから今週の応答を取得
+    const DailyNotification = (await import('../models/DailyNotification.js')).default
+    const notifications = await DailyNotification.find({
+      userId,
+      date: { $gte: monday, $lte: sunday },
+      'response.respondedAt': { $exists: true } // 応答があるものだけ
+    }).populate('elderlyId')
     
     // 曜日ごとの応答数を集計
     const weeklyData = ['月', '火', '水', '木', '金', '土', '日'].map((day, index) => {
       const dayStart = new Date(monday)
       dayStart.setDate(dayStart.getDate() + index)
+      dayStart.setHours(0, 0, 0, 0)
       const dayEnd = new Date(dayStart)
       dayEnd.setDate(dayEnd.getDate() + 1)
+      dayEnd.setHours(0, 0, 0, 0)
       
-      const dayResponses = responses.filter((r: any) => {
-        const timestamp = new Date(r.timestamp)
-        return timestamp >= dayStart && timestamp < dayEnd && r.status === 'responded'
+      // その日の応答をカウント
+      const dayResponses = notifications.filter((n: any) => {
+        const notificationDate = new Date(n.date)
+        return notificationDate >= dayStart && notificationDate < dayEnd
       })
       
       return {
         day,
-        line: dayResponses.filter((r: any) => r.method === 'LINE').length,
-        phone: dayResponses.filter((r: any) => r.method === 'Phone').length
+        line: dayResponses.length, // LINEでの応答数
+        phone: 0 // 電話応答は現在使用していない
       }
     })
     
@@ -353,28 +353,24 @@ export const getRecentResponses = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId
     const { limit = 5 } = req.query
     
-    // アクティブな家族を取得
-    const elderlyList = await Elderly.find({ userId, status: 'active' })
-    
-    // ResponseHistoryから最新の応答を取得（テストメッセージを除外）
-    const ResponseHistory = (await import('../models/ResponseHistory.js')).default
-    const responses = await ResponseHistory.find({
-      elderlyId: { $in: elderlyList.map(e => e._id) },
-      status: 'responded',
-      message: { $not: /テスト/ } // テストメッセージを除外
+    // DailyNotificationから最新の応答を取得
+    const DailyNotification = (await import('../models/DailyNotification.js')).default
+    const notifications = await DailyNotification.find({
+      userId,
+      'response.respondedAt': { $exists: true } // 応答があるものだけ
     })
-    .sort({ timestamp: -1 })
+    .sort({ 'response.respondedAt': -1 })
     .limit(Number(limit))
     .populate('elderlyId', 'name nickname')
     
     // レスポンスデータを整形
-    const recentResponses = responses.map((r: any) => ({
-      id: r._id,
-      elderlyName: r.elderlyId?.nickname || r.elderlyId?.name || '不明',
-      method: r.method,
-      timestamp: r.timestamp,
-      responseTime: r.responseTime,
-      message: r.message
+    const recentResponses = notifications.map((n: any) => ({
+      id: n._id,
+      elderlyName: n.elderlyId?.nickname || n.elderlyId?.name || '不明',
+      method: 'LINE',
+      timestamp: n.response.respondedAt,
+      responseTime: null, // 応答時間は計算が必要な場合は後で実装
+      message: '元気ですボタンが押されました'
     }))
     
     res.json({ recentResponses })
