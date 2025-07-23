@@ -41,6 +41,12 @@ const config: Config = {
           "sans-serif"
         ],
       },
+      ringWidth: {
+        DEFAULT: '0px',
+      },
+      ringOpacity: {
+        DEFAULT: '0',
+      },
     },
   },
   plugins: [],

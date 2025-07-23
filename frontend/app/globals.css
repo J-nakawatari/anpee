@@ -81,9 +81,16 @@
     font-family: "Zen Maru Gothic", sans-serif;
   }
   
+  /* すべての要素のフォーカス時のアウトラインを削除 */
+  *:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
   input:focus,
   textarea:focus,
-  select:focus {
+  select:focus,
+  button:focus {
     outline: none !important;
     box-shadow: none !important;
   }
