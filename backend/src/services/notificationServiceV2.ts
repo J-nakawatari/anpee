@@ -147,36 +147,37 @@ export class NotificationServiceV2 {
   async checkAndSendRetryNotifications(): Promise<void> {
     try {
       logger.info('再通知チェック開始')
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // 24時間前の時刻を取得（日付をまたいだ通知にも対応）
+      const twentyFourHoursAgo = new Date()
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
 
-      // デバッグ用：すべてのレコードを取得して確認
-      const allTodayRecords = await DailyNotification.find({
-        date: { $gte: today }
+      // デバッグ用：過去24時間のレコードを取得して確認
+      const allRecentRecords = await DailyNotification.find({
+        date: { $gte: twentyFourHoursAgo }
       })
-      logger.info(`本日の全レコード数: ${allTodayRecords.length}`)
+      logger.info(`過去24時間の全レコード数: ${allRecentRecords.length}`)
       
-      for (const record of allTodayRecords) {
-        logger.info(`レコード詳細: ID=${record._id}, response=${record.response ? 'あり' : 'なし'}, adminNotifiedAt=${record.adminNotifiedAt || 'なし'}`)
+      for (const record of allRecentRecords) {
+        logger.info(`レコード詳細: ID=${record._id}, date=${record.date.toISOString()}, response=${record.response ? 'あり' : 'なし'}, adminNotifiedAt=${record.adminNotifiedAt || 'なし'}`)
       }
 
-      // 今日の未応答レコードを取得（複数のクエリ方法で確認）
+      // 過去24時間の未応答レコードを取得（複数のクエリ方法で確認）
       const query1 = await DailyNotification.find({
-        date: { $gte: today },
+        date: { $gte: twentyFourHoursAgo },
         response: { $exists: false },
         adminNotifiedAt: { $exists: false }
       })
       logger.info(`クエリ1 (response: {$exists: false}): ${query1.length}件`)
 
       const query2 = await DailyNotification.find({
-        date: { $gte: today },
+        date: { $gte: twentyFourHoursAgo },
         response: null,
         adminNotifiedAt: null
       })
       logger.info(`クエリ2 (response: null): ${query2.length}件`)
 
       const query3 = await DailyNotification.find({
-        date: { $gte: today },
+        date: { $gte: twentyFourHoursAgo },
         $and: [
           {
             $or: [
@@ -199,7 +200,7 @@ export class NotificationServiceV2 {
 
       // populateありで取得（存在しないフィールドをチェック）
       const pendingRecords = await DailyNotification.find({
-        date: { $gte: today },
+        date: { $gte: twentyFourHoursAgo },
         response: { $exists: false },
         adminNotifiedAt: { $exists: false }
       }).populate('userId elderlyId')
@@ -234,7 +235,7 @@ export class NotificationServiceV2 {
             // 再通知を送信
             const retryType = `retry${retryCount + 1}` as 'retry1' | 'retry2' | 'retry3'
             logger.info(`再通知送信: ${elderly.name}さん - タイプ: ${retryType}`)
-            await this.sendNotificationToElderly(elderly, (user._id as any).toString(), today, retryType)
+            await this.sendNotificationToElderly(elderly, (user._id as any).toString(), record.date, retryType)
           } else if (!record.adminNotifiedAt && minutesSinceLastNotification >= 30) {
             // 管理者通知を送信
             logger.info(`管理者通知条件満たす: ${elderly.name}さん`)
