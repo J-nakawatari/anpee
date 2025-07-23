@@ -126,6 +126,9 @@ export class StripeService {
 
       const stripeSubscription = subscriptions.data[0]
       
+      // デバッグ用：Stripeから取得した実際の期間を確認
+      logger.info(`Stripeサブスクリプション期間: start=${new Date((stripeSubscription as any).current_period_start * 1000).toISOString()}, end=${new Date((stripeSubscription as any).current_period_end * 1000).toISOString()}`)
+      
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
         _id: stripeSubscription.id,
