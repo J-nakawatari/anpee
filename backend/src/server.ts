@@ -20,7 +20,7 @@ import userRoutes from './routes/users.js'
 import appNotificationRoutes from './routes/appNotifications.js'
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
-import { doubleCsrf } from 'csrf-csrf'
+// import csrf from 'csurf' // 一時的にコメントアウト
 import { sanitizeMiddleware } from './utils/sanitizer.js'
 
 // 環境変数の読み込み
@@ -98,36 +98,30 @@ app.use(cookieParser())
 // XSS対策: すべてのリクエストボディをサニタイズ
 app.use(sanitizeMiddleware)
 
-// CSRF保護 (csrf-csrfを使用)
-const {
-  generateCsrfToken,
-  doubleCsrfProtection,
-} = doubleCsrf({
-  getSecret: () => process.env.CSRF_SECRET || 'default-secret-replace-in-production',
-  cookieName: process.env.NODE_ENV === 'production' ? '__Host-anpee.x-csrf-token' : 'anpee.x-csrf-token',
-  cookieOptions: {
-    httpOnly: false, // フロントエンドで読み取り可能にする必要あり
+// CSRF保護 (csurfを使用) - 一時的にコメントアウト
+/*
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    sameSite: 'lax',
     path: '/'
-  },
-  size: 64,
-  ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-  getCsrfTokenFromRequest: (req: any) => req.headers['x-csrf-token'] as string,
-  // セッション識別子（ステートレスなので固定値を使用）
-  getSessionIdentifier: () => 'anpee-session'
+  } 
 })
+*/
 
-// CSRFトークン取得エンドポイント
-app.get('/api/v1/csrf-token', (req, res) => {
-  const csrfToken = generateCsrfToken(req, res)
+// CSRFトークン取得エンドポイント - 一時的にコメントアウト
+/*
+app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
   res.json({ 
     success: true,
-    csrfToken
+    csrfToken: req.csrfToken()
   })
 })
+*/
 
-// CSRF保護を適用（開発環境では無効化可能）
+// CSRF保護を適用（開発環境では無効化可能） - 一時的にコメントアウト
+/*
 const enableCsrf = process.env.ENABLE_CSRF === 'true';
 if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
   // CSRFトークンエンドポイントとWebhookは除外
@@ -138,12 +132,13 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
         req.path === '/webhook/stripe') {
       return next();
     }
-    doubleCsrfProtection(req, res, next);
+    csrfProtection(req, res, next);
   });
 }
+*/
 
 // CSRF設定のログ出力
-logger.info(`CSRF protection: ${enableCsrf ? 'enabled' : 'disabled'}`);
+logger.info(`CSRF protection: disabled (temporarily)`);
 logger.info(`Environment: ${process.env.NODE_ENV}`);
 logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anpee.jp' : 'localhost'}`)
 
