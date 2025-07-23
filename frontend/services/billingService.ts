@@ -27,7 +27,23 @@ class BillingService {
   async getSubscription(): Promise<SubscriptionData | null> {
     try {
       const response = await api.get('/billing/subscription')
-      return response.data.subscription
+      const subscription = response.data.subscription
+      
+      if (!subscription) return null
+      
+      // バックエンドのレスポンスをフロントエンドの形式にマッピング
+      return {
+        id: subscription._id || subscription.id,
+        status: subscription.status,
+        currentPlan: subscription.planId, // planId を currentPlan にマッピング
+        stripePriceId: subscription.stripePriceId,
+        startDate: subscription.createdAt,
+        nextBillingDate: subscription.currentPeriodEnd,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+        trialEnd: subscription.trialEnd,
+        stripeCustomerId: subscription.stripeCustomerId,
+        stripeSubscriptionId: subscription.stripeSubscriptionId
+      }
     } catch (error) {
       console.error('サブスクリプション取得エラー:', error)
       throw error
