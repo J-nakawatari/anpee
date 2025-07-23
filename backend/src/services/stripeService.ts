@@ -124,12 +124,17 @@ export class StripeService {
       const stripeSubscription = subscriptions.data[0]
       
       // デバッグ用：Stripeから取得した実際のデータ構造を確認（重要なフィールドのみ）
+      const stripePriceId = stripeSubscription.items.data[0].price.id;
+      const detectedPlanId = this.getPlanIdFromPriceId(stripePriceId);
+      
       logger.info(`Stripeサブスクリプションデータ: ${JSON.stringify({
         id: stripeSubscription.id,
         status: stripeSubscription.status,
         current_period_start: (stripeSubscription as any).current_period_start,
         current_period_end: (stripeSubscription as any).current_period_end,
         created: stripeSubscription.created,
+        stripePriceId: stripePriceId,
+        detectedPlanId: detectedPlanId,
         items: stripeSubscription.items.data.map(item => ({
           id: item.id,
           price: {
@@ -175,8 +180,8 @@ export class StripeService {
         userId,
         stripeCustomerId: user.stripeCustomerId,
         stripeSubscriptionId: stripeSubscription.id,
-        stripePriceId: stripeSubscription.items.data[0].price.id,
-        planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
+        stripePriceId: stripePriceId,
+        planId: detectedPlanId,
         status: stripeSubscription.status,
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
@@ -212,6 +217,9 @@ export class StripeService {
         const lineItem = invoice.lines.data[0]
         const priceId = (lineItem as any)?.price?.id || ''
         const planId = this.getPlanIdFromPriceId(priceId)
+        
+        // デバッグ: 請求履歴の価格IDとプランIDを確認
+        logger.info(`請求履歴デバッグ: invoiceId=${invoice.id}, priceId=${priceId}, planId=${planId}, description=${lineItem?.description}`)
         
         return {
           id: invoice.id,
