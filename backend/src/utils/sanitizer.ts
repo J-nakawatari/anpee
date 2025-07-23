@@ -66,14 +66,14 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
  * リクエストボディをサニタイズするミドルウェア（XSS + MongoDB injection対策）
  */
 export function sanitizeMiddleware(req: any, res: any, next: any) {
+  // Express v5では req.query, req.params は読み取り専用なので、
+  // bodyのみサニタイズする
   if (req.body) {
     req.body = sanitizeObject(req.body);
   }
-  if (req.query) {
-    req.query = sanitizeMongoInput(req.query);
-  }
-  if (req.params) {
-    req.params = sanitizeMongoInput(req.params);
-  }
+  
+  // TODO: Express v5対応 - queryとparamsのサニタイズは
+  // 各エンドポイントで個別に行う必要がある
+  
   next();
 }
