@@ -198,6 +198,7 @@ export function BillingPageV2() {
       setIsProcessing(true);
       
       // プラン変更のバリデーション
+      const { apiClient } = await import('@/services/apiClient');
       const validationResponse = await apiClient.post('/billing/validate-plan-change', {
         targetPlan: selectedPlan
       });

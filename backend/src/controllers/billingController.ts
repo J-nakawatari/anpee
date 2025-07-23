@@ -8,10 +8,10 @@ export const getBillingInfo = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    // Stripeサービスから請求情報を取得
-    const billingInfo = await getStripeService().getBillingInfo(userId)
+    // サブスクリプション情報を取得
+    const subscription = await getStripeService().getSubscription(userId)
     
-    res.json(billingInfo)
+    res.json({ subscription })
   } catch (error) {
     logger.error('請求情報取得エラー:', error)
     res.status(500).json({ error: 'Failed to fetch billing info' })
@@ -23,9 +23,10 @@ export const getSubscriptionHistory = async (req: AuthRequest, res: Response) =>
   try {
     const userId = req.user!.userId
     
-    const history = await getStripeService().getSubscriptionHistory(userId)
+    // 現在の実装では履歴機能はないため、現在のサブスクリプションのみ返す
+    const subscription = await getStripeService().getSubscription(userId)
     
-    res.json({ history })
+    res.json({ history: subscription ? [subscription] : [] })
   } catch (error) {
     logger.error('サブスクリプション履歴取得エラー:', error)
     res.status(500).json({ error: 'Failed to fetch subscription history' })
@@ -38,7 +39,7 @@ export const getInvoiceHistory = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId
     const { limit = 10 } = req.query
     
-    const invoices = await getStripeService().getInvoiceHistory(userId, Number(limit))
+    const invoices = await getStripeService().getInvoices(userId, Number(limit))
     
     res.json({ invoices })
   } catch (error) {
@@ -52,9 +53,35 @@ export const cancelSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    await getStripeService().cancelSubscription(userId)
+    // 現在のStripeServiceにはcancelSubscriptionメソッドがないため、手動で実装
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
     
-    res.json({ success: true, message: 'Subscription canceled successfully' })
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' })
+    }
+    
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-06-30.basil'
+    })
+    
+    // アクティブなサブスクリプションを取得
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: 'active',
+      limit: 1
+    })
+    
+    if (subscriptions.data.length === 0) {
+      return res.status(400).json({ error: 'No active subscription found' })
+    }
+    
+    // サブスクリプションをキャンセル（期間終了時）
+    await stripe.subscriptions.update(subscriptions.data[0].id, {
+      cancel_at_period_end: true
+    })
+    
+    res.json({ success: true, message: 'Subscription will be canceled at period end' })
   } catch (error) {
     logger.error('サブスクリプションキャンセルエラー:', error)
     res.status(500).json({ error: 'Failed to cancel subscription' })
@@ -66,7 +93,38 @@ export const resumeSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    await getStripeService().resumeSubscription(userId)
+    // 現在のStripeServiceにはresumeSubscriptionメソッドがないため、手動で実装
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' })
+    }
+    
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-06-30.basil'
+    })
+    
+    // キャンセル予定のサブスクリプションを取得
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: 'active',
+      limit: 1
+    })
+    
+    if (subscriptions.data.length === 0) {
+      return res.status(400).json({ error: 'No active subscription found' })
+    }
+    
+    const subscription = subscriptions.data[0]
+    if (!subscription.cancel_at_period_end) {
+      return res.status(400).json({ error: 'Subscription is not scheduled for cancellation' })
+    }
+    
+    // キャンセル予定を取り消し
+    await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: false
+    })
     
     res.json({ success: true, message: 'Subscription resumed successfully' })
   } catch (error) {
@@ -85,7 +143,29 @@ export const addPaymentMethod = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Payment method ID is required' })
     }
     
-    await getStripeService().addPaymentMethod(userId, paymentMethodId)
+    // 現在のStripeServiceにはaddPaymentMethodメソッドがないため、手動で実装
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' })
+    }
+    
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-06-30.basil'
+    })
+    
+    // 支払い方法を顧客に添付
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: user.stripeCustomerId
+    })
+    
+    // デフォルトの支払い方法として設定
+    await stripe.customers.update(user.stripeCustomerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId
+      }
+    })
     
     res.json({ success: true, message: 'Payment method added successfully' })
   } catch (error) {

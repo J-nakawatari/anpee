@@ -74,9 +74,11 @@ export const sendLineMessage = async (userId, messages) => {
 };
 // 個別イベント処理
 const handleEvent = async (event) => {
+    console.log('イベント処理開始:', { type: event.type, source: event.source });
     // フォローイベント（友だち追加）
     if (event.type === 'follow' && event.source.type === 'user') {
         const userId = event.source.userId;
+        console.log('フォローイベント処理:', userId);
         await handleFollow(userId);
         return;
     }
@@ -90,20 +92,34 @@ const handleEvent = async (event) => {
     if (event.type === 'message' && event.message.type === 'text' && event.source.type === 'user') {
         const userId = event.source.userId;
         const text = event.message.text.trim();
-        console.log('メッセージ受信:', { userId, text });
-        // 登録コードの処理
-        // 「登録:」プレフィックス付きの場合
-        if (text.startsWith('登録:')) {
-            const registrationCode = text.replace('登録:', '').trim();
-            console.log('登録コード処理開始:', { userId, registrationCode });
-            await handleRegistration(userId, registrationCode);
-            return;
+        console.log('メッセージ受信:', { userId, text, originalText: event.message.text });
+        try {
+            // 登録コードの処理
+            // 「登録:」プレフィックス付きの場合
+            if (text.startsWith('登録:')) {
+                const registrationCode = text.replace('登録:', '').trim();
+                console.log('登録コード処理開始（プレフィックス付き）:', { userId, registrationCode });
+                await handleRegistration(userId, registrationCode);
+                return;
+            }
+            // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
+            if (/^[A-Z0-9]{6}$/i.test(text)) {
+                console.log('登録コード処理開始（6文字パターン）:', { userId, registrationCode: text.toUpperCase() });
+                await handleRegistration(userId, text.toUpperCase());
+                return;
+            }
+            console.log('メッセージがパターンに一致しません:', { text, pattern: '/^[A-Z0-9]{6}$/i' });
+            // デフォルトの応答
+            const lineClient = initializeClient();
+            if (lineClient) {
+                await lineClient.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: '登録コード（6文字の英数字）を送信してください。\n例：ABC123'
+                });
+            }
         }
-        // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
-        if (/^[A-Z0-9]{6}$/i.test(text)) {
-            console.log('登録コード処理開始:', { userId, registrationCode: text.toUpperCase() });
-            await handleRegistration(userId, text.toUpperCase());
-            return;
+        catch (error) {
+            console.error('メッセージ処理エラー:', error);
         }
     }
     // ポストバックイベント（将来の拡張用）
@@ -161,6 +177,7 @@ const handleUnfollow = async (userId) => {
             const elderly = await Elderly.findById(lineUser.elderlyId).populate('userId');
             if (elderly) {
                 elderly.hasGenKiButton = false;
+                elderly.lineUserId = undefined; // LINE連携を解除
                 await elderly.save();
                 // 管理者に通知（将来的にメール通知実装）
                 console.log(`通知: ${elderly.name}さんがLINE連携を解除しました（管理者: ${elderly.userId}）`);
@@ -193,8 +210,10 @@ const sendWelcomeMessage = async (userId) => {
 // 登録処理
 const handleRegistration = async (userId, registrationCode) => {
     try {
+        console.log('handleRegistration開始:', { userId, registrationCode });
         // 登録コードから家族情報を検索
         const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
+        console.log('家族情報検索結果:', { found: !!elderly, registrationCode });
         if (!elderly) {
             const lineClient = initializeClient();
             if (lineClient) {
@@ -204,6 +223,34 @@ const handleRegistration = async (userId, registrationCode) => {
                 });
             }
             return;
+        }
+        // 同じLINEユーザーが既に他の家族にアクティブに登録されているかチェック
+        const existingLineUserElsewhere = await LineUser.findOne({ userId, isActive: true });
+        if (existingLineUserElsewhere && existingLineUserElsewhere.elderlyId.toString() !== elderly._id.toString()) {
+            // 古い登録を非アクティブ化
+            console.log(`既存のLINE登録を非アクティブ化: userId=${userId}, elderlyId=${existingLineUserElsewhere.elderlyId}`);
+            existingLineUserElsewhere.isActive = false;
+            existingLineUserElsewhere.lastActiveAt = new Date();
+            await existingLineUserElsewhere.save();
+            // 古い家族のLINE連携も解除
+            const oldElderly = await Elderly.findById(existingLineUserElsewhere.elderlyId);
+            if (oldElderly) {
+                oldElderly.lineUserId = undefined;
+                oldElderly.hasGenKiButton = false;
+                await oldElderly.save();
+            }
+        }
+        // Elderlyテーブルでも重複チェック
+        const existingElderlyWithSameLineId = await Elderly.findOne({
+            lineUserId: userId,
+            _id: { $ne: elderly._id }
+        });
+        if (existingElderlyWithSameLineId) {
+            console.log(`LINE ID重複エラー: ${userId}は既に${existingElderlyWithSameLineId.name}に登録されています`);
+            // 古い登録を解除
+            existingElderlyWithSameLineId.lineUserId = undefined;
+            existingElderlyWithSameLineId.hasGenKiButton = false;
+            await existingElderlyWithSameLineId.save();
         }
         // 既に登録済みかチェック
         const existingUser = await LineUser.findOne({ elderlyId: elderly._id });

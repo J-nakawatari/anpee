@@ -231,6 +231,7 @@ export class StripeService {
     }
     // サブスクリプション更新処理
     async handleSubscriptionUpdate(subscription) {
+        logger.info(`Webhookサブスクリプション更新開始: subscriptionId=${subscription.id}, timestamp=${new Date().toISOString()}`);
         let userId = subscription.metadata.userId;
         // メタデータにuserIdがない場合は、カスタマーIDから検索
         if (!userId) {
@@ -257,11 +258,12 @@ export class StripeService {
             trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
         }, { upsert: true });
         // Userモデルも更新
-        await User.findByIdAndUpdate(userId, {
+        const updateResult = await User.findByIdAndUpdate(userId, {
             subscriptionStatus: subscription.status,
             currentPlan: planId,
             hasSelectedInitialPlan: true
-        });
+        }, { new: true });
+        logger.info(`Webhookによるユーザー更新完了: userId=${userId}, plan=${planId}, timestamp=${new Date().toISOString()}, currentPlan=${updateResult?.currentPlan}`);
     }
     // サブスクリプション削除処理
     async handleSubscriptionDeleted(subscription) {
