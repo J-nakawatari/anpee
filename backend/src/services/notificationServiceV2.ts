@@ -117,7 +117,7 @@ export class NotificationServiceV2 {
         tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
       }
 
-      await DailyNotification.findOneAndUpdate(
+      const updatedRecord = await DailyNotification.findOneAndUpdate(
         { 
           elderlyId: elderly._id,
           date: date
@@ -134,6 +134,8 @@ export class NotificationServiceV2 {
       )
 
       logger.info(`通知記録を保存: ${elderly.name}さん, タイプ: ${notificationType}`)
+      logger.info(`保存されたトークン: ${token}`)
+      logger.info(`レコードID: ${updatedRecord._id}, 通知数: ${updatedRecord.notifications.length}`)
       
     } catch (error) {
       logger.error(`通知送信エラー: ${elderly.name}さん`, error)
@@ -275,6 +277,8 @@ export class NotificationServiceV2 {
   // 元気ボタンの応答を記録
   async recordResponse(token: string): Promise<{ success: boolean; elderlyName?: string; error?: string }> {
     try {
+      logger.info(`元気ボタン応答処理開始: トークン=${token}`)
+      
       // トークンで該当するレコードを検索
       const record = await DailyNotification.findOne({
         'notifications.token': token,
@@ -282,6 +286,15 @@ export class NotificationServiceV2 {
       }).populate('elderlyId')
 
       if (!record) {
+        // デバッグ用：すべてのDailyNotificationレコードを確認
+        const allRecords = await DailyNotification.find({
+          date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+        })
+        logger.error(`トークンに該当するレコードが見つかりません: ${token}`)
+        logger.error(`本日のレコード数: ${allRecords.length}`)
+        for (const r of allRecords) {
+          logger.error(`レコード: elderlyId=${r.elderlyId}, notifications=${r.notifications.map(n => n.token).join(', ')}`)
+        }
         return { success: false, error: 'Invalid or expired token' }
       }
 
