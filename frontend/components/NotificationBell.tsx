@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { useNotifications } from "@/hooks/useNotifications";
+import { safeDate } from "@/lib/dateUtils";
 
 export function NotificationBell() {
   const { notifications, markAsRead, markAllAsRead } = useNotifications();
@@ -81,9 +82,9 @@ export function NotificationBell() {
                       {notification.message}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {format(notification.createdAt, "M月d日 HH:mm", {
+                      {safeDate(notification.createdAt) ? format(safeDate(notification.createdAt)!, "M月d日 HH:mm", {
                         locale: ja,
-                      })}
+                      }) : '-'}
                     </p>
                   </div>
                   {!notification.read && (

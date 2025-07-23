@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { apiClient } from "@/services/apiClient";
+import { safeDate } from "@/lib/dateUtils";
 
 interface Notification {
   id: string;
@@ -24,7 +25,7 @@ export function useNotifications() {
       if (response.data.success) {
         setNotifications(response.data.data.map((n: any) => ({
           ...n,
-          createdAt: new Date(n.createdAt),
+          createdAt: safeDate(n.createdAt) || new Date(),
         })));
       }
     } catch (error) {
@@ -85,7 +86,7 @@ export function useNotifications() {
         setNotifications((prev) => [
           {
             ...notification,
-            createdAt: new Date(notification.createdAt),
+            createdAt: safeDate(notification.createdAt) || new Date(),
           },
           ...prev,
         ]);
