@@ -37,8 +37,8 @@ export default function CommercialLawPage() {
               
               <div className="font-semibold">販売価格</div>
               <div className="md:col-span-2">
-                スタンダードプラン：月額 980円（税込）<br />
-                ファミリープラン：月額 1,980円（税込）<br />
+                スタンダードプラン：月額 1,480円（税込）<br />
+                ファミリープラン：月額 2,480円（税込）<br />
                 ※価格はすべて税込表示です
               </div>
               

@@ -54,8 +54,8 @@ export default function TermsPage() {
                 1. 本サービスの利用料金は以下の通りです：
               </p>
               <ul className="list-disc list-inside text-orange-700 space-y-1 ml-4 mb-3">
-                <li>スタンダードプラン：月額980円（税込）</li>
-                <li>ファミリープラン：月額1,980円（税込）</li>
+                <li>スタンダードプラン：月額1,480円（税込）</li>
+                <li>ファミリープラン：月額2,480円（税込）</li>
               </ul>
               <p className="text-orange-700 leading-relaxed">
                 2. 利用者は、クレジットカードにより利用料金を支払うものとします。
