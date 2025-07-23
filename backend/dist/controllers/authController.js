@@ -104,6 +104,20 @@ export const login = async (req, res) => {
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7日
         });
+        // ログイン履歴を記録
+        try {
+            const LoginHistory = (await import('../models/LoginHistory.js')).default;
+            await LoginHistory.create({
+                userId: user._id,
+                action: 'login',
+                ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+                userAgent: req.headers['user-agent'] || ''
+            });
+        }
+        catch (historyError) {
+            logger.error('ログイン履歴記録エラー:', historyError);
+            // エラーがあってもログインは成功とする
+        }
         res.json({
             success: true,
             message: 'ログインに成功しました',

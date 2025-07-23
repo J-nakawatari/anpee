@@ -42,6 +42,29 @@ export class NotificationServiceV2 {
             logger.error(`定時通知エラー: ユーザー ${userId}`, error);
         }
     }
+    // テスト用の定時通知を送信
+    async sendScheduledNotificationAsTest(userId) {
+        try {
+            logger.info(`テスト通知開始: ユーザー ${userId}`);
+            const elderlyList = await Elderly.find({
+                userId,
+                status: 'active',
+                lineUserId: { $exists: true, $ne: null }
+            });
+            if (elderlyList.length === 0) {
+                logger.warn(`LINE連携済みの家族が見つかりません: ユーザー ${userId}`);
+                return;
+            }
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            for (const elderly of elderlyList) {
+                await this.sendNotificationToElderly(elderly, userId, today, 'test');
+            }
+        }
+        catch (error) {
+            logger.error(`テスト通知エラー: ユーザー ${userId}`, error);
+        }
+    }
     // 個別の家族に通知を送信
     async sendNotificationToElderly(elderly, userId, date, notificationType) {
         try {
@@ -61,9 +84,11 @@ export class NotificationServiceV2 {
                 urgencyMessage = '\n⚠️ 3回目の確認です。';
             else if (notificationType === 'retry3')
                 urgencyMessage = '\n🚨 最後の確認です。';
+            // テスト送信の場合は明確に表示
+            const testPrefix = notificationType === 'test' ? '【テスト送信】\n' : '';
             const messages = [{
                     type: 'text',
-                    text: `${greeting}、${elderly.name}さん！${emoji}${urgencyMessage}\n\n今日（${dateStr}）の元気確認がまだです。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
+                    text: `${testPrefix}${greeting}、${elderly.name}さん！${emoji}${urgencyMessage}\n\n今日（${dateStr}）の元気確認${notificationType === 'test' ? 'テスト' : 'がまだ'}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
                 }];
             // LINE送信
             await sendLineMessage(elderly.lineUserId, messages);
@@ -75,7 +100,7 @@ export class NotificationServiceV2 {
                 token,
                 tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
             };
-            await DailyNotification.findOneAndUpdate({
+            const updatedRecord = await DailyNotification.findOneAndUpdate({
                 elderlyId: elderly._id,
                 date: date
             }, {
@@ -87,6 +112,8 @@ export class NotificationServiceV2 {
                 $push: { notifications: notification }
             }, { upsert: true, new: true });
             logger.info(`通知記録を保存: ${elderly.name}さん, タイプ: ${notificationType}`);
+            logger.info(`保存されたトークン: ${token}`);
+            logger.info(`レコードID: ${updatedRecord._id}, 通知数: ${updatedRecord.notifications.length}`);
         }
         catch (error) {
             logger.error(`通知送信エラー: ${elderly.name}さん`, error);
@@ -203,12 +230,22 @@ export class NotificationServiceV2 {
     // 元気ボタンの応答を記録
     async recordResponse(token) {
         try {
+            logger.info(`元気ボタン応答処理開始: トークン=${token}`);
             // トークンで該当するレコードを検索
             const record = await DailyNotification.findOne({
                 'notifications.token': token,
                 response: { $exists: false }
             }).populate('elderlyId');
             if (!record) {
+                // デバッグ用：すべてのDailyNotificationレコードを確認
+                const allRecords = await DailyNotification.find({
+                    date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+                });
+                logger.error(`トークンに該当するレコードが見つかりません: ${token}`);
+                logger.error(`本日のレコード数: ${allRecords.length}`);
+                for (const r of allRecords) {
+                    logger.error(`レコード: elderlyId=${r.elderlyId}, notifications=${r.notifications.map(n => n.token).join(', ')}`);
+                }
                 return { success: false, error: 'Invalid or expired token' };
             }
             // トークンの有効期限をチェック

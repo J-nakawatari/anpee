@@ -252,3 +252,81 @@ export const unlinkLine = async (req, res) => {
         });
     }
 };
+// 週間応答状況を取得
+export const getWeeklyResponses = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        // 今週の開始日（月曜日）を取得
+        const today = new Date();
+        const monday = new Date(today);
+        monday.setDate(monday.getDate() - (monday.getDay() === 0 ? 6 : monday.getDay() - 1));
+        monday.setHours(0, 0, 0, 0);
+        // 今週の終了日（日曜日）を取得
+        const sunday = new Date(monday);
+        sunday.setDate(sunday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+        // アクティブな家族を取得
+        const elderlyList = await Elderly.find({ userId, status: 'active' });
+        // ResponseHistoryから今週の応答を取得（テストメッセージを除外）
+        const ResponseHistory = (await import('../models/ResponseHistory.js')).default;
+        const responses = await ResponseHistory.find({
+            elderlyId: { $in: elderlyList.map(e => e._id) },
+            timestamp: { $gte: monday, $lte: sunday },
+            message: { $not: /テスト/ } // テストメッセージを除外
+        });
+        // 曜日ごとの応答数を集計
+        const weeklyData = ['月', '火', '水', '木', '金', '土', '日'].map((day, index) => {
+            const dayStart = new Date(monday);
+            dayStart.setDate(dayStart.getDate() + index);
+            const dayEnd = new Date(dayStart);
+            dayEnd.setDate(dayEnd.getDate() + 1);
+            const dayResponses = responses.filter((r) => {
+                const timestamp = new Date(r.timestamp);
+                return timestamp >= dayStart && timestamp < dayEnd && r.status === 'responded';
+            });
+            return {
+                day,
+                line: dayResponses.filter((r) => r.method === 'LINE').length,
+                phone: dayResponses.filter((r) => r.method === 'Phone').length
+            };
+        });
+        res.json({ weeklyData });
+    }
+    catch (error) {
+        logger.error('週間応答状況取得エラー:', error);
+        res.status(500).json({ error: 'Failed to fetch weekly responses' });
+    }
+};
+// 最新の応答記録を取得
+export const getRecentResponses = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { limit = 5 } = req.query;
+        // アクティブな家族を取得
+        const elderlyList = await Elderly.find({ userId, status: 'active' });
+        // ResponseHistoryから最新の応答を取得（テストメッセージを除外）
+        const ResponseHistory = (await import('../models/ResponseHistory.js')).default;
+        const responses = await ResponseHistory.find({
+            elderlyId: { $in: elderlyList.map(e => e._id) },
+            status: 'responded',
+            message: { $not: /テスト/ } // テストメッセージを除外
+        })
+            .sort({ timestamp: -1 })
+            .limit(Number(limit))
+            .populate('elderlyId', 'name nickname');
+        // レスポンスデータを整形
+        const recentResponses = responses.map((r) => ({
+            id: r._id,
+            elderlyName: r.elderlyId?.nickname || r.elderlyId?.name || '不明',
+            method: r.method,
+            timestamp: r.timestamp,
+            responseTime: r.responseTime,
+            message: r.message
+        }));
+        res.json({ recentResponses });
+    }
+    catch (error) {
+        logger.error('最新応答記録取得エラー:', error);
+        res.status(500).json({ error: 'Failed to fetch recent responses' });
+    }
+};

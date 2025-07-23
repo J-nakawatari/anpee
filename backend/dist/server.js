@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import scheduledNotificationRoutes from './routes/scheduledNotificationRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
 import stripeWebhookRoutes from './routes/stripeWebhook.js';
+import userRoutes from './routes/users.js';
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'; // V2に変更
 import dailySummaryService from './services/dailySummaryService.js';
 import csrf from 'csurf'; // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
@@ -101,6 +102,7 @@ app.use('/api/v1/responses', responseRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/scheduled-notifications', scheduledNotificationRoutes);
 app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/users', userRoutes);
 // Stripe Webhook
 app.use('/api/v1/webhook', stripeWebhookRoutes);
 // Stripe Webhook用の特別なルート（charactier-ai.com用）

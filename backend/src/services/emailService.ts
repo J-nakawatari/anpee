@@ -372,7 +372,7 @@ class EmailService {
       </div>
     `;
 
-    await this.sendEmail(email, subject, text, html);
+    await this.sendDirectEmail({ to: email, subject, text, html });
   }
 
 }

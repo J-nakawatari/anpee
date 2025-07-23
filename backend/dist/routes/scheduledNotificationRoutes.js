@@ -42,8 +42,8 @@ router.post('/trigger/morning', authenticate, async (req, res) => {
                 hasLineUserId: !!e.lineUserId
             }))
         });
-        // 通知サービスV2の定時通知を呼び出す
-        await notificationServiceV2.sendScheduledNotification(userId);
+        // 通知サービスV2の定時通知を呼び出す（テストとして）
+        await notificationServiceV2.sendScheduledNotificationAsTest(userId);
         logger.info('朝の通知送信完了:', { userId });
         res.json({
             success: true,

@@ -51,6 +51,12 @@ const userSchema = new Schema({
     emailVerificationToken: {
         type: String,
     },
+    emailVerificationExpires: {
+        type: Date,
+    },
+    pendingEmail: {
+        type: String,
+    },
     passwordResetToken: {
         type: String,
     },

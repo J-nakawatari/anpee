@@ -35,21 +35,32 @@ import {
 } from "./ui/table";
 import { toast } from "@/lib/toast";
 import { apiClient } from "@/services/apiClient";
-import { 
-  mockUserAccount, 
-  mockSecurityLogs,
-  getActionLabel,
-  sendEmailVerification,
-  changePassword,
-  deleteAccount,
-  toggleTwoFactor,
-  type UserAccount,
-  type SecurityLog
-} from "../data/accountData";
+
+// 型定義
+interface UserAccount {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  emailVerified: boolean;
+  createdAt: string;
+  lastLoginAt: string;
+  currentPlan?: string;
+  subscriptionStatus?: string;
+}
+
+interface LoginHistory {
+  id: string;
+  action: string;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: string;
+}
 
 export function AccountSettingsPage() {
-  const [userAccount, setUserAccount] = useState<UserAccount>(mockUserAccount);
-  const [securityLogs] = useState<SecurityLog[]>(mockSecurityLogs);
+  const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
+  const [loginHistory, setLoginHistory] = useState<LoginHistory[]>([]);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   
   // フォーム状態
   const [emailForm, setEmailForm] = useState({
@@ -63,6 +74,8 @@ export function AccountSettingsPage() {
     confirmPassword: ''
   });
   
+  const [phoneForm, setPhoneForm] = useState('');
+  
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -72,16 +85,16 @@ export function AccountSettingsPage() {
   // ダイアログ状態
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showTwoFactorDialog, setShowTwoFactorDialog] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   
   // ローディング状態
   const [isLoading, setIsLoading] = useState({
     email: false,
     password: false,
+    phone: false,
     delete: false,
-    twoFactor: false,
     notificationSettings: false
   });
 
@@ -95,6 +108,35 @@ export function AccountSettingsPage() {
 
   // 完全な通知設定を保持（他の設定を保存時に維持するため）
   const [fullNotificationSettings, setFullNotificationSettings] = useState<any>(null);
+
+  // ユーザープロフィールとログイン履歴を取得
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setIsLoadingProfile(true);
+        
+        // ユーザープロフィールを取得
+        const profileResponse = await apiClient.get('/users/profile');
+        if (profileResponse.data.success) {
+          setUserAccount(profileResponse.data.data);
+          setPhoneForm(profileResponse.data.data.phone || '');
+        }
+        
+        // ログイン履歴を取得
+        const historyResponse = await apiClient.get('/users/login-history?limit=10');
+        if (historyResponse.data.success) {
+          setLoginHistory(historyResponse.data.data);
+        }
+      } catch (error) {
+        console.error('ユーザーデータの取得エラー:', error);
+        toast.error('ユーザー情報の取得に失敗しました');
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    
+    loadUserData();
+  }, []);
 
   // 通知設定を取得
   useEffect(() => {
@@ -160,14 +202,40 @@ export function AccountSettingsPage() {
     setIsLoading(prev => ({ ...prev, email: true }));
     
     try {
-      await sendEmailVerification(emailForm.newEmail);
-      toast.success('確認メールを送信しました。メールをご確認ください。');
-      setShowEmailDialog(false);
-      setEmailForm({ newEmail: '', confirmEmail: '' });
-    } catch (error) {
-      toast.error('メールアドレスの変更に失敗しました');
+      const response = await apiClient.post('/users/change-email', {
+        newEmail: emailForm.newEmail
+      });
+      
+      if (response.data.success) {
+        toast.success('確認メールを送信しました。メールをご確認ください。');
+        setShowEmailDialog(false);
+        setEmailForm({ newEmail: '', confirmEmail: '' });
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'メールアドレスの変更に失敗しました');
     } finally {
       setIsLoading(prev => ({ ...prev, email: false }));
+    }
+  };
+
+  // 電話番号更新
+  const handlePhoneUpdate = async () => {
+    setIsLoading(prev => ({ ...prev, phone: true }));
+    
+    try {
+      const response = await apiClient.put('/users/profile', {
+        phone: phoneForm
+      });
+      
+      if (response.data.success) {
+        toast.success('電話番号を更新しました');
+        setUserAccount(prev => prev ? { ...prev, phone: phoneForm } : null);
+        setShowPhoneDialog(false);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || '電話番号の更新に失敗しました');
+    } finally {
+      setIsLoading(prev => ({ ...prev, phone: false }));
     }
   };
 
@@ -186,12 +254,18 @@ export function AccountSettingsPage() {
     setIsLoading(prev => ({ ...prev, password: true }));
     
     try {
-      await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
-      toast.success('パスワードを変更しました');
-      setShowPasswordDialog(false);
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'パスワードの変更に失敗しました');
+      const response = await apiClient.post('/users/change-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      
+      if (response.data.success) {
+        toast.success('パスワードを変更しました');
+        setShowPasswordDialog(false);
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'パスワードの変更に失敗しました');
     } finally {
       setIsLoading(prev => ({ ...prev, password: false }));
     }
@@ -207,11 +281,18 @@ export function AccountSettingsPage() {
     setIsLoading(prev => ({ ...prev, delete: true }));
     
     try {
-      await deleteAccount(deletePassword);
-      toast.success('アカウントを削除しました');
-      // 実際の実装では、ログアウトしてログイン画面にリダイレクト
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'アカウントの削除に失敗しました');
+      const response = await apiClient.delete('/users/account', {
+        data: { password: deletePassword }
+      });
+      
+      if (response.data.success) {
+        toast.success('アカウントを削除しました');
+        // ログアウトしてログイン画面にリダイレクト
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'アカウントの削除に失敗しました');
     } finally {
       setIsLoading(prev => ({ ...prev, delete: false }));
       setShowDeleteDialog(false);
@@ -219,22 +300,16 @@ export function AccountSettingsPage() {
     }
   };
 
-  // 2段階認証の切り替え
-  const handleTwoFactorToggle = async (enabled: boolean) => {
-    setIsLoading(prev => ({ ...prev, twoFactor: true }));
-    
-    try {
-      await toggleTwoFactor(enabled);
-      setUserAccount(prev => ({ ...prev, twoFactorEnabled: enabled }));
-      toast.success(enabled ? '2段階認証を有効にしました' : '2段階認証を無効にしました');
-      if (enabled) {
-        setShowTwoFactorDialog(true);
-      }
-    } catch (error) {
-      toast.error('2段階認証の設定に失敗しました');
-    } finally {
-      setIsLoading(prev => ({ ...prev, twoFactor: false }));
-    }
+  // アクションのラベルを取得
+  const getActionLabel = (action: string): string => {
+    const labels: { [key: string]: string } = {
+      login: 'ログイン',
+      logout: 'ログアウト',
+      password_change: 'パスワード変更',
+      email_change: 'メールアドレス変更',
+      failed_login: 'ログイン失敗'
+    };
+    return labels[action] || action;
   };
 
   const getDeviceIcon = (userAgent: string) => {
@@ -243,6 +318,25 @@ export function AccountSettingsPage() {
     }
     return <Monitor className="w-4 h-4" />;
   };
+
+  if (isLoadingProfile) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">ユーザー情報を読み込んでいます...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userAccount) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">ユーザー情報の取得に失敗しました</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -259,10 +353,10 @@ export function AccountSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* アカウント情報 - 横並び */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">名前</Label>
-              <p className="text-gray-900 mt-1 font-medium">{userAccount.lastName} {userAccount.firstName}</p>
+              <p className="text-gray-900 mt-1 font-medium">{userAccount.name}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">メールアドレス</Label>
@@ -276,15 +370,22 @@ export function AccountSettingsPage() {
               </div>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <Label className="text-sm font-medium text-gray-500">登録日</Label>
-              <p className="text-gray-900 mt-1 font-medium">
-                {new Date(userAccount.registrationDate).toLocaleDateString('ja-JP')}
-              </p>
+              <Label className="text-sm font-medium text-gray-500">電話番号</Label>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-gray-900 font-medium">{userAccount.phone || '未設定'}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPhoneDialog(true)}
+                >
+                  編集
+                </Button>
+              </div>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <Label className="text-sm font-medium text-gray-500">最終ログイン</Label>
+              <Label className="text-sm font-medium text-gray-500">登録日</Label>
               <p className="text-gray-900 mt-1 font-medium">
-                {new Date(userAccount.lastLoginDate).toLocaleString('ja-JP')}
+                {new Date(userAccount.createdAt).toLocaleDateString('ja-JP')}
               </p>
             </div>
           </div>
@@ -329,27 +430,6 @@ export function AccountSettingsPage() {
             </Button>
           </div>
 
-          <Separator />
-
-          {/* 2段階認証 */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900">2段階認証</h4>
-              <p className="text-sm text-gray-600">
-                ログイン時に追加の認証を要求してセキュリティを強化します
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={userAccount.twoFactorEnabled ? "default" : "secondary"}>
-                {userAccount.twoFactorEnabled ? "有効" : "無効"}
-              </Badge>
-              <Switch
-                checked={userAccount.twoFactorEnabled}
-                onCheckedChange={handleTwoFactorToggle}
-                disabled={isLoading.twoFactor}
-              />
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -429,7 +509,7 @@ export function AccountSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* セキュリティログ */}
+      {/* ログイン履歴 */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -437,20 +517,20 @@ export function AccountSettingsPage() {
             最近のアクティビティ
           </CardTitle>
           <CardDescription>
-            最近のセキュリティ関連の活動履歴
+            最近のログインとセキュリティ関連の活動履歴
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {securityLogs.map((log) => (
+            {loginHistory.map((log) => (
               <div key={log.id} className="p-4 bg-gray-50 rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {log.action === 'login' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                    {log.action === 'logout' && <XCircle className="w-4 h-4 text-gray-600" />}
                     {log.action === 'password_change' && <Lock className="w-4 h-4 text-blue-600" />}
                     {log.action === 'email_change' && <Mail className="w-4 h-4 text-purple-600" />}
-                    {log.action === 'two_factor_enabled' && <Shield className="w-4 h-4 text-orange-600" />}
-                    {log.action === 'two_factor_disabled' && <Shield className="w-4 h-4 text-gray-600" />}
+                    {log.action === 'failed_login' && <AlertTriangle className="w-4 h-4 text-red-600" />}
                     <span className="font-medium text-gray-900">{getActionLabel(log.action)}</span>
                   </div>
                   <Badge variant="secondary" className="text-xs">
@@ -474,7 +554,7 @@ export function AccountSettingsPage() {
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin className="w-3 h-3" />
-                    <span>{log.location}</span>
+                    <span>{log.ipAddress}</span>
                   </div>
                 </div>
               </div>
@@ -651,6 +731,44 @@ export function AccountSettingsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* 電話番号編集ダイアログ */}
+      <Dialog open={showPhoneDialog} onOpenChange={setShowPhoneDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>電話番号の編集</DialogTitle>
+            <DialogDescription>
+              電話番号を入力してください（ハイフンなし）
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="phone">電話番号</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phoneForm}
+                onChange={(e) => setPhoneForm(e.target.value)}
+                placeholder="09012345678"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                例：09012345678（ハイフンなし）
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowPhoneDialog(false)}>
+              キャンセル
+            </Button>
+            <Button 
+              onClick={handlePhoneUpdate}
+              disabled={isLoading.phone}
+            >
+              {isLoading.phone ? '更新中...' : '更新'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* アカウント削除ダイアログ */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
@@ -693,49 +811,6 @@ export function AccountSettingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 2段階認証設定ダイアログ */}
-      <Dialog open={showTwoFactorDialog} onOpenChange={setShowTwoFactorDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>2段階認証を設定</DialogTitle>
-            <DialogDescription>
-              認証アプリでQRコードをスキャンしてください。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="w-48 h-48 bg-gray-100 rounded-lg mx-auto flex items-center justify-center">
-                <p className="text-gray-500 text-sm">QRコード<br />（デモ用）</p>
-              </div>
-            </div>
-            <div className="text-sm text-gray-600">
-              <p className="font-medium">手順：</p>
-              <ol className="list-decimal list-inside mt-2 space-y-1">
-                <li>Google Authenticator等の認証アプリをダウンロード</li>
-                <li>アプリでQRコードをスキャン</li>
-                <li>表示された6桁のコードを入力</li>
-              </ol>
-            </div>
-            <div>
-              <Label htmlFor="verificationCode">認証コード（6桁）</Label>
-              <Input
-                id="verificationCode"
-                type="text"
-                maxLength={6}
-                placeholder="123456"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowTwoFactorDialog(false)}>
-              後で設定
-            </Button>
-            <Button onClick={() => setShowTwoFactorDialog(false)}>
-              設定完了
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

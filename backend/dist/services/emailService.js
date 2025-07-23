@@ -261,6 +261,35 @@ class EmailService {
     `;
         await this.sendDirectEmail({ to, subject, text, html });
     }
+    // メールアドレス変更確認メール
+    async sendEmailChangeVerification(email, userName, verificationUrl) {
+        const subject = '【あんぴーちゃん】メールアドレス変更の確認';
+        const text = `${userName}様\n\nメールアドレスの変更をリクエストいただきました。\n\n以下のリンクをクリックして、メールアドレスの変更を完了してください：\n${verificationUrl}\n\nこのリンクは1時間有効です。\n\n心当たりがない場合は、このメールを無視してください。\n\nあんぴーちゃん`;
+        const html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">メールアドレス変更の確認</h2>
+        <p>${userName}様</p>
+        <p>メールアドレスの変更をリクエストいただきました。</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationUrl}" style="background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            メールアドレスを変更する
+          </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">
+          このリンクは1時間有効です。<br>
+          心当たりがない場合は、このメールを無視してください。
+        </p>
+        
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
+        <p style="color: #666; font-size: 12px;">
+          このメールは あんぴーちゃん から自動送信されています。
+        </p>
+      </div>
+    `;
+        await this.sendDirectEmail({ to: email, subject, text, html });
+    }
 }
 // シングルトンインスタンスをエクスポート
 export default new EmailService();

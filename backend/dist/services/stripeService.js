@@ -254,8 +254,8 @@ export class StripeService {
             stripePriceId: subscription.items.data[0].price.id,
             planId,
             status: subscription.status,
-            currentPeriodStart: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : new Date(),
-            currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : new Date(),
+            currentPeriodStart: new Date(subscription.current_period_start * 1000),
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
         }, { upsert: true });
