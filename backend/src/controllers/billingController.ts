@@ -100,7 +100,7 @@ export const cancelSubscription = async (req: AuthRequest, res: Response) => {
     }
     
     const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
     
     // アクティブなサブスクリプションを取得
@@ -140,7 +140,7 @@ export const resumeSubscription = async (req: AuthRequest, res: Response) => {
     }
     
     const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
     
     // キャンセル予定のサブスクリプションを取得
@@ -190,7 +190,7 @@ export const addPaymentMethod = async (req: AuthRequest, res: Response) => {
     }
     
     const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
     
     // 支払い方法を顧客に添付
@@ -293,7 +293,7 @@ export const handlePaymentSuccess = async (req: AuthRequest, res: Response) => {
     
     // Stripeからセッション情報を取得
     const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
     
     logger.info('Stripeセッション取得中...')
@@ -440,7 +440,7 @@ export const changePlan = async (req: AuthRequest, res: Response) => {
     
     // Stripeのサブスクリプションを更新
     const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
     
     // 現在のサブスクリプションを取得

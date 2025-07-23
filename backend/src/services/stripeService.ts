@@ -14,7 +14,7 @@ export class StripeService {
     }
     
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-06-30.basil'
+      apiVersion: '2024-06-20'
     })
   }
   // Stripeカスタマーを作成
@@ -127,17 +127,23 @@ export class StripeService {
 
       const stripeSubscription = subscriptions.data[0]
       
-      // デバッグ用：Stripeから取得した実際の期間を確認
+      // デバッグ用：Stripeから取得した実際のデータ構造を確認
+      logger.info(`Stripeサブスクリプション全体データ: ${JSON.stringify(stripeSubscription, null, 2)}`)
+      
+      // 標準的なフィールドを確認
       const debugData = {
         id: stripeSubscription.id,
         status: stripeSubscription.status,
-        current_period_start: (stripeSubscription as any).current_period_start,
-        current_period_end: (stripeSubscription as any).current_period_end,
+        current_period_start: stripeSubscription.current_period_start,
+        current_period_end: stripeSubscription.current_period_end,
         cancel_at_period_end: stripeSubscription.cancel_at_period_end,
         price_id: stripeSubscription.items.data[0]?.price?.id,
-        created: stripeSubscription.created
+        created: stripeSubscription.created,
+        // アイテムレベルの期間情報も確認
+        item_period_start: stripeSubscription.items.data[0]?.current_period_start,
+        item_period_end: stripeSubscription.items.data[0]?.current_period_end
       }
-      logger.info(`Stripeサブスクリプション生データ: ${JSON.stringify(debugData)}`)
+      logger.info(`Stripeサブスクリプション抽出データ: ${JSON.stringify(debugData)}`)
       
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
@@ -148,8 +154,8 @@ export class StripeService {
         stripePriceId: stripeSubscription.items.data[0].price.id,
         planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
         status: stripeSubscription.status,
-        currentPeriodStart: (stripeSubscription as any).current_period_start ? new Date((stripeSubscription as any).current_period_start * 1000) : new Date(),
-        currentPeriodEnd: (stripeSubscription as any).current_period_end ? new Date((stripeSubscription as any).current_period_end * 1000) : new Date(),
+        currentPeriodStart: stripeSubscription.current_period_start ? new Date(stripeSubscription.current_period_start * 1000) : new Date(),
+        currentPeriodEnd: stripeSubscription.current_period_end ? new Date(stripeSubscription.current_period_end * 1000) : new Date(),
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
         createdAt: new Date(stripeSubscription.created * 1000),
         updatedAt: new Date()
@@ -313,8 +319,8 @@ export class StripeService {
         stripePriceId: subscription.items.data[0].price.id,
         planId,
         status: subscription.status,
-        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
-        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
       },
