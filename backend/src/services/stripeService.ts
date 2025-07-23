@@ -128,13 +128,15 @@ export class StripeService {
       const stripeSubscription = subscriptions.data[0]
       
       // デバッグ用：Stripeから取得した実際の期間を確認
-      logger.info(`Stripeサブスクリプション生データ:`, {
+      logger.info(`Stripeサブスクリプション生データ:`, JSON.stringify({
         id: stripeSubscription.id,
         status: stripeSubscription.status,
         current_period_start: (stripeSubscription as any).current_period_start,
         current_period_end: (stripeSubscription as any).current_period_end,
-        items: stripeSubscription.items.data[0]?.price
-      })
+        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+        price_id: stripeSubscription.items.data[0]?.price?.id,
+        created: stripeSubscription.created
+      }))
       
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
