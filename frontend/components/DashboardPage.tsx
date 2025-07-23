@@ -18,11 +18,13 @@ export function DashboardPage() {
   const [elderlyList, setElderlyList] = useState<ElderlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [nextNotificationTime, setNextNotificationTime] = useState<string | null>(null);
+  const [weeklyData, setWeeklyData] = useState<Array<{ day: string; line: number; phone: number }>>([]);
   const { isExpired } = useDebugMode();
 
   useEffect(() => {
     fetchElderlyData();
     fetchNotificationSettings();
+    fetchWeeklyResponses();
   }, []);
 
   const fetchElderlyData = async () => {
@@ -49,6 +51,25 @@ export function DashboardPage() {
       }
     } catch (error) {
       console.error("通知設定の取得に失敗しました:", error);
+    }
+  };
+
+  const fetchWeeklyResponses = async () => {
+    try {
+      const response = await apiClient.get('/elderly/weekly-responses');
+      setWeeklyData(response.data.weeklyData);
+    } catch (error) {
+      console.error("週間応答状況の取得に失敗しました:", error);
+      // エラー時はデフォルトデータを設定
+      setWeeklyData([
+        { day: "月", line: 0, phone: 0 },
+        { day: "火", line: 0, phone: 0 },
+        { day: "水", line: 0, phone: 0 },
+        { day: "木", line: 0, phone: 0 },
+        { day: "金", line: 0, phone: 0 },
+        { day: "土", line: 0, phone: 0 },
+        { day: "日", line: 0, phone: 0 }
+      ]);
     }
   };
 
@@ -140,15 +161,15 @@ export function DashboardPage() {
     }
   ];
 
-  // 今週の応答データ
-  const weeklyData = [
-    { day: "月", line: elderlyPeople.length },
-    { day: "火", line: elderlyPeople.length },
-    { day: "水", line: elderlyPeople.length },
-    { day: "木", line: elderlyPeople.length },
-    { day: "金", line: elderlyPeople.length },
-    { day: "土", line: elderlyPeople.length },
-    { day: "日", line: elderlyPeople.length }
+  // 今週の応答データ（実データはuseStateから取得）
+  const weeklyResponseData = weeklyData.length > 0 ? weeklyData : [
+    { day: "月", line: 0, phone: 0 },
+    { day: "火", line: 0, phone: 0 },
+    { day: "水", line: 0, phone: 0 },
+    { day: "木", line: 0, phone: 0 },
+    { day: "金", line: 0, phone: 0 },
+    { day: "土", line: 0, phone: 0 },
+    { day: "日", line: 0, phone: 0 }
   ];
 
   // 最新の応答記録（実際のデータから生成）
@@ -379,8 +400,8 @@ export function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-1 sm:gap-2">
-            {weeklyData.map((data, index) => {
-              const hasResponse = data.line > 0;
+            {weeklyResponseData.map((data, index) => {
+              const hasResponse = data.line > 0 || data.phone > 0;
               const today = new Date();
               const dayOfWeek = today.getDay();
               // 日曜日を0から6に変換（月曜始まりの場合）
