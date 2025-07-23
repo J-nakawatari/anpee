@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import mongoSanitize from 'express-mongo-sanitize'
+// import mongoSanitize from 'express-mongo-sanitize' // 一時的にコメントアウト（互換性問題）
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
@@ -73,8 +73,8 @@ app.use(helmet({
   permittedCrossDomainPolicies: false,
 }))
 
-// MongoDBインジェクション対策
-app.use(mongoSanitize())
+// MongoDBインジェクション対策 - 一時的にコメントアウト（互換性問題）
+// app.use(mongoSanitize())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://anpee.jp', process.env.FRONTEND_URL].filter((url): url is string => !!url)
