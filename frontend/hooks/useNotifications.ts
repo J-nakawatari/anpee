@@ -59,9 +59,16 @@ export function useNotifications() {
     // 初回の通知を取得
     fetchNotifications();
 
-    // SSE接続を確立
+    // 認証トークンを取得
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      console.error('認証トークンが見つかりません');
+      return;
+    }
+
+    // SSE接続を確立（トークンをクエリパラメータとして送信）
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/app-notifications/stream`,
+      `${process.env.NEXT_PUBLIC_API_URL}/app-notifications/stream?token=${encodeURIComponent(token)}`,
       {
         withCredentials: true,
       }

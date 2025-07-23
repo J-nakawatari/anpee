@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { sseAuthenticate } from '../middleware/sseAuth.js';
 import {
   getNotifications,
   markAsRead,
@@ -10,22 +11,19 @@ import {
 
 const router = express.Router();
 
-// 認証が必要なルート
-router.use(authenticate);
+// 通知一覧を取得（通常の認証）
+router.get('/', authenticate, getNotifications);
 
-// 通知一覧を取得
-router.get('/', getNotifications);
+// SSEストリーム（クエリパラメータからの認証）
+router.get('/stream', sseAuthenticate, notificationStream);
 
-// SSEストリーム
-router.get('/stream', notificationStream);
+// 通知を既読にする（通常の認証）
+router.put('/:id/read', authenticate, markAsRead);
 
-// 通知を既読にする
-router.put('/:id/read', markAsRead);
+// すべての通知を既読にする（通常の認証）
+router.put('/read-all', authenticate, markAllAsRead);
 
-// すべての通知を既読にする
-router.put('/read-all', markAllAsRead);
-
-// 通知を削除
-router.delete('/:id', deleteNotification);
+// 通知を削除（通常の認証）
+router.delete('/:id', authenticate, deleteNotification);
 
 export default router;
