@@ -313,11 +313,12 @@ export const getWeeklyResponses = async (req: AuthRequest, res: Response) => {
     // アクティブな家族を取得
     const elderlyList = await Elderly.find({ userId, status: 'active' })
     
-    // ResponseHistoryから今週の応答を取得
+    // ResponseHistoryから今週の応答を取得（テストメッセージを除外）
     const ResponseHistory = (await import('../models/ResponseHistory.js')).default
     const responses = await ResponseHistory.find({
       elderlyId: { $in: elderlyList.map(e => e._id) },
-      timestamp: { $gte: monday, $lte: sunday }
+      timestamp: { $gte: monday, $lte: sunday },
+      message: { $not: /テスト/ } // テストメッセージを除外
     })
     
     // 曜日ごとの応答数を集計
@@ -343,5 +344,42 @@ export const getWeeklyResponses = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     logger.error('週間応答状況取得エラー:', error)
     res.status(500).json({ error: 'Failed to fetch weekly responses' })
+  }
+}
+
+// 最新の応答記録を取得
+export const getRecentResponses = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    const { limit = 5 } = req.query
+    
+    // アクティブな家族を取得
+    const elderlyList = await Elderly.find({ userId, status: 'active' })
+    
+    // ResponseHistoryから最新の応答を取得（テストメッセージを除外）
+    const ResponseHistory = (await import('../models/ResponseHistory.js')).default
+    const responses = await ResponseHistory.find({
+      elderlyId: { $in: elderlyList.map(e => e._id) },
+      status: 'responded',
+      message: { $not: /テスト/ } // テストメッセージを除外
+    })
+    .sort({ timestamp: -1 })
+    .limit(Number(limit))
+    .populate('elderlyId', 'name nickname')
+    
+    // レスポンスデータを整形
+    const recentResponses = responses.map((r: any) => ({
+      id: r._id,
+      elderlyName: r.elderlyId?.nickname || r.elderlyId?.name || '不明',
+      method: r.method,
+      timestamp: r.timestamp,
+      responseTime: r.responseTime,
+      message: r.message
+    }))
+    
+    res.json({ recentResponses })
+  } catch (error) {
+    logger.error('最新応答記録取得エラー:', error)
+    res.status(500).json({ error: 'Failed to fetch recent responses' })
   }
 }

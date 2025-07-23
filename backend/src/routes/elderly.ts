@@ -7,6 +7,7 @@ import {
   deleteElderly,
   unlinkLine,
   getWeeklyResponses,
+  getRecentResponses,
 } from '../controllers/elderlyController.js'
 import { authenticate } from '../middleware/auth.js'
 
@@ -20,6 +21,9 @@ router.get('/', getElderlyList)
 
 // 週間応答状況の取得
 router.get('/weekly-responses', getWeeklyResponses)
+
+// 最新の応答記録の取得
+router.get('/recent-responses', getRecentResponses)
 
 // 家族の詳細取得
 router.get('/:id', getElderlyById)

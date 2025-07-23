@@ -19,12 +19,14 @@ export function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [nextNotificationTime, setNextNotificationTime] = useState<string | null>(null);
   const [weeklyData, setWeeklyData] = useState<Array<{ day: string; line: number; phone: number }>>([]);
+  const [recentResponsesData, setRecentResponsesData] = useState<Array<any>>([]);
   const { isExpired } = useDebugMode();
 
   useEffect(() => {
     fetchElderlyData();
     fetchNotificationSettings();
     fetchWeeklyResponses();
+    fetchRecentResponses();
   }, []);
 
   const fetchElderlyData = async () => {
@@ -70,6 +72,15 @@ export function DashboardPage() {
         { day: "土", line: 0, phone: 0 },
         { day: "日", line: 0, phone: 0 }
       ]);
+    }
+  };
+
+  const fetchRecentResponses = async () => {
+    try {
+      const response = await apiClient.get('/elderly/recent-responses?limit=5');
+      setRecentResponsesData(response.data.recentResponses);
+    } catch (error) {
+      console.error("最新の応答記録の取得に失敗しました:", error);
     }
   };
 
@@ -172,32 +183,17 @@ export function DashboardPage() {
     { day: "日", line: 0, phone: 0 }
   ];
 
-  // 最新の応答記録（実際のデータから生成）
-  const recentResponses = elderlyPeople.flatMap(person => {
-    const responses = [];
-    
-    // LINE応答があれば追加
-    if (person.lastLineResponse !== "未応答") {
-      responses.push({
-        id: `${person.id}-line`,
-        person: person.realName,  // 実際の名前を使用
-        type: "LINE",
-        action: "元気ですボタン",
-        status: "応答",
-        time: person.lastLineResponse,
-        icon: MessageSquare,
-        color: "text-green-600"
-      });
-    }
-    
-    
-    return responses;
-  }).sort((a, b) => {
-    // 時刻でソート（新しい順）
-    const timeA = a.time.includes(':') ? a.time : '00:00';
-    const timeB = b.time.includes(':') ? b.time : '00:00';
-    return timeB.localeCompare(timeA);
-  }).slice(0, 4); // 最新4件のみ表示
+  // 最新の応答記録（APIから取得したデータを使用）
+  const recentResponses = recentResponsesData.map(response => ({
+    id: response.id,
+    person: response.elderlyName,
+    type: response.method === 'LINE' ? 'LINE' : '電話',
+    action: response.method === 'LINE' ? '元気ですボタン' : '電話応答',
+    status: '応答',
+    time: new Date(response.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+    icon: response.method === 'LINE' ? MessageSquare : Phone,
+    color: 'text-green-600'
+  }));
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('ja-JP', { 
