@@ -68,23 +68,21 @@ export function ClientLayout({
   const legalLinks = [
     {
       label: "利用規約",
-      url: "#", // 実際のURLに置き換え
+      url: "/terms",
     },
     {
       label: "プライバシーポリシー",
-      url: "#", // 実際のURLに置き換え
+      url: "/privacy",
     },
     {
       label: "特定商取引法の表示",
-      url: "#", // 実際のURLに置き換え
+      url: "/commercial-law",
     }
   ];
 
   const handleLegalLinkClick = (url: string, label: string) => {
-    // 実際の実装では、新しいウィンドウで開くか、モーダルで表示する
-    // 現在はダミーの処理
-    console.log(`Opening ${label}: ${url}`);
-    // window.open(url, '_blank');
+    // 新しいタブで開く
+    window.open(url, '_blank');
   };
 
   const handleMenuClick = (path: string) => {
