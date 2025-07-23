@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import mongoSanitize from 'express-mongo-sanitize';
+// import mongoSanitize from 'express-mongo-sanitize' // Express v5と互換性がないため無効化
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
@@ -20,7 +20,7 @@ import userRoutes from './routes/users.js';
 import appNotificationRoutes from './routes/appNotifications.js';
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'; // V2に変更
 import dailySummaryService from './services/dailySummaryService.js';
-import { doubleCsrf } from 'csrf-csrf';
+import csrf from 'csurf'; // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 import { sanitizeMiddleware } from './utils/sanitizer.js';
 // 環境変数の読み込み
 import path from 'path';
@@ -67,8 +67,8 @@ app.use(helmet({
     referrerPolicy: { policy: 'same-origin' },
     permittedCrossDomainPolicies: false,
 }));
-// MongoDBインジェクション対策
-app.use(mongoSanitize());
+// MongoDBインジェクション対策 - express-mongo-sanitizeはExpress v5と互換性がないため、カスタム実装を使用
+// app.use(mongoSanitize())
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? ['https://anpee.jp', process.env.FRONTEND_URL].filter((url) => !!url)
@@ -91,33 +91,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // XSS対策: すべてのリクエストボディをサニタイズ
 app.use(sanitizeMiddleware);
-// CSRF保護 (csrf-csrfを使用)
-const { generateCsrfToken, doubleCsrfProtection, } = doubleCsrf({
-    getSecret: () => process.env.CSRF_SECRET || 'default-secret-replace-in-production',
-    cookieName: process.env.NODE_ENV === 'production' ? '__Host-anpee.x-csrf-token' : 'anpee.x-csrf-token',
-    cookieOptions: {
-        httpOnly: false, // フロントエンドで読み取り可能にする必要あり
+// CSRF保護
+const csrfProtection = csrf({
+    cookie: {
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/'
-    },
-    size: 64,
-    ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-    getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'],
-    // セッション識別子（ステートレスなので固定値を使用）
-    getSessionIdentifier: () => 'anpee-session'
+    }
 });
-// CSRFトークン取得エンドポイント
-app.get('/api/v1/csrf-token', (req, res) => {
-    const csrfToken = generateCsrfToken(req, res);
+// CSRFトークン取得エンドポイント（CSRF保護の前に定義）
+app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
     res.json({
         success: true,
-        csrfToken
+        csrfToken: req.csrfToken()
     });
 });
-// CSRF保護を適用（開発環境では無効化可能）
-const enableCsrf = process.env.ENABLE_CSRF === 'true';
-if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
+// CSRF保護を適用（Webhook以外）
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true') {
     // CSRFトークンエンドポイントとWebhookは除外
     app.use((req, res, next) => {
         if (req.path === '/api/v1/csrf-token' ||
@@ -126,11 +117,11 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
             req.path === '/webhook/stripe') {
             return next();
         }
-        doubleCsrfProtection(req, res, next);
+        csrfProtection(req, res, next);
     });
 }
 // CSRF設定のログ出力
-logger.info(`CSRF protection: ${enableCsrf ? 'enabled' : 'disabled'}`);
+logger.info(`CSRF protection: ${process.env.NODE_ENV === 'production' ? 'enabled' : 'disabled'}`);
 logger.info(`Environment: ${process.env.NODE_ENV}`);
 logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anpee.jp' : 'localhost'}`);
 // ルート設定

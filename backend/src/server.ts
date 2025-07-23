@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-// import mongoSanitize from 'express-mongo-sanitize' // 一時的にコメントアウト（互換性問題）
+// import mongoSanitize from 'express-mongo-sanitize' // Express v5と互換性がないため無効化
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
@@ -20,7 +20,7 @@ import userRoutes from './routes/users.js'
 import appNotificationRoutes from './routes/appNotifications.js'
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
-import csrf from 'csurf'
+import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
 import { sanitizeMiddleware } from './utils/sanitizer.js'
 
 // 環境変数の読み込み
@@ -73,7 +73,7 @@ app.use(helmet({
   permittedCrossDomainPolicies: false,
 }))
 
-// MongoDBインジェクション対策 - 一時的にコメントアウト（互換性問題）
+// MongoDBインジェクション対策 - express-mongo-sanitizeはExpress v5と互換性がないため、カスタム実装を使用
 // app.use(mongoSanitize())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
@@ -98,7 +98,7 @@ app.use(cookieParser())
 // XSS対策: すべてのリクエストボディをサニタイズ
 app.use(sanitizeMiddleware)
 
-// CSRF保護 (csurfを使用)
+// CSRF保護
 const csrfProtection = csrf({ 
   cookie: {
     httpOnly: false,
@@ -108,7 +108,7 @@ const csrfProtection = csrf({
   } 
 })
 
-// CSRFトークン取得エンドポイント
+// CSRFトークン取得エンドポイント（CSRF保護の前に定義）
 app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
   res.json({ 
     success: true,
@@ -116,9 +116,8 @@ app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
   })
 })
 
-// CSRF保護を適用（開発環境では無効化可能）
-const enableCsrf = process.env.ENABLE_CSRF === 'true';
-if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true')) {
+// CSRF保護を適用（Webhook以外）
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true') {
   // CSRFトークンエンドポイントとWebhookは除外
   app.use((req, res, next) => {
     if (req.path === '/api/v1/csrf-token' || 
@@ -132,7 +131,7 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
 }
 
 // CSRF設定のログ出力
-logger.info(`CSRF protection: ${enableCsrf ? 'enabled' : 'disabled'}`);
+logger.info(`CSRF protection: ${process.env.NODE_ENV === 'production' ? 'enabled' : 'disabled'}`);
 logger.info(`Environment: ${process.env.NODE_ENV}`);
 logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anpee.jp' : 'localhost'}`)
 

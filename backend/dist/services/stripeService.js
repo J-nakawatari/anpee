@@ -246,6 +246,18 @@ export class StripeService {
             logger.info('カスタマーIDからユーザーを特定しました', { userId, customerId: subscription.customer });
         }
         const planId = this.getPlanIdFromPriceId(subscription.items.data[0].price.id);
+        // 日付デバッグ情報
+        const startTimestamp = subscription.current_period_start;
+        const endTimestamp = subscription.current_period_end;
+        const startDate = new Date(startTimestamp * 1000);
+        const endDate = new Date(endTimestamp * 1000);
+        logger.info('Webhook日付処理デバッグ:', {
+            startTimestamp,
+            endTimestamp,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            subscriptionId: subscription.id
+        });
         // Subscriptionコレクションを更新
         await Subscription.findOneAndUpdate({ stripeSubscriptionId: subscription.id }, {
             userId,
