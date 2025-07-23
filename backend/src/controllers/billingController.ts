@@ -8,8 +8,20 @@ export const getBillingInfo = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
+    // デバッグ用：ユーザー情報を取得
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    logger.info(`getBillingInfo - ユーザー情報: userId=${userId}, currentPlan=${user?.currentPlan}, stripeCustomerId=${user?.stripeCustomerId}, hasSelectedInitialPlan=${user?.hasSelectedInitialPlan}`)
+    
     // サブスクリプション情報を取得
     const subscription = await getStripeService().getSubscription(userId)
+    
+    // デバッグ用：サブスクリプション情報
+    logger.info(`getBillingInfo - サブスクリプション情報: ${subscription ? JSON.stringify({
+      id: subscription._id,
+      status: subscription.status,
+      planId: subscription.planId
+    }) : 'null'}`)
     
     res.json({ subscription })
   } catch (error) {

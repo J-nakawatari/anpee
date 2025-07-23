@@ -40,6 +40,70 @@ router.post('/send-test-email', authenticate, async (req, res) => {
     }
 });
 /**
+ * ユーザー情報のデバッグ
+ * 開発・検証用のエンドポイント
+ */
+router.get('/user-debug-info', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const User = (await import('../models/User.js')).default;
+        const user = await User.findById(userId).select('+stripeCustomerId');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Stripeカスタマー情報も取得
+        let stripeInfo = null;
+        if (user.stripeCustomerId) {
+            try {
+                const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
+                    apiVersion: '2025-06-30.basil'
+                });
+                const customer = await stripe.customers.retrieve(user.stripeCustomerId);
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: user.stripeCustomerId,
+                    status: 'all',
+                    limit: 5
+                });
+                stripeInfo = {
+                    customer: {
+                        id: customer.id,
+                        email: customer.email,
+                        created: new Date(customer.created * 1000).toISOString()
+                    },
+                    subscriptions: subscriptions.data.map(sub => ({
+                        id: sub.id,
+                        status: sub.status,
+                        priceId: sub.items.data[0]?.price.id,
+                        created: new Date(sub.created * 1000).toISOString(),
+                        currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null
+                    }))
+                };
+            }
+            catch (error) {
+                logger.error('Stripe情報取得エラー:', error);
+                stripeInfo = { error: 'Failed to fetch Stripe info' };
+            }
+        }
+        res.json({
+            user: {
+                id: user._id,
+                email: user.email,
+                currentPlan: user.currentPlan,
+                subscriptionStatus: user.subscriptionStatus,
+                hasSelectedInitialPlan: user.hasSelectedInitialPlan,
+                stripeCustomerId: user.stripeCustomerId,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            },
+            stripeInfo
+        });
+    }
+    catch (error) {
+        logger.error('ユーザーデバッグ情報取得エラー:', error);
+        res.status(500).json({ error: 'Failed to fetch debug info' });
+    }
+});
+/**
  * ヘルスチェック
  */
 router.get('/health', (req, res) => {
@@ -231,7 +295,93 @@ router.post('/webhook-test', async (req, res) => {
     }
 });
 /**
- * Stripeサブスクリプションを手動同期
+ * Stripeサブスクリプション情報の同期（認証付き）
+ * 開発・検証用のエンドポイント
+ */
+router.post('/sync-stripe-subscription', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        logger.info(`同期開始: userId=${userId}`);
+        const User = (await import('../models/User.js')).default;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'ユーザーが見つかりません'
+            });
+        }
+        // StripeカスタマーIDがない場合はエラー
+        if (!user.stripeCustomerId) {
+            logger.warn(`StripeカスタマーIDが設定されていません: userId=${userId}`);
+            return res.json({
+                success: false,
+                message: 'StripeカスタマーIDが設定されていません'
+            });
+        }
+        logger.info(`StripeカスタマーID: ${user.stripeCustomerId}`);
+        const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2025-06-30.basil'
+        });
+        // Stripeからサブスクリプションを取得
+        const subscriptions = await stripe.subscriptions.list({
+            customer: user.stripeCustomerId,
+            status: 'active',
+            limit: 1
+        });
+        logger.info(`アクティブなサブスクリプション数: ${subscriptions.data.length}`);
+        if (subscriptions.data.length === 0) {
+            return res.json({
+                success: false,
+                message: 'アクティブなサブスクリプションが見つかりません'
+            });
+        }
+        const subscription = subscriptions.data[0];
+        const priceId = subscription.items.data[0].price.id;
+        const planId = priceId === 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt' ? 'standard' :
+            priceId === 'price_1RnLJC1qmMqgQ3qQc9t1lemY' ? 'family' : 'standard';
+        logger.info(`同期するサブスクリプション: id=${subscription.id}, priceId=${priceId}, planId=${planId}`);
+        // ユーザー情報を更新
+        user.currentPlan = planId;
+        user.subscriptionStatus = 'active';
+        user.hasSelectedInitialPlan = true;
+        await user.save();
+        logger.info(`ユーザー情報を更新しました: userId=${userId}, plan=${planId}`);
+        // StripeServiceのhandleSubscriptionUpdateも呼び出す
+        const { getStripeService } = await import('../services/stripeService.js');
+        try {
+            await getStripeService().handleSubscriptionUpdate(subscription);
+            logger.info('StripeServiceによる同期も完了しました');
+        }
+        catch (error) {
+            logger.error('StripeService同期エラー（続行）:', error);
+        }
+        res.json({
+            success: true,
+            message: 'サブスクリプション情報を同期しました',
+            data: {
+                subscriptionId: subscription.id,
+                status: subscription.status,
+                priceId: priceId,
+                planId: planId,
+                user: {
+                    currentPlan: user.currentPlan,
+                    subscriptionStatus: user.subscriptionStatus,
+                    hasSelectedInitialPlan: user.hasSelectedInitialPlan
+                }
+            }
+        });
+    }
+    catch (error) {
+        logger.error('サブスクリプション同期エラー:', error);
+        res.status(500).json({
+            success: false,
+            message: 'サブスクリプション同期に失敗しました',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+});
+/**
+ * Stripeサブスクリプションを手動同期（userIdパラメータ版）
  * 開発・検証用のエンドポイント
  */
 router.post('/sync-stripe-subscription/:userId', async (req, res) => {
