@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Home, Users, History, Bell, CreditCard, User, LogOut, Plus, ExternalLink, Heart } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 // import anpeechanImage from "figma:asset/8044dd3c50661d1e6746e0bc3e98566187669130.png";
 
 interface ClientLayoutProps {
@@ -220,12 +221,7 @@ export function ClientLayout({
 
             <div className="flex items-center gap-4">
               {/* 通知ベル */}
-              <button className="relative p-2 text-orange-600 hover:text-orange-800 transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 bg-red-400 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
-                  1
-                </span>
-              </button>
+              <NotificationBell />
 
               {/* 新規追加ボタン */}
               {showAddButton && (
