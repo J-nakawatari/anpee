@@ -100,15 +100,21 @@ const csrfProtection = csrf({
         path: '/'
     }
 });
-// CSRFトークン取得エンドポイント（CSRF保護の前に定義）
-app.get('/api/v1/csrf-token', csrfProtection, (req, res) => {
-    res.json({
-        success: true,
-        csrfToken: req.csrfToken()
+// CSRFトークン取得エンドポイント
+app.get('/api/v1/csrf-token', (req, res) => {
+    // CSRFトークンを生成するために一時的にcsrfProtectionを適用
+    csrfProtection(req, res, (err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to generate CSRF token' });
+        }
+        res.json({
+            success: true,
+            csrfToken: req.csrfToken()
+        });
     });
 });
-// CSRF保護を適用（Webhook以外）
-if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CSRF === 'true') {
+// CSRF保護を適用（開発環境では無効化）
+if (process.env.NODE_ENV === 'production' && process.env.ENABLE_CSRF !== 'false') {
     // CSRFトークンエンドポイントとWebhookは除外
     app.use((req, res, next) => {
         if (req.path === '/api/v1/csrf-token' ||
