@@ -194,14 +194,14 @@ export class NotificationServiceV2 {
       })
       logger.info(`クエリ3 ($orを使用): ${query3.length}件`)
 
-      const pendingRecordsWithoutPopulate = query2  // nullチェックを使用
+      const pendingRecordsWithoutPopulate = query1  // $exists: falseを使用
       logger.info(`populate前のチェック対象履歴数: ${pendingRecordsWithoutPopulate.length}`)
 
-      // populateありで取得（nullチェックを使用）
+      // populateありで取得（存在しないフィールドをチェック）
       const pendingRecords = await DailyNotification.find({
         date: { $gte: today },
-        response: null,
-        adminNotifiedAt: null
+        response: { $exists: false },
+        adminNotifiedAt: { $exists: false }
       }).populate('userId elderlyId')
       
       logger.info(`populate後のチェック対象履歴数: ${pendingRecords.length}`)
@@ -279,7 +279,7 @@ export class NotificationServiceV2 {
     try {
       logger.info(`元気ボタン応答処理開始: トークン=${token}`)
       
-      // トークンで該当するレコードを検索
+      // トークンで該当するレコードを検索（responseが存在しないことを確認）
       const record = await DailyNotification.findOne({
         'notifications.token': token,
         response: { $exists: false }
