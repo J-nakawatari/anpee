@@ -71,7 +71,7 @@ export function NotificationBell() {
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-80 bg-white shadow-lg border border-gray-200">
         <div className="p-3 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900">通知</h3>
@@ -85,7 +85,7 @@ export function NotificationBell() {
             )}
           </div>
         </div>
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto bg-white">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               通知はありません
@@ -95,8 +95,8 @@ export function NotificationBell() {
               <DropdownMenuItem
                 key={notification.id}
                 onClick={() => markAsRead(notification.id)}
-                className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                  !notification.read ? "bg-orange-50" : ""
+                className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                  !notification.read ? "bg-orange-50" : "bg-white"
                 }`}
               >
                 <div className="flex gap-3 w-full">
@@ -125,7 +125,7 @@ export function NotificationBell() {
           )}
         </div>
         {notifications.length > 0 && (
-          <div className="p-2 border-t border-gray-100">
+          <div className="p-2 border-t border-gray-100 bg-white">
             <button className="w-full text-center text-sm text-orange-600 hover:text-orange-800 py-1">
               すべての通知を見る
             </button>
