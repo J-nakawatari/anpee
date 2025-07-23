@@ -359,6 +359,12 @@ export function AccountSettingsPage() {
               <p className="text-gray-900 mt-1 font-medium">{userAccount.name}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
+              <Label className="text-sm font-medium text-gray-500">登録日</Label>
+              <p className="text-gray-900 mt-1 font-medium">
+                {new Date(userAccount.createdAt).toLocaleDateString('ja-JP')}
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">メールアドレス</Label>
               <div className="flex items-center justify-between mt-1">
                 <div className="flex items-center gap-2">
@@ -390,12 +396,6 @@ export function AccountSettingsPage() {
                   編集
                 </Button>
               </div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <Label className="text-sm font-medium text-gray-500">登録日</Label>
-              <p className="text-gray-900 mt-1 font-medium">
-                {new Date(userAccount.createdAt).toLocaleDateString('ja-JP')}
-              </p>
             </div>
           </div>
         </CardContent>
