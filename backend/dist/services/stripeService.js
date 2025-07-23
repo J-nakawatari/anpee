@@ -11,7 +11,7 @@ export class StripeService {
             throw new Error('STRIPE_SECRET_KEY is required');
         }
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
     }
     // Stripeカスタマーを作成
@@ -88,41 +88,59 @@ export class StripeService {
     async getSubscription(userId) {
         try {
             // まずMongoDBから取得を試みる
-            const subscription = await Subscription.findOne({ userId });
-            if (subscription) {
-                return subscription;
-            }
-            // MongoDBにない場合は、Stripeから直接取得
+            const mongoSubscription = await Subscription.findOne({ userId });
             const user = await User.findById(userId);
             if (!user || !user.stripeCustomerId) {
                 return null;
             }
-            // Stripeからサブスクリプションを取得
+            // Stripeからサブスクリプションを取得（expand使用）
             const subscriptions = await this.stripe.subscriptions.list({
                 customer: user.stripeCustomerId,
                 status: 'active',
-                limit: 1
+                limit: 1,
+                expand: ['data.default_payment_method', 'data.latest_invoice']
             });
             if (subscriptions.data.length === 0) {
                 return null;
             }
             const stripeSubscription = subscriptions.data[0];
-            // デバッグ用：Stripeから取得した実際の期間を確認
-            logger.info(`Stripeサブスクリプション期間: start=${new Date(stripeSubscription.current_period_start * 1000).toISOString()}, end=${new Date(stripeSubscription.current_period_end * 1000).toISOString()}`);
+            // デバッグ用：Stripeから取得した実際のデータ構造を確認
+            logger.info(`Stripeサブスクリプション全体データ: ${JSON.stringify(stripeSubscription, null, 2)}`);
+            // MongoDBのデータも確認
+            if (mongoSubscription) {
+                logger.info(`MongoDBサブスクリプションデータ: ${JSON.stringify({
+                    id: mongoSubscription._id,
+                    currentPeriodStart: mongoSubscription.currentPeriodStart,
+                    currentPeriodEnd: mongoSubscription.currentPeriodEnd,
+                    planId: mongoSubscription.planId,
+                    status: mongoSubscription.status
+                })}`);
+            }
+            // 日付の取得優先順位：
+            // 1. Stripeのcurrent_period_start/end（型アサーションを使用）
+            // 2. MongoDBのcurrentPeriodStart/End
+            // 3. デフォルト値（現在時刻と30日後）
+            const stripeSubAny = stripeSubscription;
+            let periodStart = stripeSubAny.current_period_start
+                ? new Date(stripeSubAny.current_period_start * 1000)
+                : mongoSubscription?.currentPeriodStart || new Date();
+            let periodEnd = stripeSubAny.current_period_end
+                ? new Date(stripeSubAny.current_period_end * 1000)
+                : mongoSubscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
             // 仮想的なサブスクリプションオブジェクトを返す
             return {
-                _id: stripeSubscription.id,
+                _id: mongoSubscription?._id || stripeSubscription.id,
                 userId,
                 stripeCustomerId: user.stripeCustomerId,
                 stripeSubscriptionId: stripeSubscription.id,
                 stripePriceId: stripeSubscription.items.data[0].price.id,
                 planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
                 status: stripeSubscription.status,
-                currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-                currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+                currentPeriodStart: periodStart,
+                currentPeriodEnd: periodEnd,
                 cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-                createdAt: new Date(stripeSubscription.created * 1000),
-                updatedAt: new Date()
+                createdAt: mongoSubscription?.createdAt || new Date(stripeSubscription.created * 1000),
+                updatedAt: mongoSubscription?.updatedAt || new Date()
             };
         }
         catch (error) {

@@ -9,14 +9,40 @@ export const getBillingInfo = async (req, res) => {
         const user = await User.findById(userId);
         logger.info(`getBillingInfo - ユーザー情報: userId=${userId}, currentPlan=${user?.currentPlan}, stripeCustomerId=${user?.stripeCustomerId}, hasSelectedInitialPlan=${user?.hasSelectedInitialPlan}`);
         // サブスクリプション情報を取得
-        const subscription = await getStripeService().getSubscription(userId);
+        const stripeService = getStripeService();
+        if (!stripeService) {
+            return res.status(503).json({ error: 'Billing service is temporarily unavailable' });
+        }
+        const subscription = await stripeService.getSubscription(userId);
         // デバッグ用：サブスクリプション情報
         logger.info(`getBillingInfo - サブスクリプション情報: ${subscription ? JSON.stringify({
             id: subscription._id,
             status: subscription.status,
-            planId: subscription.planId
+            planId: subscription.planId,
+            currentPeriodStart: subscription.currentPeriodStart,
+            currentPeriodEnd: subscription.currentPeriodEnd
         }) : 'null'}`);
-        res.json({ subscription });
+        // フロントエンドが期待するフィールド名に変換
+        if (subscription) {
+            const formattedSubscription = {
+                _id: subscription._id,
+                userId: subscription.userId,
+                stripeCustomerId: subscription.stripeCustomerId,
+                stripeSubscriptionId: subscription.stripeSubscriptionId,
+                stripePriceId: subscription.stripePriceId,
+                planId: subscription.planId,
+                status: subscription.status,
+                cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+                createdAt: subscription.createdAt,
+                updatedAt: subscription.updatedAt,
+                startDate: subscription.currentPeriodStart,
+                nextBillingDate: subscription.currentPeriodEnd
+            };
+            res.json({ subscription: formattedSubscription });
+        }
+        else {
+            res.json({ subscription: null });
+        }
     }
     catch (error) {
         logger.error('請求情報取得エラー:', error);
@@ -60,7 +86,7 @@ export const cancelSubscription = async (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
         // アクティブなサブスクリプションを取得
         const subscriptions = await stripe.subscriptions.list({
@@ -93,7 +119,7 @@ export const resumeSubscription = async (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
         // キャンセル予定のサブスクリプションを取得
         const subscriptions = await stripe.subscriptions.list({
@@ -134,7 +160,7 @@ export const addPaymentMethod = async (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
         // 支払い方法を顧客に添付
         await stripe.paymentMethods.attach(paymentMethodId, {
@@ -216,7 +242,7 @@ export const handlePaymentSuccess = async (req, res) => {
         }
         // Stripeからセッション情報を取得
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
         logger.info('Stripeセッション取得中...');
         const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -342,7 +368,7 @@ export const changePlan = async (req, res) => {
         }
         // Stripeのサブスクリプションを更新
         const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-06-30.basil'
+            apiVersion: '2024-06-20'
         });
         // 現在のサブスクリプションを取得
         const subscriptions = await stripe.subscriptions.list({

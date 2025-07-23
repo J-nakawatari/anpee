@@ -21,7 +21,7 @@ const webhookHandler = async (req: Request, res: Response) => {
     try {
       // Stripeオブジェクトを取得
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: '2024-06-20'
+        apiVersion: '2024-06-20' as any
       })
 
       // 生のボディバッファが必要

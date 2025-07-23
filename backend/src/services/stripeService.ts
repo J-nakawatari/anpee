@@ -14,7 +14,7 @@ export class StripeService {
     }
     
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20'
+      apiVersion: '2024-06-20' as any
     })
   }
   // Stripeカスタマーを作成
@@ -138,15 +138,16 @@ export class StripeService {
       }
       
       // 日付の取得優先順位：
-      // 1. Stripeのcurrent_period_start/end
+      // 1. Stripeのcurrent_period_start/end（型アサーションを使用）
       // 2. MongoDBのcurrentPeriodStart/End
       // 3. デフォルト値（現在時刻と30日後）
-      let periodStart = stripeSubscription.current_period_start 
-        ? new Date(stripeSubscription.current_period_start * 1000)
+      const stripeSubAny = stripeSubscription as any;
+      let periodStart = stripeSubAny.current_period_start 
+        ? new Date(stripeSubAny.current_period_start * 1000)
         : mongoSubscription?.currentPeriodStart || new Date();
         
-      let periodEnd = stripeSubscription.current_period_end
-        ? new Date(stripeSubscription.current_period_end * 1000)
+      let periodEnd = stripeSubAny.current_period_end
+        ? new Date(stripeSubAny.current_period_end * 1000)
         : mongoSubscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       
       // 仮想的なサブスクリプションオブジェクトを返す
@@ -323,8 +324,8 @@ export class StripeService {
         stripePriceId: subscription.items.data[0].price.id,
         planId,
         status: subscription.status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
       },
