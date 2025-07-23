@@ -1,13 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import mongoSanitize from 'express-mongo-sanitize'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
 import { createServer } from 'http'
 import logger from './utils/logger.js'
 import authRoutes from './routes/auth.js'
-import testRoutes from './routes/test.js'
+// import testRoutes from './routes/test.js' // セキュリティのため削除
 import elderlyRoutes from './routes/elderly.js'
 import lineRoutes from './routes/lineRoutes.js'
 import responseRoutes from './routes/responseRoutesV2.js'  // V2に変更
@@ -20,6 +21,7 @@ import appNotificationRoutes from './routes/appNotifications.js'
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
 import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
+import { sanitizeMiddleware } from './utils/sanitizer.js'
 
 // 環境変数の読み込み
 import path from 'path'
@@ -43,7 +45,36 @@ const httpServer = createServer(app)
 const PORT = process.env.PORT || 4003
 
 // ミドルウェア
-app.use(helmet())
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // TODO: unsafe-inlineを削除してnonceベースに移行
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://anpee.jp"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'same-origin' },
+  permittedCrossDomainPolicies: false,
+}))
+
+// MongoDBインジェクション対策
+app.use(mongoSanitize())
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://anpee.jp', process.env.FRONTEND_URL].filter((url): url is string => !!url)
@@ -63,6 +94,9 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
+// XSS対策: すべてのリクエストボディをサニタイズ
+app.use(sanitizeMiddleware)
 
 // CSRF保護
 const csrfProtection = csrf({ 
@@ -90,8 +124,7 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
     if (req.path === '/api/v1/csrf-token' || 
         req.path === '/api/v1/line/webhook' || 
         req.path === '/api/v1/webhook/stripe' ||
-        req.path === '/webhook/stripe' ||
-        req.path.startsWith('/api/v1/test/')) {
+        req.path === '/webhook/stripe') {
       return next();
     }
     csrfProtection(req, res, next);
@@ -105,7 +138,7 @@ logger.info(`CORS origin: ${process.env.NODE_ENV === 'production' ? 'https://anp
 
 // ルート設定
 app.use('/api/v1/auth', authRoutes)
-app.use('/api/v1/test', testRoutes)
+// app.use('/api/v1/test', testRoutes) // セキュリティのため削除
 app.use('/api/v1/elderly', elderlyRoutes)
 app.use('/api/v1/line', lineRoutes)
 app.use('/api/v1/responses', responseRoutes)
