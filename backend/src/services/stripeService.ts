@@ -280,8 +280,8 @@ export class StripeService {
     const planId = this.getPlanIdFromPriceId(subscription.items.data[0].price.id)
     
     // 日付デバッグ情報
-    const startTimestamp = subscription.current_period_start
-    const endTimestamp = subscription.current_period_end
+    const startTimestamp = (subscription as any).current_period_start
+    const endTimestamp = (subscription as any).current_period_end
     const startDate = new Date(startTimestamp * 1000)
     const endDate = new Date(endTimestamp * 1000)
     
@@ -303,8 +303,8 @@ export class StripeService {
         stripePriceId: subscription.items.data[0].price.id,
         planId,
         status: subscription.status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined
       },
