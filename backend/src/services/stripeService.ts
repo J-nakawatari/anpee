@@ -131,8 +131,8 @@ export class StripeService {
       logger.info(`Stripeサブスクリプション生データ:`, {
         id: stripeSubscription.id,
         status: stripeSubscription.status,
-        current_period_start: stripeSubscription.current_period_start,
-        current_period_end: stripeSubscription.current_period_end,
+        current_period_start: (stripeSubscription as any).current_period_start,
+        current_period_end: (stripeSubscription as any).current_period_end,
         items: stripeSubscription.items.data[0]?.price
       })
       
@@ -145,8 +145,8 @@ export class StripeService {
         stripePriceId: stripeSubscription.items.data[0].price.id,
         planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
         status: stripeSubscription.status,
-        currentPeriodStart: stripeSubscription.current_period_start ? new Date(stripeSubscription.current_period_start * 1000) : new Date(),
-        currentPeriodEnd: stripeSubscription.current_period_end ? new Date(stripeSubscription.current_period_end * 1000) : new Date(),
+        currentPeriodStart: (stripeSubscription as any).current_period_start ? new Date((stripeSubscription as any).current_period_start * 1000) : new Date(),
+        currentPeriodEnd: (stripeSubscription as any).current_period_end ? new Date((stripeSubscription as any).current_period_end * 1000) : new Date(),
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
         createdAt: new Date(stripeSubscription.created * 1000),
         updatedAt: new Date()
