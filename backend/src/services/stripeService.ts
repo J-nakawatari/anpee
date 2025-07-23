@@ -128,7 +128,13 @@ export class StripeService {
       const stripeSubscription = subscriptions.data[0]
       
       // デバッグ用：Stripeから取得した実際の期間を確認
-      logger.info(`Stripeサブスクリプション期間: start=${new Date((stripeSubscription as any).current_period_start * 1000).toISOString()}, end=${new Date((stripeSubscription as any).current_period_end * 1000).toISOString()}`)
+      logger.info(`Stripeサブスクリプション生データ:`, {
+        id: stripeSubscription.id,
+        status: stripeSubscription.status,
+        current_period_start: stripeSubscription.current_period_start,
+        current_period_end: stripeSubscription.current_period_end,
+        items: stripeSubscription.items.data[0]?.price
+      })
       
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
@@ -139,8 +145,8 @@ export class StripeService {
         stripePriceId: stripeSubscription.items.data[0].price.id,
         planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
         status: stripeSubscription.status,
-        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
-        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        currentPeriodStart: stripeSubscription.current_period_start ? new Date(stripeSubscription.current_period_start * 1000) : new Date(),
+        currentPeriodEnd: stripeSubscription.current_period_end ? new Date(stripeSubscription.current_period_end * 1000) : new Date(),
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
         createdAt: new Date(stripeSubscription.created * 1000),
         updatedAt: new Date()
