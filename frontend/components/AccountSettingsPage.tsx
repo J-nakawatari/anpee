@@ -360,13 +360,22 @@ export function AccountSettingsPage() {
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">メールアドレス</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-gray-900 font-medium">{userAccount.email}</p>
-                {userAccount.emailVerified ? (
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-600" />
-                )}
+              <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-gray-900 font-medium">{userAccount.email}</p>
+                  {userAccount.emailVerified ? (
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEmailDialog(true)}
+                >
+                  編集
+                </Button>
               </div>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
@@ -388,17 +397,6 @@ export function AccountSettingsPage() {
                 {new Date(userAccount.createdAt).toLocaleDateString('ja-JP')}
               </p>
             </div>
-          </div>
-
-          {/* メールアドレス変更ボタン */}
-          <div className="pt-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowEmailDialog(true)}
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              メールアドレスを変更
-            </Button>
           </div>
         </CardContent>
       </Card>
