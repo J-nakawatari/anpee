@@ -302,23 +302,27 @@ class EmailService {
   async sendSafetyCheckNotification(
     to: string,
     elderlyName: string,
-    lastResponseTime?: Date
+    lastNotificationTime?: Date
   ): Promise<void> {
     const subject = '【あんぴーちゃん】安否確認のお知らせ';
     
-    let timeInfo = '応答がありません';
-    if (lastResponseTime) {
-      const hours = Math.floor((Date.now() - lastResponseTime.getTime()) / (1000 * 60 * 60));
-      timeInfo = `最後の応答から${hours}時間が経過しています`;
+    let timeInfo = '';
+    if (lastNotificationTime) {
+      const minutes = Math.floor((Date.now() - lastNotificationTime.getTime()) / (1000 * 60));
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      
+      const timeStr = lastNotificationTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+      timeInfo = `\n\n${timeStr}に通知を送ってから${hours > 0 ? `${hours}時間` : ''}${mins}分経過しています。`;
     }
 
-    const text = `${elderlyName}さんから「元気ですボタン」の応答がありません。\n${timeInfo}\n\nご家族の安否をご確認ください。\n\n詳細はこちら: https://anpee.jp/user/dashboard`;
+    const text = `${elderlyName}さんから「元気ですボタン」の応答がありません。${timeInfo}\n\nご家族の安否をご確認ください。\n\n詳細はこちら: https://anpee.jp/user/dashboard`;
 
     const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #f97316;">安否確認のお知らせ</h2>
         <p>${elderlyName}さんから「元気ですボタン」の応答がありません。</p>
-        <p>${timeInfo}</p>
+        ${timeInfo ? `<p style="color: #666;">${timeInfo.trim()}</p>` : ''}
         
         <div style="background-color: #fff7ed; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0;">ご家族の安否をご確認ください。</p>
