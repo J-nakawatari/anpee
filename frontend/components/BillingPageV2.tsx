@@ -385,31 +385,39 @@ export function BillingPageV2() {
             ご契約中のプラン情報
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {currentPlan ? (
             <>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Badge className={getPlanBadgeColor(currentPlan.id)}>
-                    {currentPlan.displayName}
-                  </Badge>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      月額 ¥{currentPlan.price.toLocaleString()}
-                    </p>
-                    {subscription?.nextBillingDate && (
-                      <p className="text-sm text-gray-500">
-                        次回請求日: {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}
-                      </p>
-                    )}
+              {/* プラン概要 */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge className={`${getPlanBadgeColor(currentPlan.id)} text-base px-3 py-1`}>
+                        {currentPlan.displayName}
+                      </Badge>
+                      {subscription?.status === 'active' && !subscription.cancelAtPeriodEnd && (
+                        <Badge className="bg-green-100 text-green-700">
+                          アクティブ
+                        </Badge>
+                      )}
+                      {subscription?.cancelAtPeriodEnd && (
+                        <Badge className="bg-orange-100 text-orange-700">
+                          キャンセル予定
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900">
+                      ¥{currentPlan.price.toLocaleString()}
+                      <span className="text-sm font-normal text-gray-600 ml-1">/月</span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  {currentPlan.id === 'standard' && (
+                  {currentPlan.id === 'standard' && subscription?.status === 'active' && !subscription.cancelAtPeriodEnd && (
                     <Button 
                       variant="default" 
                       size="sm"
                       onClick={() => handlePlanChange('family')}
+                      className="ml-4"
                     >
                       ファミリープランにアップグレード
                     </Button>
@@ -417,36 +425,77 @@ export function BillingPageV2() {
                 </div>
               </div>
 
-              <Separator />
+              {/* 3列レイアウト */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 契約情報 */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-600" />
+                    契約情報
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    {subscription && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">契約開始日</span>
+                          <span className="font-medium">{new Date(subscription.startDate).toLocaleDateString('ja-JP')}</span>
+                        </div>
+                        {subscription.nextBillingDate && !subscription.cancelAtPeriodEnd && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">次回請求日</span>
+                            <span className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}</span>
+                          </div>
+                        )}
+                        {subscription.cancelAtPeriodEnd && subscription.nextBillingDate && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">サービス終了日</span>
+                            <span className="font-medium text-orange-600">
+                              {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900">プラン特典</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• 最大 {currentPlan.features.maxElderlyUsers} 人まで登録可能</li>
-                    <li>• {currentPlan.features.safetyCheckFrequency}</li>
-                    <li>• 再通知 {currentPlan.features.maxRetryCount} 回まで</li>
+                {/* プラン特典 */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    プラン特典
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>最大 {currentPlan.features.maxElderlyUsers} 人まで登録可能</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>{currentPlan.features.safetyCheckFrequency}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>再通知 {currentPlan.features.maxRetryCount} 回まで</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* 追加機能 */}
+                <div className="bg-green-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-green-600" />
+                    追加機能
+                  </h4>
+                  <ul className="space-y-2 text-sm">
                     {currentPlan.features.supportFeatures.map((feature, index) => (
-                      <li key={index}>• {feature}</li>
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                {subscription && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">契約情報</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>契約開始日: {new Date(subscription.startDate).toLocaleDateString('ja-JP')}</p>
-                      <p>ステータス: <span className={subscription.cancelAtPeriodEnd ? 'text-orange-600' : subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}>
-                        {subscription.cancelAtPeriodEnd ? 'キャンセル予定' : subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み'}
-                      </span></p>
-                      {subscription.cancelAtPeriodEnd && subscription.nextBillingDate && (
-                        <p className="text-orange-600 font-medium">
-                          {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')} にサービス終了
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           ) : (
