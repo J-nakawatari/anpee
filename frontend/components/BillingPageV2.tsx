@@ -194,6 +194,16 @@ export function BillingPageV2() {
     const newPlan = availablePlans.find(p => p.id === selectedPlan);
     if (!newPlan) return;
 
+    // キャンセル予定の場合はブロック
+    if (subscription?.cancelAtPeriodEnd) {
+      toast.error(
+        'キャンセル予定のプランは変更できません。\n' +
+        'プランを変更する場合は、先に「契約管理」からキャンセルを取り消してください。'
+      );
+      setShowPlanDetailDialog(false);
+      return;
+    }
+
     try {
       setIsProcessing(true);
       
@@ -252,6 +262,28 @@ export function BillingPageV2() {
     } catch (error: any) {
       console.error('キャンセルエラー:', error);
       toast.error(error.response?.data?.error || 'キャンセル処理に失敗しました');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleResumeSub = async () => {
+    try {
+      setIsProcessing(true);
+      const { apiClient } = await import('@/services/apiClient');
+      
+      const response = await apiClient.post('/billing/resume');
+      
+      if (response.data.success) {
+        toast.success('サブスクリプションを再開しました');
+        // データを再読み込み
+        await loadBillingData();
+      } else {
+        toast.error(response.data.error || 'サブスクリプション再開に失敗しました');
+      }
+    } catch (error: any) {
+      console.error('サブスクリプション再開エラー:', error);
+      toast.error(error.response?.data?.error || 'サブスクリプション再開処理に失敗しました');
     } finally {
       setIsProcessing(false);
     }
@@ -412,14 +444,15 @@ export function BillingPageV2() {
                       <span className="text-sm font-normal text-gray-600 ml-1">/月</span>
                     </div>
                   </div>
-                  {currentPlan.id === 'standard' && subscription?.status === 'active' && !subscription.cancelAtPeriodEnd && (
+                  {currentPlan.id === 'standard' && subscription?.status === 'active' && (
                     <Button 
                       variant="default" 
                       size="sm"
                       onClick={() => handlePlanChange('family')}
                       className="ml-4"
+                      disabled={subscription.cancelAtPeriodEnd}
                     >
-                      ファミリープランにアップグレード
+                      {subscription.cancelAtPeriodEnd ? 'プラン変更不可' : 'ファミリープランにアップグレード'}
                     </Button>
                   )}
                 </div>
@@ -605,10 +638,19 @@ export function BillingPageV2() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {subscription?.cancelAtPeriodEnd && (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  キャンセル予定のため、プラン変更はできません。プランを変更する場合は、先に契約管理からキャンセルを取り消してください。
+                </AlertDescription>
+              </Alert>
+            )}
             {availablePlans.map((plan) => {
               const isCurrentPlan = currentPlan && plan.id === currentPlan.id;
+              const isCancelPending = subscription?.cancelAtPeriodEnd;
               return (
-                <div key={plan.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={plan.id} className={`flex items-center justify-between p-3 border rounded-lg ${isCancelPending ? 'opacity-60' : ''}`}>
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-gray-900">{plan.displayName}</h4>
@@ -620,10 +662,10 @@ export function BillingPageV2() {
                   <Button 
                     variant={isCurrentPlan ? "secondary" : "default"}
                     size="sm"
-                    disabled={!!isCurrentPlan}
+                    disabled={!!isCurrentPlan || !!isCancelPending}
                     onClick={() => handlePlanChange(plan.id)}
                   >
-                    {isCurrentPlan ? "現在のプラン" : "詳細を見る"}
+                    {isCurrentPlan ? "現在のプラン" : isCancelPending ? "変更不可" : "詳細を見る"}
                   </Button>
                 </div>
               );
@@ -664,13 +706,26 @@ export function BillingPageV2() {
             
             <div className="space-y-2">
               {subscription?.cancelAtPeriodEnd ? (
-                <Button 
-                  variant="secondary" 
-                  className="w-full"
-                  disabled
-                >
-                  キャンセル済み
-                </Button>
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleResumeSub}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        処理中...
+                      </>
+                    ) : (
+                      'キャンセルを取り消す'
+                    )}
+                  </Button>
+                  <p className="text-sm text-gray-600 text-center">
+                    キャンセルを取り消すと、次回請求日から自動的に請求が再開されます
+                  </p>
+                </>
               ) : (
                 <Button 
                   variant="destructive" 
