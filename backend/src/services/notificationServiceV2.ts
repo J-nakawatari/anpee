@@ -46,6 +46,33 @@ export class NotificationServiceV2 {
     }
   }
 
+  // テスト用の定時通知を送信
+  async sendScheduledNotificationAsTest(userId: string): Promise<void> {
+    try {
+      logger.info(`テスト通知開始: ユーザー ${userId}`)
+      
+      const elderlyList = await Elderly.find({
+        userId,
+        status: 'active',
+        lineUserId: { $exists: true, $ne: null }
+      })
+
+      if (elderlyList.length === 0) {
+        logger.warn(`LINE連携済みの家族が見つかりません: ユーザー ${userId}`)
+        return
+      }
+
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      for (const elderly of elderlyList) {
+        await this.sendNotificationToElderly(elderly, userId, today, 'test')
+      }
+    } catch (error) {
+      logger.error(`テスト通知エラー: ユーザー ${userId}`, error)
+    }
+  }
+
   // 個別の家族に通知を送信
   private async sendNotificationToElderly(
     elderly: any,
@@ -69,10 +96,13 @@ export class NotificationServiceV2 {
       if (notificationType === 'retry1') urgencyMessage = '\n⚠️ 2回目の確認です。'
       else if (notificationType === 'retry2') urgencyMessage = '\n⚠️ 3回目の確認です。'
       else if (notificationType === 'retry3') urgencyMessage = '\n🚨 最後の確認です。'
+      
+      // テスト送信の場合は明確に表示
+      const testPrefix = notificationType === 'test' ? '【テスト送信】\n' : ''
 
       const messages = [{
         type: 'text' as const,
-        text: `${greeting}、${elderly.name}さん！${emoji}${urgencyMessage}\n\n今日（${dateStr}）の元気確認がまだです。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
+        text: `${testPrefix}${greeting}、${elderly.name}さん！${emoji}${urgencyMessage}\n\n今日（${dateStr}）の元気確認${notificationType === 'test' ? 'テスト' : 'がまだ'}です。\nお元気でお過ごしですか？\n\n下のリンクをタップして、\n「元気ですボタン」を押してください。\n\n▼ タップしてください ▼\n${responseUrl}\n\nご家族が${elderly.name}さんの元気を待っています💝`
       }]
 
       // LINE送信
