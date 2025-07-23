@@ -376,31 +376,14 @@ export function BillingPageV2() {
     <div className="space-y-6">
       {/* 現在のプラン */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="w-5 h-5 text-blue-600" />
-              現在のプラン
-            </CardTitle>
-            <CardDescription>
-              ご契約中のプラン情報
-            </CardDescription>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSyncSubscription}
-            disabled={isSyncing}
-          >
-            {isSyncing ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                同期中...
-              </>
-            ) : (
-              '契約情報を同期'
-            )}
-          </Button>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="w-5 h-5 text-blue-600" />
+            現在のプラン
+          </CardTitle>
+          <CardDescription>
+            ご契約中のプラン情報
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {currentPlan ? (
@@ -467,32 +450,12 @@ export function BillingPageV2() {
               </div>
             </>
           ) : (
-            <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  現在有効なサブスクリプションがありません。プランを選択して契約してください。
-                </AlertDescription>
-              </Alert>
-              
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSyncSubscription}
-                  disabled={isSyncing}
-                >
-                  {isSyncing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      同期中...
-                    </>
-                  ) : (
-                    '契約情報を同期'
-                  )}
-                </Button>
-              </div>
-            </div>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                現在有効なサブスクリプションがありません。プランを選択して契約してください。
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>
