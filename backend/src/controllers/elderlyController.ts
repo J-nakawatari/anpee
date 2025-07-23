@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { AuthRequest } from '../middleware/auth.js'
 import Elderly from '../models/Elderly.js'
 import logger from '../utils/logger.js'
 
@@ -326,15 +327,15 @@ export const getWeeklyResponses = async (req: AuthRequest, res: Response) => {
       const dayEnd = new Date(dayStart)
       dayEnd.setDate(dayEnd.getDate() + 1)
       
-      const dayResponses = responses.filter(r => {
+      const dayResponses = responses.filter((r: any) => {
         const timestamp = new Date(r.timestamp)
         return timestamp >= dayStart && timestamp < dayEnd && r.status === 'responded'
       })
       
       return {
         day,
-        line: dayResponses.filter(r => r.method === 'LINE').length,
-        phone: dayResponses.filter(r => r.method === 'Phone').length
+        line: dayResponses.filter((r: any) => r.method === 'LINE').length,
+        phone: dayResponses.filter((r: any) => r.method === 'Phone').length
       }
     })
     
