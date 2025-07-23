@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ToasterProvider } from '@/components/ToasterProvider'
+import { DebugBanner } from '@/components/DebugBanner'
 
 export const metadata: Metadata = {
   title: 'あんぴーちゃん 見守りサービス',
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className="zen-maru-gothic-medium">
         {children}
         <ToasterProvider />
+        <DebugBanner />
       </body>
     </html>
   )

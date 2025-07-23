@@ -10,12 +10,15 @@ import { elderlyService, ElderlyData } from "@/services/elderlyService";
 import { apiClient } from "@/services/apiClient";
 import { toast } from "@/lib/toast";
 import { InitialPlanSelection } from "./InitialPlanSelection";
+import { useDebugMode } from "@/hooks/useDebugMode";
+import Link from "next/link";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
   const [elderlyList, setElderlyList] = useState<ElderlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [nextNotificationTime, setNextNotificationTime] = useState<string | null>(null);
+  const { isExpired } = useDebugMode();
 
   useEffect(() => {
     fetchElderlyData();
@@ -209,8 +212,56 @@ export function DashboardPage() {
       <InitialPlanSelection />
       
       <div className="space-y-6">
+      {/* 期限切れ警告 */}
+      {isExpired && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="bg-red-100 rounded-full p-3">
+              <XCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-red-900 mb-2">
+                サービスの利用期限が終了しました
+              </h2>
+              <p className="text-red-800 mb-4">
+                現在、見守りサービスは停止されています。大切なご家族の安否確認を再開するには、プランを選択してください。
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white/50 rounded-lg p-3 text-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-sm font-semibold text-red-900">見守り機能</p>
+                  <p className="text-xs text-red-700">停止中</p>
+                </div>
+                <div className="bg-white/50 rounded-lg p-3 text-center">
+                  <MessageSquare className="w-6 h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-sm font-semibold text-red-900">LINE通知</p>
+                  <p className="text-xs text-red-700">送信停止</p>
+                </div>
+                <div className="bg-white/50 rounded-lg p-3 text-center">
+                  <Phone className="w-6 h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-sm font-semibold text-red-900">電話確認</p>
+                  <p className="text-xs text-red-700">利用不可</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Link href="/user/billing">
+                  <Button size="lg" className="bg-red-600 hover:bg-red-700">
+                    プランを選択して再開
+                  </Button>
+                </Link>
+                <Link href="/user/history">
+                  <Button size="lg" variant="outline">
+                    過去の履歴を確認
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* ウェルカムメッセージ */}
-      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow">
+      <div className={`bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow ${isExpired ? 'opacity-50' : ''}`}>
         <div className="flex items-center gap-4">
           <img 
             src="/logo.svg" 
@@ -238,7 +289,7 @@ export function DashboardPage() {
       </div>
 
       {/* 見守り対象者カード */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isExpired ? 'opacity-50 pointer-events-none' : ''}`}>
         {elderlyPeople.map((person) => (
           <Card key={person.id} className="cute-card hover:shadow-lg transition-all duration-200">
             <CardContent className="p-6">
