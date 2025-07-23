@@ -32,13 +32,25 @@ class BillingService {
       if (!subscription) return null
       
       // バックエンドのレスポンスをフロントエンドの形式にマッピング
+      // currentPeriodEndが今日の日付の場合、1ヶ月後として計算
+      let nextBillingDate = subscription.currentPeriodEnd
+      const currentPeriodEnd = new Date(subscription.currentPeriodEnd)
+      const today = new Date()
+      
+      // 日付が同じ日の場合、1ヶ月後として設定
+      if (currentPeriodEnd.toDateString() === today.toDateString()) {
+        const nextMonth = new Date(today)
+        nextMonth.setMonth(nextMonth.getMonth() + 1)
+        nextBillingDate = nextMonth.toISOString()
+      }
+      
       return {
         id: subscription._id || subscription.id,
         status: subscription.status,
         currentPlan: subscription.planId, // planId を currentPlan にマッピング
         stripePriceId: subscription.stripePriceId,
         startDate: subscription.createdAt,
-        nextBillingDate: subscription.currentPeriodEnd,
+        nextBillingDate: nextBillingDate,
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
         trialEnd: subscription.trialEnd,
         stripeCustomerId: subscription.stripeCustomerId,
