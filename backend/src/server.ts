@@ -20,7 +20,7 @@ import userRoutes from './routes/users.js'
 import appNotificationRoutes from './routes/appNotifications.js'
 import scheduledNotificationServiceV2 from './services/scheduledNotificationServiceV2.js'  // V2に変更
 import dailySummaryService from './services/dailySummaryService.js'
-import csrf from 'csurf' // TODO: csurfは非推奨。将来的に別のCSRF対策ライブラリへの移行を検討
+import { doubleCsrf } from 'csrf-csrf'
 import { sanitizeMiddleware } from './utils/sanitizer.js'
 
 // 環境変数の読み込み
@@ -98,21 +98,32 @@ app.use(cookieParser())
 // XSS対策: すべてのリクエストボディをサニタイズ
 app.use(sanitizeMiddleware)
 
-// CSRF保護
-const csrfProtection = csrf({ 
-  cookie: {
-    httpOnly: false,
+// CSRF保護 (csrf-csrfを使用)
+const {
+  generateCsrfToken,
+  doubleCsrfProtection,
+} = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET || 'default-secret-replace-in-production',
+  cookieName: process.env.NODE_ENV === 'production' ? '__Host-anpee.x-csrf-token' : 'anpee.x-csrf-token',
+  cookieOptions: {
+    httpOnly: false, // フロントエンドで読み取り可能にする必要あり
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/'
-  } 
+  },
+  size: 64,
+  ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
+  getCsrfTokenFromRequest: (req: any) => req.headers['x-csrf-token'] as string,
+  // セッション識別子（ステートレスなので固定値を使用）
+  getSessionIdentifier: () => 'anpee-session'
 })
 
-// CSRFトークン取得エンドポイント（CSRF保護の前に定義）
-app.get('/api/v1/csrf-token', csrfProtection, (req: any, res) => {
+// CSRFトークン取得エンドポイント
+app.get('/api/v1/csrf-token', (req, res) => {
+  const csrfToken = generateCsrfToken(req, res)
   res.json({ 
     success: true,
-    csrfToken: req.csrfToken()
+    csrfToken
   })
 })
 
@@ -127,7 +138,7 @@ if (enableCsrf && (process.env.NODE_ENV === 'production' || process.env.ENABLE_C
         req.path === '/webhook/stripe') {
       return next();
     }
-    csrfProtection(req, res, next);
+    doubleCsrfProtection(req, res, next);
   });
 }
 
