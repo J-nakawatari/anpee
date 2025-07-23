@@ -47,6 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { formatDateJP } from "@/lib/dateUtils";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -585,7 +586,7 @@ export function FamilyManagementPage() {
                       {person.address}
                     </TableCell>
                     <TableCell className="text-base">
-                      {person.lastResponseAt ? new Date(person.lastResponseAt).toLocaleDateString('ja-JP') : '-'}
+                      {formatDateJP(person.lastResponseAt)}
                     </TableCell>
                     <TableCell className="text-center">
                       <TooltipProvider>

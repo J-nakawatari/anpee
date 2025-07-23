@@ -12,6 +12,7 @@ import { toast } from "@/lib/toast";
 import { InitialPlanSelection } from "./InitialPlanSelection";
 import { useDebugMode } from "@/hooks/useDebugMode";
 import Link from "next/link";
+import { safeDate, formatTimeJP, isSameDay } from "@/lib/dateUtils";
 
 export function DashboardPage() {
   const [currentTime] = useState(new Date());
@@ -137,8 +138,7 @@ export function DashboardPage() {
   const elderlyPeople = elderlyList.map((elderly, index) => {
     // 本日のLINE応答があるかチェック
     const today = new Date();
-    const hasResponseToday = elderly.lastResponseAt && 
-      new Date(elderly.lastResponseAt).toDateString() === today.toDateString();
+    const hasResponseToday = isSameDay(elderly.lastResponseAt, today);
     
     return {
       id: elderly._id || `${index}`,
@@ -147,9 +147,7 @@ export function DashboardPage() {
       age: elderly.age,
       gender: elderly.gender,
       status: "安全",
-      lastLineResponse: hasResponseToday && elderly.lastResponseAt ? 
-        new Date(elderly.lastResponseAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : 
-        "未応答",
+      lastLineResponse: hasResponseToday ? formatTimeJP(elderly.lastResponseAt, "未応答") : "未応答",
       todayLineResponse: hasResponseToday,
       avatar: getAvatar(elderly.gender),
       statusColor: "bg-green-100 text-green-700"
@@ -210,7 +208,7 @@ export function DashboardPage() {
     type: response.method === 'LINE' ? 'LINE' : '電話',
     action: response.method === 'LINE' ? '元気ですボタン' : '電話応答',
     status: '応答',
-    time: new Date(response.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+    time: formatTimeJP(response.timestamp),
     icon: response.method === 'LINE' ? MessageSquare : Phone,
     color: 'text-green-600'
   }));

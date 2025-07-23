@@ -17,6 +17,7 @@ import {
 } from "./ui/select";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { safeDate } from '@/lib/dateUtils';
 import { apiClient } from "@/services/apiClient";
 import { toast } from "@/lib/toast";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -221,14 +222,16 @@ export function HistoryPage() {
         let bValue: any;
         
         if (sortField === 'date') {
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
+          const aDate = safeDate(a.createdAt);
+          const bDate = safeDate(b.createdAt);
+          aValue = aDate ? aDate.getTime() : 0;
+          bValue = bDate ? bDate.getTime() : 0;
         } else if (sortField === 'time') {
           // 時刻を比較可能な形式に変換
-          const aDate = new Date(a.createdAt);
-          const bDate = new Date(b.createdAt);
-          aValue = aDate.getHours() * 60 + aDate.getMinutes();
-          bValue = bDate.getHours() * 60 + bDate.getMinutes();
+          const aDate = safeDate(a.createdAt);
+          const bDate = safeDate(b.createdAt);
+          aValue = aDate ? aDate.getHours() * 60 + aDate.getMinutes() : 0;
+          bValue = bDate ? bDate.getHours() * 60 + bDate.getMinutes() : 0;
         }
         
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
@@ -582,10 +585,10 @@ export function HistoryPage() {
                           <td className="px-4 py-3">
                             <div>
                               <div className="font-medium">
-                                {format(new Date(record.createdAt), 'M月d日', { locale: ja })}
+                                {safeDate(record.createdAt) ? format(safeDate(record.createdAt)!, 'M月d日', { locale: ja }) : '-'}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {format(new Date(record.createdAt), 'HH:mm', { locale: ja })}
+                                {safeDate(record.createdAt) ? format(safeDate(record.createdAt)!, 'HH:mm', { locale: ja }) : '-'}
                               </div>
                             </div>
                           </td>

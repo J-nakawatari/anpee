@@ -33,6 +33,7 @@ import {
 import { toast } from "@/lib/toast";
 import billingService, { SubscriptionData } from "@/services/billingService";
 import { Plan, Invoice, PaymentMethod } from "@/types/billing";
+import { safeDate, formatDateJP } from "@/lib/dateUtils";
 
 export function BillingPageV2() {
   const searchParams = useSearchParams();
@@ -482,19 +483,19 @@ export function BillingPageV2() {
                       <>
                         <div className="flex justify-between">
                           <span className="text-gray-600">契約開始日</span>
-                          <span className="font-medium">{new Date(subscription.startDate).toLocaleDateString('ja-JP')}</span>
+                          <span className="font-medium">{formatDateJP(subscription.startDate)}</span>
                         </div>
                         {subscription.nextBillingDate && !subscription.cancelAtPeriodEnd && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">次回請求日</span>
-                            <span className="font-medium">{new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}</span>
+                            <span className="font-medium">{formatDateJP(subscription.nextBillingDate)}</span>
                           </div>
                         )}
                         {subscription.cancelAtPeriodEnd && subscription.nextBillingDate && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">サービス終了日</span>
                             <span className="font-medium text-orange-600">
-                              {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}
+                              {formatDateJP(subscription.nextBillingDate)}
                             </span>
                           </div>
                         )}
@@ -624,7 +625,7 @@ export function BillingPageV2() {
                         {invoice.invoiceNumber || '-'}
                       </TableCell>
                       <TableCell>
-                        {new Date(invoice.date).toLocaleDateString('ja-JP')}
+                        {formatDateJP(invoice.date)}
                       </TableCell>
                       <TableCell>
                         {invoice.planName}
@@ -739,7 +740,7 @@ export function BillingPageV2() {
                 <AlertDescription className="text-red-800">
                   {subscription.nextBillingDate && (
                     <>
-                      キャンセル済み: {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')} まで利用可能です
+                      キャンセル済み: {formatDateJP(subscription.nextBillingDate)} まで利用可能です
                     </>
                   )}
                 </AlertDescription>
@@ -800,11 +801,11 @@ export function BillingPageV2() {
                 <div className="space-y-2">
                   <p>キャンセルしても、以下の日付まで引き続きサービスをご利用いただけます：</p>
                   <p className="font-semibold text-lg">
-                    {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP', {
+                    {safeDate(subscription.nextBillingDate) ? safeDate(subscription.nextBillingDate)!.toLocaleDateString('ja-JP', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
-                    })}まで
+                    }) : '-'}まで
                   </p>
                   <p className="text-sm text-gray-600">
                     上記の日付以降、自動的にサービスが停止され、次回の請求は発生しません。

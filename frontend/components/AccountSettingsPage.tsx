@@ -35,6 +35,7 @@ import {
 } from "./ui/table";
 import { toast } from "@/lib/toast";
 import { apiClient } from "@/services/apiClient";
+import { formatDateJP } from '@/lib/dateUtils';
 
 // 型定義
 interface UserAccount {
@@ -361,7 +362,7 @@ export function AccountSettingsPage() {
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">登録日</Label>
               <p className="text-gray-900 mt-1 font-medium">
-                {new Date(userAccount.createdAt).toLocaleDateString('ja-JP')}
+                {formatDateJP(userAccount.createdAt)}
               </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
