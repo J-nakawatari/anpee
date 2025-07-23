@@ -81,6 +81,17 @@ export function BillingPageV2() {
 
   // データの取得
   useEffect(() => {
+    // デバッグモード: ?debug=expired でサブスクリプション期限切れをシミュレート
+    const debugMode = searchParams.get('debug');
+    if (debugMode === 'expired') {
+      // 期限切れ状態をシミュレート
+      setSubscription(null);
+      setCurrentPlan(null);
+      setLoading(false);
+      toast.info('デバッグモード: サブスクリプション期限切れ状態');
+      return;
+    }
+    
     loadBillingData();
     
     // 支払い成功後の処理
@@ -532,12 +543,50 @@ export function BillingPageV2() {
               </div>
             </>
           ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                現在有効なサブスクリプションがありません。プランを選択して契約してください。
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+              {/* 期限切れの場合の特別なメッセージ */}
+              {searchParams.get('debug') === 'expired' && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-red-100 rounded-full p-3">
+                      <XCircle className="w-8 h-8 text-red-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-red-900 mb-2">
+                    サービスの利用期限が終了しました
+                  </h3>
+                  <p className="text-red-800 mb-4">
+                    見守りサービスは停止されています。サービスを再開するには、プランを選択してください。
+                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-yellow-800">
+                      <AlertCircle className="inline w-4 h-4 mr-1" />
+                      過去30日間のデータは保持されています。再契約後すぐにご利用いただけます。
+                    </p>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    className="w-full max-w-sm mx-auto"
+                    onClick={() => {
+                      const element = document.getElementById('plan-selection');
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    プランを選択してサービスを再開
+                  </Button>
+                </div>
+              )}
+              
+              {/* 通常の未契約状態 */}
+              {searchParams.get('debug') !== 'expired' && (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    現在有効なサブスクリプションがありません。プランを選択して契約してください。
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -626,7 +675,7 @@ export function BillingPageV2() {
       </Card>
 
       {/* プラン変更・契約管理 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="plan-selection">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
