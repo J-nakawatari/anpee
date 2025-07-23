@@ -34,9 +34,18 @@ const notificationSchema = new Schema({
 // インデックス
 notificationSchema.index({ userId: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, read: 1 });
-// 30日以上前の既読通知を自動削除
+// 通知の自動削除ポリシー:
+// - 既読通知: 24時間後に自動削除
+// - 未読通知: 削除されない（管理者通知など重要な通知を見逃さないため）
+// 
+// 注意: 未読通知も90日後に削除したい場合は、以下のようなインデックスを追加：
+// notificationSchema.index({ createdAt: 1 }, { 
+//   expireAfterSeconds: 90 * 24 * 60 * 60,
+//   partialFilterExpression: { read: false }
+// });
+// 24時間以上前の既読通知を自動削除
 notificationSchema.index({ createdAt: 1 }, {
-    expireAfterSeconds: 30 * 24 * 60 * 60,
+    expireAfterSeconds: 24 * 60 * 60, // 24時間 = 86400秒
     partialFilterExpression: { read: true }
 });
 export default mongoose.model('Notification', notificationSchema);
