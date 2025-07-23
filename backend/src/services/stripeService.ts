@@ -101,24 +101,20 @@ export class StripeService {
   // サブスクリプション情報を取得
   async getSubscription(userId: string): Promise<ISubscription | null> {
     try {
-      // MongoDBから取得せず、常にStripeから最新情報を取得
-      // （MongoDBのデータが不正確なため）
-      // const subscription = await Subscription.findOne({ userId })
-      // if (subscription) {
-      //   return subscription
-      // }
-
-      // MongoDBにない場合は、Stripeから直接取得
+      // まずMongoDBから取得を試みる
+      const mongoSubscription = await Subscription.findOne({ userId })
+      
       const user = await User.findById(userId)
       if (!user || !user.stripeCustomerId) {
         return null
       }
 
-      // Stripeからサブスクリプションを取得
+      // Stripeからサブスクリプションを取得（expand使用）
       const subscriptions = await this.stripe.subscriptions.list({
         customer: user.stripeCustomerId,
         status: 'active',
-        limit: 1
+        limit: 1,
+        expand: ['data.default_payment_method', 'data.latest_invoice']
       })
 
       if (subscriptions.data.length === 0) {
@@ -130,35 +126,43 @@ export class StripeService {
       // デバッグ用：Stripeから取得した実際のデータ構造を確認
       logger.info(`Stripeサブスクリプション全体データ: ${JSON.stringify(stripeSubscription, null, 2)}`)
       
-      // 標準的なフィールドを確認
-      const debugData = {
-        id: stripeSubscription.id,
-        status: stripeSubscription.status,
-        current_period_start: stripeSubscription.current_period_start,
-        current_period_end: stripeSubscription.current_period_end,
-        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-        price_id: stripeSubscription.items.data[0]?.price?.id,
-        created: stripeSubscription.created,
-        // アイテムレベルの期間情報も確認
-        item_period_start: stripeSubscription.items.data[0]?.current_period_start,
-        item_period_end: stripeSubscription.items.data[0]?.current_period_end
+      // MongoDBのデータも確認
+      if (mongoSubscription) {
+        logger.info(`MongoDBサブスクリプションデータ: ${JSON.stringify({
+          id: mongoSubscription._id,
+          currentPeriodStart: mongoSubscription.currentPeriodStart,
+          currentPeriodEnd: mongoSubscription.currentPeriodEnd,
+          planId: mongoSubscription.planId,
+          status: mongoSubscription.status
+        })}`)
       }
-      logger.info(`Stripeサブスクリプション抽出データ: ${JSON.stringify(debugData)}`)
+      
+      // 日付の取得優先順位：
+      // 1. Stripeのcurrent_period_start/end
+      // 2. MongoDBのcurrentPeriodStart/End
+      // 3. デフォルト値（現在時刻と30日後）
+      let periodStart = stripeSubscription.current_period_start 
+        ? new Date(stripeSubscription.current_period_start * 1000)
+        : mongoSubscription?.currentPeriodStart || new Date();
+        
+      let periodEnd = stripeSubscription.current_period_end
+        ? new Date(stripeSubscription.current_period_end * 1000)
+        : mongoSubscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       
       // 仮想的なサブスクリプションオブジェクトを返す
       return {
-        _id: stripeSubscription.id,
+        _id: mongoSubscription?._id || stripeSubscription.id,
         userId,
         stripeCustomerId: user.stripeCustomerId,
         stripeSubscriptionId: stripeSubscription.id,
         stripePriceId: stripeSubscription.items.data[0].price.id,
         planId: this.getPlanIdFromPriceId(stripeSubscription.items.data[0].price.id),
         status: stripeSubscription.status,
-        currentPeriodStart: stripeSubscription.current_period_start ? new Date(stripeSubscription.current_period_start * 1000) : new Date(),
-        currentPeriodEnd: stripeSubscription.current_period_end ? new Date(stripeSubscription.current_period_end * 1000) : new Date(),
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-        createdAt: new Date(stripeSubscription.created * 1000),
-        updatedAt: new Date()
+        createdAt: mongoSubscription?.createdAt || new Date(stripeSubscription.created * 1000),
+        updatedAt: mongoSubscription?.updatedAt || new Date()
       } as any
     } catch (error) {
       logger.error('サブスクリプション取得エラー:', error)
