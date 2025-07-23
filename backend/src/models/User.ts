@@ -12,6 +12,8 @@ export interface IUser extends Document {
   hasSelectedInitialPlan?: boolean
   emailVerified: boolean
   emailVerificationToken?: string
+  emailVerificationExpires?: Date
+  pendingEmail?: string
   passwordResetToken?: string
   passwordResetExpires?: Date
   notificationSettings?: {
@@ -84,6 +86,12 @@ const userSchema = new Schema<IUser>(
       default: false,
     },
     emailVerificationToken: {
+      type: String,
+    },
+    emailVerificationExpires: {
+      type: Date,
+    },
+    pendingEmail: {
       type: String,
     },
     passwordResetToken: {
