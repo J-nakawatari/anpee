@@ -20,13 +20,19 @@ const router = Router()
 // すべてのルートで認証が必要
 router.use(authenticate)
 
-// 請求情報を取得
+// サブスクリプション情報を取得
+router.get('/subscription', getBillingInfo)
+
+// 請求情報を取得 (互換性のため残す)
 router.get('/info', getBillingInfo)
 
 // サブスクリプション履歴を取得
 router.get('/subscription-history', getSubscriptionHistory)
 
 // 請求履歴を取得
+router.get('/invoices', getInvoiceHistory)
+
+// 請求履歴を取得 (互換性のため残す)
 router.get('/invoice-history', getInvoiceHistory)
 
 // サブスクリプションをキャンセル
