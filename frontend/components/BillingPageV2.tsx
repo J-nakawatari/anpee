@@ -196,11 +196,39 @@ export function BillingPageV2() {
 
     try {
       setIsProcessing(true);
-      const checkoutUrl = await billingService.createCheckoutSession(newPlan.stripePriceId);
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error('チェックアウトセッション作成エラー:', error);
-      toast.error('プラン変更の処理に失敗しました');
+      
+      // プラン変更のバリデーション
+      const validationResponse = await apiClient.post('/billing/validate-plan-change', {
+        targetPlan: selectedPlan
+      });
+      
+      if (!validationResponse.data.valid) {
+        // バリデーションエラーがある場合
+        toast.error(validationResponse.data.message);
+        setIsProcessing(false);
+        setShowPlanDetailDialog(false);
+        return;
+      }
+      
+      // 現在のプランがある場合は直接プラン変更、ない場合は新規契約
+      if (subscription?.id) {
+        // 既存のサブスクリプションがある場合はプラン変更API
+        await apiClient.post('/billing/change-plan', {
+          targetPlan: selectedPlan
+        });
+        
+        toast.success('プランを変更しました');
+        await loadBillingData(); // データを再読み込み
+        setShowPlanDetailDialog(false);
+      } else {
+        // 新規契約の場合はチェックアウト
+        const checkoutUrl = await billingService.createCheckoutSession(newPlan.stripePriceId);
+        window.location.href = checkoutUrl;
+      }
+    } catch (error: any) {
+      console.error('プラン変更エラー:', error);
+      toast.error(error.response?.data?.error || 'プラン変更の処理に失敗しました');
+    } finally {
       setIsProcessing(false);
     }
   };

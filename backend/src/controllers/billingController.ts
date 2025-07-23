@@ -1,92 +1,96 @@
 import { Response } from 'express'
 import { AuthRequest } from '../middleware/auth.js'
-import { getStripeService } from '../services/stripeService.js'
 import logger from '../utils/logger.js'
+import { getStripeService } from '../services/stripeService.js'
 
-// サブスクリプション情報を取得
-export const getSubscription = async (req: AuthRequest, res: Response) => {
+// 請求情報を取得
+export const getBillingInfo = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
     
-    try {
-      const subscription = await getStripeService().getSubscription(userId)
-      
-      if (subscription) {
-        return res.json({
-          subscription: {
-            id: subscription._id || subscription.stripeSubscriptionId,
-            status: subscription.status,
-            currentPlan: subscription.planId,
-            stripePriceId: subscription.stripePriceId,
-            startDate: subscription.createdAt,
-            nextBillingDate: subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-            trialEnd: subscription.trialEnd,
-            stripeCustomerId: subscription.stripeCustomerId,
-            stripeSubscriptionId: subscription.stripeSubscriptionId
-          }
-        })
-      }
-    } catch (stripeError) {
-      logger.warn('Stripeからのサブスクリプション取得に失敗、請求履歴から推測します:', stripeError)
-    }
+    // Stripeサービスから請求情報を取得
+    const billingInfo = await getStripeService().getBillingInfo(userId)
     
-    // Stripeエラーの場合は請求履歴から推測
-    try {
-      const invoices = await getStripeService().getInvoices(userId, 1)
-      
-      if (invoices.length > 0 && invoices[0].status === 'paid') {
-        const latestInvoice = invoices[0]
-        
-        // planIdまたはpriceIdからプランを判定
-        let planId = latestInvoice.planId || 'standard'
-        let stripePriceId = latestInvoice.priceId || 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt'
-        
-        // priceIdが設定されている場合は、それに基づいてplanIdを確定
-        if (latestInvoice.priceId === 'price_1RnLJC1qmMqgQ3qQc9t1lemY') {
-          planId = 'family'
-        }
-        
-        return res.json({
-          subscription: {
-            id: 'inferred-from-invoice',
-            status: 'active',
-            currentPlan: planId,
-            stripePriceId: stripePriceId,
-            startDate: latestInvoice.period.start,
-            nextBillingDate: latestInvoice.period.end,
-            cancelAtPeriodEnd: false,
-            stripeCustomerId: null,
-            stripeSubscriptionId: null
-          }
-        })
-      }
-    } catch (invoiceError) {
-      logger.error('請求履歴取得エラー:', invoiceError)
-    }
-    
-    return res.json({
-      subscription: null,
-      message: 'No active subscription'
-    })
+    res.json(billingInfo)
   } catch (error) {
-    logger.error('サブスクリプション取得エラー:', error)
-    res.status(500).json({ error: 'Failed to fetch subscription' })
+    logger.error('請求情報取得エラー:', error)
+    res.status(500).json({ error: 'Failed to fetch billing info' })
   }
 }
 
-// 請求履歴を取得
-export const getInvoices = async (req: AuthRequest, res: Response) => {
+// サブスクリプション履歴を取得
+export const getSubscriptionHistory = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId
-    const limit = parseInt(req.query.limit as string) || 10
     
-    const invoices = await getStripeService().getInvoices(userId, limit)
+    const history = await getStripeService().getSubscriptionHistory(userId)
+    
+    res.json({ history })
+  } catch (error) {
+    logger.error('サブスクリプション履歴取得エラー:', error)
+    res.status(500).json({ error: 'Failed to fetch subscription history' })
+  }
+}
+
+// 請求書履歴を取得
+export const getInvoiceHistory = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    const { limit = 10 } = req.query
+    
+    const invoices = await getStripeService().getInvoiceHistory(userId, Number(limit))
     
     res.json({ invoices })
   } catch (error) {
-    logger.error('請求履歴取得エラー:', error)
-    res.status(500).json({ error: 'Failed to fetch invoices' })
+    logger.error('請求書履歴取得エラー:', error)
+    res.status(500).json({ error: 'Failed to fetch invoice history' })
+  }
+}
+
+// サブスクリプションをキャンセル
+export const cancelSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    
+    await getStripeService().cancelSubscription(userId)
+    
+    res.json({ success: true, message: 'Subscription canceled successfully' })
+  } catch (error) {
+    logger.error('サブスクリプションキャンセルエラー:', error)
+    res.status(500).json({ error: 'Failed to cancel subscription' })
+  }
+}
+
+// サブスクリプションを再開
+export const resumeSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    
+    await getStripeService().resumeSubscription(userId)
+    
+    res.json({ success: true, message: 'Subscription resumed successfully' })
+  } catch (error) {
+    logger.error('サブスクリプション再開エラー:', error)
+    res.status(500).json({ error: 'Failed to resume subscription' })
+  }
+}
+
+// 支払い方法を追加
+export const addPaymentMethod = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    const { paymentMethodId } = req.body
+    
+    if (!paymentMethodId) {
+      return res.status(400).json({ error: 'Payment method ID is required' })
+    }
+    
+    await getStripeService().addPaymentMethod(userId, paymentMethodId)
+    
+    res.json({ success: true, message: 'Payment method added successfully' })
+  } catch (error) {
+    logger.error('支払い方法追加エラー:', error)
+    res.status(500).json({ error: 'Failed to add payment method' })
   }
 }
 
@@ -230,5 +234,136 @@ export const handlePaymentSuccess = async (req: AuthRequest, res: Response) => {
       userId: req.user?.userId
     })
     res.status(500).json({ error: 'Failed to process payment success' })
+  }
+}
+
+// プラン変更のバリデーション
+export const validatePlanChange = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    const { targetPlan } = req.body
+    
+    if (!targetPlan || !['standard', 'family'].includes(targetPlan)) {
+      return res.status(400).json({ error: '有効なプランを指定してください' })
+    }
+    
+    // 現在のプランを取得
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    
+    if (!user) {
+      return res.status(404).json({ error: 'ユーザーが見つかりません' })
+    }
+    
+    // スタンダードプランへのダウングレードの場合
+    if (targetPlan === 'standard' && user.currentPlan === 'family') {
+      // 登録されている家族の数を確認
+      const Elderly = (await import('../models/Elderly.js')).default
+      const activeElderly = await Elderly.countDocuments({
+        userId: userId,
+        status: 'active'
+      })
+      
+      if (activeElderly > 1) {
+        return res.json({
+          valid: false,
+          message: `現在${activeElderly}人の家族が登録されています。スタンダードプランでは1人までしか登録できません。家族管理画面で${activeElderly - 1}人を削除してからプランを変更してください。`,
+          currentFamilyCount: activeElderly,
+          maxAllowed: 1
+        })
+      }
+    }
+    
+    // バリデーション成功
+    res.json({
+      valid: true,
+      message: 'プラン変更可能です'
+    })
+    
+  } catch (error) {
+    logger.error('プラン変更バリデーションエラー:', error)
+    res.status(500).json({ error: 'プラン変更の検証に失敗しました' })
+  }
+}
+
+// プラン変更処理
+export const changePlan = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId
+    const { targetPlan } = req.body
+    
+    if (!targetPlan || !['standard', 'family'].includes(targetPlan)) {
+      return res.status(400).json({ error: '有効なプランを指定してください' })
+    }
+    
+    // バリデーションを再度実行
+    const User = (await import('../models/User.js')).default
+    const user = await User.findById(userId)
+    
+    if (!user) {
+      return res.status(404).json({ error: 'ユーザーが見つかりません' })
+    }
+    
+    // スタンダードプランへのダウングレードの場合
+    if (targetPlan === 'standard' && user.currentPlan === 'family') {
+      const Elderly = (await import('../models/Elderly.js')).default
+      const activeElderly = await Elderly.countDocuments({
+        userId: userId,
+        status: 'active'
+      })
+      
+      if (activeElderly > 1) {
+        return res.status(400).json({
+          error: '家族の人数を1人に調整してからプランを変更してください',
+          currentFamilyCount: activeElderly
+        })
+      }
+    }
+    
+    // Stripeのサブスクリプションを更新
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-06-30.basil'
+    })
+    
+    // 現在のサブスクリプションを取得
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId!,
+      status: 'active',
+      limit: 1
+    })
+    
+    if (subscriptions.data.length === 0) {
+      return res.status(400).json({ error: 'アクティブなサブスクリプションが見つかりません' })
+    }
+    
+    const subscription = subscriptions.data[0]
+    const newPriceId = targetPlan === 'standard' 
+      ? 'price_1RnLHg1qmMqgQ3qQx3Mfo1rt' 
+      : 'price_1RnLJC1qmMqgQ3qQc9t1lemY'
+    
+    // サブスクリプションアイテムを更新
+    await stripe.subscriptions.update(subscription.id, {
+      items: [{
+        id: subscription.items.data[0].id,
+        price: newPriceId
+      }],
+      proration_behavior: 'create_prorations'
+    })
+    
+    // DBを更新
+    user.currentPlan = targetPlan
+    await user.save()
+    
+    logger.info(`プラン変更完了: userId=${userId}, newPlan=${targetPlan}`)
+    
+    res.json({
+      success: true,
+      message: 'プランを変更しました',
+      newPlan: targetPlan
+    })
+    
+  } catch (error) {
+    logger.error('プラン変更エラー:', error)
+    res.status(500).json({ error: 'プラン変更に失敗しました' })
   }
 }
