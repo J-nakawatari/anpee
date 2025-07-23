@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell } from "lucide-react";
-import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,41 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-
-interface Notification {
-  id: string;
-  type: "response" | "no_response" | "system";
-  title: string;
-  message: string;
-  elderlyName?: string;
-  createdAt: Date;
-  read: boolean;
-}
+import { useNotifications } from "@/hooks/useNotifications";
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "response",
-      title: "応答がありました",
-      message: "田中太郎さんが元気ですボタンを押しました",
-      elderlyName: "田中太郎",
-      createdAt: new Date(),
-      read: false,
-    },
-  ]);
+  const { notifications, markAsRead, markAllAsRead } = useNotifications();
 
   const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

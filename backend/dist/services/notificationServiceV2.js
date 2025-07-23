@@ -5,6 +5,7 @@ import { sendLineMessage } from './lineService.js';
 import { generateResponseToken } from './tokenService.js';
 import emailService from './emailService.js';
 import logger from '../utils/logger.js';
+import notificationService from './notificationService.js';
 // date-fnsの代わりにネイティブのDateメソッドを使用
 // 時間帯に応じた挨拶を取得
 function getGreeting(hour) {
@@ -189,6 +190,11 @@ export class NotificationServiceV2 {
                 // 現在の再通知回数を計算（retryタイプの通知数をカウント）
                 const retryCount = record.notifications.filter(n => n.type.startsWith('retry')).length;
                 logger.info(`再通知チェック: ${elderly.name}さん - 最後の通知から${minutesSinceLastNotification}分経過, 再通知回数: ${retryCount}`);
+                // 初回の応答なし通知を送信（まだ再通知が0回で、設定した間隔が経過した場合）
+                if (retryCount === 0 && minutesSinceLastNotification >= retrySettings.retryInterval) {
+                    // 初回の応答なし通知を作成
+                    await notificationService.notifyNoResponse(user._id.toString(), elderly._id.toString(), elderly.name, 0);
+                }
                 // 再通知が必要かチェック
                 if (minutesSinceLastNotification >= retrySettings.retryInterval) {
                     if (retryCount < retrySettings.maxRetries) {
@@ -196,6 +202,8 @@ export class NotificationServiceV2 {
                         const retryType = `retry${retryCount + 1}`;
                         logger.info(`再通知送信: ${elderly.name}さん - タイプ: ${retryType}`);
                         await this.sendNotificationToElderly(elderly, user._id.toString(), record.date, retryType);
+                        // アプリ内通知を作成
+                        await notificationService.notifyNoResponse(user._id.toString(), elderly._id.toString(), elderly.name, retryCount + 1);
                     }
                     else if (!record.adminNotifiedAt && minutesSinceLastNotification >= 30) {
                         // 管理者通知を送信
@@ -221,6 +229,8 @@ export class NotificationServiceV2 {
                 // 管理者通知済みフラグを設定
                 record.adminNotifiedAt = new Date();
                 await record.save();
+                // アプリ内通知を作成
+                await notificationService.notifyAdmin(user._id.toString(), elderly._id.toString(), elderly.name);
                 logger.info(`管理者通知送信: ${emailAddress} - ${elderly.name}さん`);
             }
         }
@@ -264,6 +274,10 @@ export class NotificationServiceV2 {
             const elderly = record.elderlyId;
             elderly.lastResponseAt = new Date();
             await elderly.save();
+            // アプリ内通知を作成
+            if (record.userId) {
+                await notificationService.notifyResponse(record.userId, elderly._id, elderly.name);
+            }
             logger.info(`元気ボタン応答記録: ${elderly.name}さん`);
             return { success: true, elderlyName: elderly.name };
         }

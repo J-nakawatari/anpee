@@ -20,7 +20,7 @@ export function useNotifications() {
   // 通知を取得
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await apiClient.get("/notifications");
+      const response = await apiClient.get("/app-notifications");
       if (response.data.success) {
         setNotifications(response.data.data.map((n: any) => ({
           ...n,
@@ -35,7 +35,7 @@ export function useNotifications() {
   // 通知を既読にする
   const markAsRead = useCallback(async (id: string) => {
     try {
-      await apiClient.put(`/notifications/${id}/read`);
+      await apiClient.put(`/app-notifications/${id}/read`);
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
@@ -47,7 +47,7 @@ export function useNotifications() {
   // すべての通知を既読にする
   const markAllAsRead = useCallback(async () => {
     try {
-      await apiClient.put("/notifications/read-all");
+      await apiClient.put("/app-notifications/read-all");
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("通知の一括既読処理に失敗しました:", error);
@@ -61,7 +61,7 @@ export function useNotifications() {
 
     // SSE接続を確立
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/notifications/stream`,
+      `${process.env.NEXT_PUBLIC_API_URL}/app-notifications/stream`,
       {
         withCredentials: true,
       }
