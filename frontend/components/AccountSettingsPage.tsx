@@ -601,7 +601,7 @@ export function AccountSettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="newEmail">新しいメールアドレス</Label>
               <Input
                 id="newEmail"
@@ -611,7 +611,7 @@ export function AccountSettingsPage() {
                 placeholder="new@example.com"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="confirmEmail">メールアドレス（確認）</Label>
               <Input
                 id="confirmEmail"
@@ -646,7 +646,7 @@ export function AccountSettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="currentPassword">現在のパスワード</Label>
               <div className="relative">
                 <Input
@@ -666,7 +666,7 @@ export function AccountSettingsPage() {
                 </Button>
               </div>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="newPassword">新しいパスワード</Label>
               <div className="relative">
                 <Input
@@ -686,7 +686,7 @@ export function AccountSettingsPage() {
                 </Button>
               </div>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="confirmPassword">新しいパスワード（確認）</Label>
               <div className="relative">
                 <Input
@@ -739,7 +739,7 @@ export function AccountSettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="phone">電話番号</Label>
               <Input
                 id="phone"
@@ -783,7 +783,7 @@ export function AccountSettingsPage() {
                 削除されるデータ：見守り対象者の情報、通話履歴、設定、請求履歴など
               </AlertDescription>
             </Alert>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="deletePassword">パスワードを入力して確認</Label>
               <Input
                 id="deletePassword"
