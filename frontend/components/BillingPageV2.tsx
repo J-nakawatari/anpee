@@ -235,9 +235,26 @@ export function BillingPageV2() {
   };
 
   const handleCancelSubscription = async () => {
-    // キャンセル機能は現在実装中
-    toast.info('キャンセル機能は現在実装中です。お問い合わせください。');
-    setShowCancelDialog(false);
+    try {
+      setIsProcessing(true);
+      const { apiClient } = await import('@/services/apiClient');
+      
+      const response = await apiClient.post('/billing/cancel');
+      
+      if (response.data.success) {
+        toast.success('サブスクリプションのキャンセルを受け付けました');
+        // データを再読み込み
+        await loadBillingData();
+        setShowCancelDialog(false);
+      } else {
+        toast.error(response.data.error || 'キャンセルに失敗しました');
+      }
+    } catch (error: any) {
+      console.error('キャンセルエラー:', error);
+      toast.error(error.response?.data?.error || 'キャンセル処理に失敗しました');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDownloadInvoice = (downloadUrl?: string) => {
@@ -419,11 +436,13 @@ export function BillingPageV2() {
                     <h4 className="font-medium text-gray-900">契約情報</h4>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>契約開始日: {new Date(subscription.startDate).toLocaleDateString('ja-JP')}</p>
-                      <p>ステータス: <span className={subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}>
-                        {subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み'}
+                      <p>ステータス: <span className={subscription.cancelAtPeriodEnd ? 'text-orange-600' : subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}>
+                        {subscription.cancelAtPeriodEnd ? 'キャンセル予定' : subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み'}
                       </span></p>
-                      {subscription.cancelAtPeriodEnd && (
-                        <p className="text-red-600">期間終了時にキャンセル予定</p>
+                      {subscription.cancelAtPeriodEnd && subscription.nextBillingDate && (
+                        <p className="text-orange-600 font-medium">
+                          {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')} にサービス終了
+                        </p>
                       )}
                     </div>
                   </div>
@@ -594,21 +613,45 @@ export function BillingPageV2() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                契約のキャンセルや一時停止をご希望の場合は、サポートまでお問い合わせください。
-              </AlertDescription>
-            </Alert>
+            {subscription?.cancelAtPeriodEnd ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  {subscription.nextBillingDate && (
+                    <>
+                      キャンセル済み: {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')} まで利用可能です
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  キャンセル後も現在の請求期間終了までサービスをご利用いただけます
+                </AlertDescription>
+              </Alert>
+            )}
             
             <div className="space-y-2">
-              <Button 
-                variant="destructive" 
-                className="w-full"
-                onClick={() => setShowCancelDialog(true)}
-              >
-                契約をキャンセル
-              </Button>
+              {subscription?.cancelAtPeriodEnd ? (
+                <Button 
+                  variant="secondary" 
+                  className="w-full"
+                  disabled
+                >
+                  キャンセル済み
+                </Button>
+              ) : (
+                <Button 
+                  variant="destructive" 
+                  className="w-full"
+                  onClick={() => setShowCancelDialog(true)}
+                  disabled={!subscription || subscription.status !== 'active'}
+                >
+                  契約をキャンセル
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -620,11 +663,20 @@ export function BillingPageV2() {
           <DialogHeader>
             <DialogTitle>契約をキャンセルしますか？</DialogTitle>
             <DialogDescription>
-              この操作は取り消すことができません。現在の請求期間の終了時にサービスが停止されます。
               {subscription?.nextBillingDate && (
-                <span className="block mt-2">
-                  サービス終了予定日: {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP')}
-                </span>
+                <div className="space-y-2">
+                  <p>キャンセルしても、以下の日付まで引き続きサービスをご利用いただけます：</p>
+                  <p className="font-semibold text-lg">
+                    {new Date(subscription.nextBillingDate).toLocaleDateString('ja-JP', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}まで
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    上記の日付以降、自動的にサービスが停止され、次回の請求は発生しません。
+                  </p>
+                </div>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -632,8 +684,19 @@ export function BillingPageV2() {
             <Button variant="outline" onClick={() => setShowCancelDialog(false)}>
               キャンセル
             </Button>
-            <Button variant="destructive" onClick={handleCancelSubscription}>
-              契約をキャンセル
+            <Button 
+              variant="destructive" 
+              onClick={handleCancelSubscription}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  処理中...
+                </>
+              ) : (
+                '契約をキャンセル'
+              )}
             </Button>
           </div>
         </DialogContent>
