@@ -33,7 +33,16 @@ export const getBillingInfo = async (req: AuthRequest, res: Response) => {
     // フロントエンドが期待するフィールド名に変換
     if (subscription) {
       const formattedSubscription = {
-        ...subscription,
+        _id: subscription._id,
+        userId: subscription.userId,
+        stripeCustomerId: subscription.stripeCustomerId,
+        stripeSubscriptionId: subscription.stripeSubscriptionId,
+        stripePriceId: subscription.stripePriceId,
+        planId: subscription.planId,
+        status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+        createdAt: subscription.createdAt,
+        updatedAt: subscription.updatedAt,
         startDate: subscription.currentPeriodStart,
         nextBillingDate: subscription.currentPeriodEnd
       }

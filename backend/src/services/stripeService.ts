@@ -101,11 +101,12 @@ export class StripeService {
   // サブスクリプション情報を取得
   async getSubscription(userId: string): Promise<ISubscription | null> {
     try {
-      // まずMongoDBから取得を試みる
-      const subscription = await Subscription.findOne({ userId })
-      if (subscription) {
-        return subscription
-      }
+      // MongoDBから取得せず、常にStripeから最新情報を取得
+      // （MongoDBのデータが不正確なため）
+      // const subscription = await Subscription.findOne({ userId })
+      // if (subscription) {
+      //   return subscription
+      // }
 
       // MongoDBにない場合は、Stripeから直接取得
       const user = await User.findById(userId)
