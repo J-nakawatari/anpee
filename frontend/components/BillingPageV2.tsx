@@ -420,7 +420,7 @@ export function BillingPageV2() {
     <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* 現在のプラン */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-blue-600" />
             現在のプラン
@@ -429,7 +429,7 @@ export function BillingPageV2() {
             ご契約中のプラン情報
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {currentPlan ? (
             <>
               {/* プラン概要 */}
@@ -474,25 +474,25 @@ export function BillingPageV2() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 {/* 契約情報 */}
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
                     <Calendar className="w-4 h-4 text-gray-600" />
                     契約情報
                   </h4>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-xs sm:text-sm">
                     {subscription && (
                       <>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2 text-xs sm:text-sm">
                           <span className="text-gray-600">契約開始日</span>
                           <span className="font-medium">{formatDateJP(subscription.startDate)}</span>
                         </div>
                         {subscription.nextBillingDate && !subscription.cancelAtPeriodEnd && (
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2 text-xs sm:text-sm">
                             <span className="text-gray-600">次回請求日</span>
                             <span className="font-medium">{formatDateJP(subscription.nextBillingDate)}</span>
                           </div>
                         )}
                         {subscription.cancelAtPeriodEnd && subscription.nextBillingDate && (
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2 text-xs sm:text-sm">
                             <span className="text-gray-600">サービス終了日</span>
                             <span className="font-medium text-orange-600">
                               {formatDateJP(subscription.nextBillingDate)}
@@ -506,11 +506,11 @@ export function BillingPageV2() {
 
                 {/* プラン特典 */}
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
                     <CheckCircle className="w-4 h-4 text-blue-600" />
                     プラン特典
                   </h4>
-                  <ul className="space-y-2 text-sm">
+                  <ul className="space-y-2 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                       <span>最大 {currentPlan.features.maxElderlyUsers} 人まで登録可能</span>
@@ -528,11 +528,11 @@ export function BillingPageV2() {
 
                 {/* 追加機能 */}
                 <div className="bg-green-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
                     <Settings className="w-4 h-4 text-green-600" />
                     追加機能
                   </h4>
-                  <ul className="space-y-2 text-sm">
+                  <ul className="space-y-2 text-xs sm:text-sm">
                     {currentPlan.features.supportFeatures.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -594,7 +594,7 @@ export function BillingPageV2() {
 
       {/* 請求履歴 */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
             請求履歴
@@ -603,7 +603,7 @@ export function BillingPageV2() {
             過去の請求書と支払い状況
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {invoices.length > 0 ? (
             <>
               {/* PC用テーブル */}
@@ -743,7 +743,7 @@ export function BillingPageV2() {
       {/* プラン変更・契約管理 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="plan-selection">
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2">
               <Settings className="w-5 h-5" />
               プラン変更
@@ -752,7 +752,7 @@ export function BillingPageV2() {
               より多くの機能をご利用いただけます
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
             {subscription?.cancelAtPeriodEnd && (
               <Alert className="border-orange-200 bg-orange-50">
                 <AlertCircle className="h-4 w-4 text-orange-600" />
@@ -769,8 +769,8 @@ export function BillingPageV2() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-gray-900">{plan.displayName}</h4>
-                      {plan.id === 'family' && <Badge variant="secondary">人気</Badge>}
-                      {isCurrentPlan && <Badge>現在のプラン</Badge>}
+                      {plan.id === 'family' && <Badge variant="secondary" className="text-xs">人気</Badge>}
+                      {isCurrentPlan && <Badge className="text-xs">現在のプラン</Badge>}
                     </div>
                     <p className="text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
                   </div>
@@ -789,7 +789,7 @@ export function BillingPageV2() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-red-600" />
               契約管理
@@ -798,7 +798,7 @@ export function BillingPageV2() {
               契約の一時停止やキャンセル
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
             {subscription?.cancelAtPeriodEnd ? (
               <Alert className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4 text-red-600" />
@@ -908,7 +908,7 @@ export function BillingPageV2() {
       }}>
         <DialogContent className="max-w-2xl mx-2 sm:mx-4 bg-white w-[calc(100vw-1rem)] sm:w-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
               {selectedPlanData && (
                 <>
                   <Badge className={getPlanBadgeColor(selectedPlanData.id)}>
@@ -921,7 +921,7 @@ export function BillingPageV2() {
             <DialogDescription>
               {selectedPlanData && (
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-xl sm:text-2xl font-bold text-gray-900">
                     ¥{selectedPlanData.price.toLocaleString()}
                   </span>
                   <span className="text-gray-500">/月</span>
@@ -936,13 +936,13 @@ export function BillingPageV2() {
           {selectedPlanDetails && (
             <div className="space-y-6">
               {/* 最適な用途 */}
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">こんな方におすすめ</h4>
                 <p className="text-blue-800 text-sm">{selectedPlanDetails.bestFor}</p>
               </div>
 
               {/* 機能一覧 */}
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
                   <Check className="w-5 h-5" />
                   含まれる機能
@@ -959,9 +959,9 @@ export function BillingPageV2() {
 
               {/* 制限事項 */}
               {selectedPlanDetails.limitations.length > 0 && (
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2">
-                    <X className="w-5 h-5" />
+                <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
+                    <X className="w-4 sm:w-5 h-4 sm:h-5" />
                     制限事項
                   </h4>
                   <div className="space-y-2">
