@@ -417,7 +417,7 @@ export function BillingPageV2() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden max-w-7xl mx-auto">
       {/* 現在のプラン */}
       <Card>
         <CardHeader className="p-4 sm:p-6">
@@ -433,27 +433,27 @@ export function BillingPageV2() {
           {currentPlan ? (
             <>
               {/* プラン概要 */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
-                <div className="flex items-center justify-between">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Badge className={`${getPlanBadgeColor(currentPlan.id)} text-base px-3 py-1`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className={`${getPlanBadgeColor(currentPlan.id)} text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1`}>
                         {currentPlan.displayName}
                       </Badge>
                       {subscription?.status === 'active' && !subscription.cancelAtPeriodEnd && (
-                        <Badge className="bg-green-100 text-green-700">
+                        <Badge className="bg-green-100 text-green-700 text-xs">
                           アクティブ
                         </Badge>
                       )}
                       {subscription?.cancelAtPeriodEnd && (
-                        <Badge className="bg-orange-100 text-orange-700">
+                        <Badge className="bg-orange-100 text-orange-700 text-xs">
                           キャンセル予定
                         </Badge>
                       )}
                     </div>
-                    <div className="text-3xl font-bold text-gray-900">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                       ¥{currentPlan.price.toLocaleString()}
-                      <span className="text-sm font-normal text-gray-600 ml-1">/月</span>
+                      <span className="text-xs sm:text-sm font-normal text-gray-600 ml-1">/月</span>
                     </div>
                   </div>
                   {currentPlan.id === 'standard' && subscription?.status === 'active' && (
@@ -461,10 +461,12 @@ export function BillingPageV2() {
                       variant="default" 
                       size="sm"
                       onClick={() => handlePlanChange('family')}
-                      className="ml-4"
+                      className="w-full sm:w-auto"
                       disabled={subscription.cancelAtPeriodEnd}
                     >
-                      {subscription.cancelAtPeriodEnd ? 'プラン変更不可' : 'ファミリープランにアップグレード'}
+                      <span className="text-xs sm:text-sm">
+                        {subscription.cancelAtPeriodEnd ? 'プラン変更不可' : 'ファミリープランにアップグレード'}
+                      </span>
                     </Button>
                   )}
                 </div>
@@ -512,15 +514,15 @@ export function BillingPageV2() {
                   </h4>
                   <ul className="space-y-2 text-xs sm:text-sm">
                     <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5" />
                       <span>最大 {currentPlan.features.maxElderlyUsers} 人まで登録可能</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5" />
                       <span>{currentPlan.features.safetyCheckFrequency}</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-blue-600 mt-0.5" />
                       <span>再通知 {currentPlan.features.maxRetryCount} 回まで</span>
                     </li>
                   </ul>
@@ -535,7 +537,7 @@ export function BillingPageV2() {
                   <ul className="space-y-2 text-xs sm:text-sm">
                     {currentPlan.features.supportFeatures.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-green-600 mt-0.5" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -765,20 +767,21 @@ export function BillingPageV2() {
               const isCurrentPlan = currentPlan && plan.id === currentPlan.id;
               const isCancelPending = subscription?.cancelAtPeriodEnd;
               return (
-                <div key={plan.id} className={`flex items-center justify-between p-3 border rounded-lg ${isCancelPending ? 'opacity-60' : ''}`}>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-gray-900">{plan.displayName}</h4>
+                <div key={plan.id} className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg ${isCancelPending ? 'opacity-60' : ''}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-medium text-gray-900 text-sm sm:text-base truncate">{plan.displayName}</h4>
                       {plan.id === 'family' && <Badge variant="secondary" className="text-xs">人気</Badge>}
                       {isCurrentPlan && <Badge className="text-xs">現在のプラン</Badge>}
                     </div>
-                    <p className="text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
+                    <p className="text-xs sm:text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
                   </div>
                   <Button 
                     variant={isCurrentPlan ? "secondary" : "default"}
                     size="sm"
                     disabled={!!isCurrentPlan || !!isCancelPending}
                     onClick={() => handlePlanChange(plan.id)}
+                    className="w-full sm:w-auto whitespace-nowrap"
                   >
                     {isCurrentPlan ? "現在のプラン" : isCancelPending ? "変更不可" : "詳細を見る"}
                   </Button>
@@ -906,7 +909,7 @@ export function BillingPageV2() {
         console.log('ダイアログ状態変更:', open);
         setShowPlanDetailDialog(open);
       }}>
-        <DialogContent className="max-w-2xl mx-2 sm:mx-4 bg-white w-[calc(100vw-1rem)] sm:w-auto">
+        <DialogContent className="max-w-2xl mx-2 sm:mx-4 bg-white">
           <DialogHeader>
             <DialogTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
               {selectedPlanData && (
@@ -950,7 +953,7 @@ export function BillingPageV2() {
                 <div className="space-y-2">
                   {selectedPlanDetails.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
                       <span className="text-sm text-gray-700">{feature}</span>
                     </div>
                   ))}
@@ -967,7 +970,7 @@ export function BillingPageV2() {
                   <div className="space-y-2">
                     {selectedPlanDetails.limitations.map((limitation, index) => (
                       <div key={index} className="flex items-start gap-2">
-                        <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        <X className="w-4 h-4 text-red-500 mt-0.5" />
                         <span className="text-sm text-gray-600">{limitation}</span>
                       </div>
                     ))}
