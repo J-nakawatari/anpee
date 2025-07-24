@@ -4,6 +4,8 @@ const router = Router();
 // LINE Webhook エンドポイント - 生のボディを処理
 router.post('/webhook', async (req, res) => {
     console.log('LINE Webhook受信 - Headers:', req.headers);
+    console.log('LINE Webhook受信 - Body Type:', typeof req.body);
+    console.log('LINE Webhook受信 - Body is Buffer:', Buffer.isBuffer(req.body));
     try {
         // 署名検証
         const signature = req.headers['x-line-signature'];
@@ -12,7 +14,16 @@ router.post('/webhook', async (req, res) => {
             return res.status(400).json({ error: 'No signature' });
         }
         // リクエストボディを文字列として取得
-        const body = req.body.toString('utf8');
+        let body;
+        if (Buffer.isBuffer(req.body)) {
+            body = req.body.toString('utf8');
+        }
+        else if (typeof req.body === 'string') {
+            body = req.body;
+        }
+        else {
+            body = JSON.stringify(req.body);
+        }
         console.log('LINE Webhook受信 - Raw Body:', body);
         // 署名を検証
         if (!validateSignature(body, signature)) {
