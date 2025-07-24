@@ -55,6 +55,8 @@ const elderlySchema = new Schema({
         type: String,
         unique: true,
         sparse: true,
+        trim: true,
+        uppercase: true,
     },
     callTime: {
         type: String,

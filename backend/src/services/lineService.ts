@@ -118,12 +118,23 @@ const handleEvent = async (event: WebhookEvent): Promise<MessageAPIResponseBase 
       
       // 6文字の英数字のパターンにマッチする場合（登録コードとみなす）
       if (/^[A-Z0-9]{6}$/i.test(text)) {
-        console.log('登録コード処理開始（6文字パターン）:', { userId, registrationCode: text.toUpperCase() });
+        console.log('登録コード処理開始（6文字パターン）:', { 
+          userId, 
+          originalText: text,
+          registrationCode: text.toUpperCase(),
+          length: text.length
+        });
         await handleRegistration(userId, text.toUpperCase());
         return;
       }
 
-      console.log('メッセージがパターンに一致しません:', { text, pattern: '/^[A-Z0-9]{6}$/i' });
+      console.log('メッセージがパターンに一致しません:', { 
+        text, 
+        pattern: '/^[A-Z0-9]{6}$/i',
+        length: text.length,
+        hasSpace: text.includes(' '),
+        hasNewline: text.includes('\n')
+      });
       
       // デフォルトの応答
       const lineClient = initializeClient();
@@ -240,8 +251,29 @@ const handleRegistration = async (userId: string, registrationCode: string): Pro
     console.log('handleRegistration開始:', { userId, registrationCode });
     
     // 登録コードから家族情報を検索
-    const elderly = await Elderly.findOne({ registrationCode, status: 'active' });
-    console.log('家族情報検索結果:', { found: !!elderly, registrationCode });
+    console.log('登録コード検索開始:', { 
+      registrationCode,
+      codeLength: registrationCode.length,
+      codeType: typeof registrationCode
+    });
+    
+    // デバッグ: すべてのアクティブな家族の登録コードを確認
+    const allActiveElderly = await Elderly.find({ status: 'active' }).select('name registrationCode');
+    console.log('アクティブな家族一覧:', allActiveElderly.map(e => ({
+      name: e.name,
+      code: e.registrationCode,
+      codeLength: e.registrationCode?.length
+    })));
+    
+    const elderly = await Elderly.findOne({ 
+      registrationCode: registrationCode.toUpperCase().trim(), 
+      status: 'active' 
+    });
+    console.log('家族情報検索結果:', { 
+      found: !!elderly, 
+      registrationCode,
+      elderlyName: elderly?.name 
+    });
 
     if (!elderly) {
           const lineClient = initializeClient();

@@ -81,6 +81,8 @@ const elderlySchema = new Schema<IElderly>(
       type: String,
       unique: true,
       sparse: true,
+      trim: true,
+      uppercase: true,
     },
     callTime: {
       type: String,
