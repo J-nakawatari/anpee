@@ -465,7 +465,7 @@ export const changePlan = async (req: AuthRequest, res: Response) => {
         id: subscription.items.data[0].id,
         price: newPriceId
       }],
-      proration_behavior: 'create_prorations'
+      proration_behavior: 'always_invoice' // 即座に請求書を生成
     })
     
     // DBを更新
@@ -476,8 +476,9 @@ export const changePlan = async (req: AuthRequest, res: Response) => {
     
     res.json({
       success: true,
-      message: 'プランを変更しました',
-      newPlan: targetPlan
+      message: 'プランを変更しました。差額の請求書が発行されました。',
+      newPlan: targetPlan,
+      note: 'プラン変更による料金調整の請求書をご確認ください。'
     })
     
   } catch (error) {
