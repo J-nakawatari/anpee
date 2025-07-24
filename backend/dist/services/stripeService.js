@@ -180,9 +180,19 @@ export class StripeService {
             if (!user || !user.stripeCustomerId) {
                 return [];
             }
+            logger.info(`請求履歴取得開始: userId=${userId}, customerId=${user.stripeCustomerId}, limit=${limit}`);
             const invoices = await this.stripe.invoices.list({
                 customer: user.stripeCustomerId,
-                limit
+                limit,
+                expand: ['data.lines.data.price'] // 価格情報を展開
+                // statusフィルターを削除して全ての請求書を取得
+            });
+            logger.info(`Stripeから取得した請求履歴: count=${invoices.data.length}, hasMore=${invoices.has_more}`);
+            // 各請求書の詳細をログ出力
+            invoices.data.forEach((invoice, index) => {
+                const lineItem = invoice.lines.data[0];
+                const priceId = lineItem?.price?.id || '';
+                logger.info(`請求書[${index}]: id=${invoice.id}, created=${new Date(invoice.created * 1000).toISOString()}, status=${invoice.status}, amount=${invoice.amount_paid}, priceId=${priceId}, description=${lineItem?.description}`);
             });
             return invoices.data.map(invoice => {
                 // 価格IDからプランIDを取得
