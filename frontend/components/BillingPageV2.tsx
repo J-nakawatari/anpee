@@ -628,7 +628,12 @@ export function BillingPageV2() {
                         {formatDateJP(invoice.date)}
                       </TableCell>
                       <TableCell>
-                        {invoice.planName}
+                        <div className="flex items-center gap-2">
+                          <span>{invoice.planName}</span>
+                          {currentPlan && invoice.planId && invoice.planId !== currentPlan.id && (
+                            <span className="text-xs text-gray-500">(変更前)</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         ¥{invoice.amount.toLocaleString()}

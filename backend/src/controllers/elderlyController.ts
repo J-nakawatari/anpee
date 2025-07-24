@@ -59,6 +59,7 @@ export const createElderly = async (req: Request, res: Response) => {
     const {
       name,
       age,
+      gender,
       phone,
       address,
       emergencyContact,
@@ -128,6 +129,7 @@ export const createElderly = async (req: Request, res: Response) => {
       userId,
       name,
       age,
+      gender: gender || 'other',
       phone,
       address,
       emergencyContact,

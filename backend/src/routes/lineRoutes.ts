@@ -6,7 +6,7 @@ import { validateSignature, handleWebhook } from '../services/lineService.js';
 const router = Router();
 
 // LINE Webhook エンドポイント - 生のボディを処理
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhook', async (req, res) => {
   console.log('LINE Webhook受信 - Headers:', req.headers);
   
   try {

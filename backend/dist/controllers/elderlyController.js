@@ -48,7 +48,7 @@ export const getElderlyById = async (req, res) => {
 export const createElderly = async (req, res) => {
     try {
         const userId = req.user?.userId;
-        const { name, age, phone, address, emergencyContact, emergencyPhone, notes, } = req.body;
+        const { name, age, gender, phone, address, emergencyContact, emergencyPhone, notes, } = req.body;
         // ユーザー情報とプランを確認
         const User = (await import('../models/User.js')).default;
         const user = await User.findById(userId);
@@ -108,6 +108,7 @@ export const createElderly = async (req, res) => {
             userId,
             name,
             age,
+            gender: gender || 'other',
             phone,
             address,
             emergencyContact,
