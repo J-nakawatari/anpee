@@ -417,14 +417,15 @@ export function AccountSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* パスワード変更 */}
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
               <h4 className="font-medium text-gray-900">パスワード</h4>
               <p className="text-sm text-gray-600">アカウントのパスワードを変更します</p>
             </div>
             <Button 
               variant="outline"
               onClick={() => setShowPasswordDialog(true)}
+              className="w-full sm:w-auto"
             >
               <Lock className="w-4 h-4 mr-2" />
               パスワード変更
@@ -446,8 +447,8 @@ export function AccountSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
               <h4 className="font-medium text-gray-900">メール通知</h4>
               <p className="text-sm text-gray-600">
                 家族から応答がない場合や日次サマリーをメールで受け取ります
