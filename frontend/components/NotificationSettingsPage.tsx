@@ -401,16 +401,18 @@ export function NotificationSettingsPage() {
       {/* 現在のプラン表示 */}
       <Card className="border-blue-200 bg-blue-50/50">
         <CardContent className="py-4">
-          <div className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-blue-600" />
-            <span className="text-sm font-medium">現在のプラン:</span>
-            <Badge className={getPlanBadgeColor(currentPlan.id)}>
-              {currentPlan.displayName}
-            </Badge>
-            <span className="text-sm text-gray-600">
-              月額 ¥{currentPlan.price.toLocaleString()}
-            </span>
-            <span className="text-xs text-gray-500 ml-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Crown className="w-5 h-5 text-blue-600" />
+              <span className="text-sm font-medium">現在のプラン:</span>
+              <Badge className={getPlanBadgeColor(currentPlan.id)}>
+                {currentPlan.displayName}
+              </Badge>
+              <span className="text-sm text-gray-600">
+                月額 ¥{currentPlan.price.toLocaleString()}
+              </span>
+            </div>
+            <span className="text-xs text-gray-500 sm:ml-auto">
               プラン変更は<a href="/user/billing" className="text-blue-600 underline">こちら</a>
             </span>
           </div>
@@ -587,7 +589,7 @@ export function NotificationSettingsPage() {
               <div className="flex-1 space-y-3">
                 <div>
                   <Label className="text-sm font-medium text-gray-700">友だち追加URL</Label>
-                  <div className="flex gap-2 mt-1">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-1">
                     <Input
                       value={lineAddUrl}
                       readOnly
@@ -597,7 +599,7 @@ export function NotificationSettingsPage() {
                       variant="default"
                       size="sm"
                       onClick={handleCopyUrl}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 whitespace-nowrap w-full sm:w-auto"
                     >
                       <Copy className="w-4 h-4" />
                       コピー
@@ -608,7 +610,7 @@ export function NotificationSettingsPage() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">メールで招待リンクを送る</Label>
                   <div className="space-y-2">
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         type="email"
                         placeholder="example@domain.com"
@@ -629,7 +631,7 @@ export function NotificationSettingsPage() {
                         variant="default"
                         onClick={handleSendInvite}
                         disabled={isInviteSending || !!inviteEmailError}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 w-full sm:w-auto"
                       >
                         <Send className="w-4 h-4" />
                         {isInviteSending ? '送信中...' : '招待リンクを送る'}
