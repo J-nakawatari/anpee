@@ -25,10 +25,10 @@ async function testRetryWithNewNotification() {
         console.log(`再通知設定:`);
         console.log(`  最大再通知回数: ${user.notificationSettings?.retrySettings?.maxRetries}`);
         console.log(`  再通知間隔: ${user.notificationSettings?.retrySettings?.retryInterval}分`);
-        // Step 1: 新しいテスト通知を送信（これは応答しない）
-        console.log('\n=== Step 1: 新しいテスト通知を送信 ===');
-        await notificationServiceV2.sendScheduledNotificationAsTest(userId);
-        console.log('テスト通知を送信しました');
+        // Step 1: 新しい通知を送信（これは応答しない）
+        console.log('\n=== Step 1: 新しい通知を送信 ===');
+        await notificationServiceV2.sendScheduledNotification(userId);
+        console.log('通知を送信しました');
         // 5秒待機
         console.log('\n5秒待機します...');
         await new Promise(resolve => setTimeout(resolve, 5000));

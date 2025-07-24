@@ -154,7 +154,6 @@ export function NotificationSettingsPage() {
   const [isTestingSendingEmail, setIsTestingSendingEmail] = useState(false);
   const [isTestingPhone, setIsTestingPhone] = useState(false);
   const [isTestingLineNotification, setIsTestingLineNotification] = useState(false);
-  const [isTestingMorningNotification, setIsTestingMorningNotification] = useState(false);
   const [familyList, setFamilyList] = useState<ElderlyData[]>([]);
   const [isLoadingFamily, setIsLoadingFamily] = useState(false);
 
@@ -345,20 +344,6 @@ export function NotificationSettingsPage() {
     }
   };
 
-  // 朝の通知テスト
-  const handleTestMorningNotification = async () => {
-    setIsTestingMorningNotification(true);
-    
-    try {
-      const response = await apiClient.post('/scheduled-notifications/trigger/morning');
-      toast.success(response.data.message || '朝の元気確認メッセージを送信しました。');
-    } catch (error: any) {
-      console.error('Morning notification test error:', error);
-      toast.error(error.response?.data?.message || '朝の通知テストに失敗しました');
-    } finally {
-      setIsTestingMorningNotification(false);
-    }
-  };
 
   const generateTimeOptions = () => {
     const options = [];
@@ -791,24 +776,6 @@ export function NotificationSettingsPage() {
             {/* 法人化後に復活予定 */}
           </div>
 
-          <Separator className="my-4" />
-          
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">定時通知テスト</Label>
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-              {/* 朝の通知テスト */}
-              <Button
-                variant="default"
-                onClick={handleTestMorningNotification}
-                disabled={isTestingMorningNotification}
-                className="flex items-center justify-center gap-2 h-12"
-              >
-                <Clock className="w-4 h-4 text-yellow-600" />
-                {isTestingMorningNotification ? '元気確認送信中...' : '元気確認を今すぐ送信'}
-              </Button>
-            </div>
-          </div>
-
           <Alert className="bg-blue-50 border-blue-200">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-700">
@@ -817,7 +784,6 @@ export function NotificationSettingsPage() {
                 <li>• LINE通知は登録されている家族のLINEに送信されます</li>
                 {/* <li>• 電話通知は登録されている家族の電話番号に発信されます</li> */}
                 <li>• テスト通知は即座に実行されます（時間設定は無視されます）</li>
-                <li>• 「元気確認を今すぐ送信」は家族に元気ですボタン付きのメッセージを送信します</li>
               </ul>
             </AlertDescription>
           </Alert>

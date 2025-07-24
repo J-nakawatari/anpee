@@ -47,32 +47,6 @@ export class NotificationServiceV2 {
     }
   }
 
-  // テスト用の定時通知を送信
-  async sendScheduledNotificationAsTest(userId: string): Promise<void> {
-    try {
-      logger.info(`テスト通知開始: ユーザー ${userId}`)
-      
-      const elderlyList = await Elderly.find({
-        userId,
-        status: 'active',
-        lineUserId: { $exists: true, $ne: null }
-      })
-
-      if (elderlyList.length === 0) {
-        logger.warn(`LINE連携済みの家族が見つかりません: ユーザー ${userId}`)
-        return
-      }
-
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-
-      for (const elderly of elderlyList) {
-        await this.sendNotificationToElderly(elderly, userId, today, 'test')
-      }
-    } catch (error) {
-      logger.error(`テスト通知エラー: ユーザー ${userId}`, error)
-    }
-  }
 
   // 個別の家族に通知を送信
   private async sendNotificationToElderly(
