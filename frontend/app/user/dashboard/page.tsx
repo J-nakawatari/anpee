@@ -6,8 +6,7 @@ export default function Home() {
     <ClientLayout
       title="ダッシュボード"
       subtitle="本日の見守り状況"
-      showAddButton={true}
-      addButtonText="新規登録"
+      showAddButton={false}
     >
       <DashboardPage />
     </ClientLayout>
