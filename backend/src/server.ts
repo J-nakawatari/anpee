@@ -83,12 +83,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token']
 }))
-// Webhook用のルートを先に設定（ボディパーサーより前）
-app.post('/api/v1/line/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
-  // このルートは後でlineRoutesが処理する
-  next();
-});
-
 // 通常のボディパーサー設定
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

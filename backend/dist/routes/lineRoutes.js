@@ -1,8 +1,9 @@
 import { Router } from 'express';
+import express from 'express';
 import { validateSignature, handleWebhook } from '../services/lineService.js';
 const router = Router();
 // LINE Webhook エンドポイント - 生のボディを処理
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', express.raw({ type: '*/*' }), async (req, res) => {
     console.log('LINE Webhook受信 - Headers:', req.headers);
     console.log('LINE Webhook受信 - Body Type:', typeof req.body);
     console.log('LINE Webhook受信 - Body is Buffer:', Buffer.isBuffer(req.body));
