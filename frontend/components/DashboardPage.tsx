@@ -99,15 +99,18 @@ export function DashboardPage() {
 
   // 次回の通知が今日か明日かを判定
   const getNextNotificationDay = () => {
-    if (!nextNotificationTime) return "";
+    if (!nextNotificationTime) return "未設定";
     
     const now = new Date();
     const [hours, minutes] = nextNotificationTime.split(':').map(Number);
-    const todayNotificationTime = new Date();
-    todayNotificationTime.setHours(hours, minutes, 0, 0);
+    const todayNotification = new Date();
+    todayNotification.setHours(hours, minutes, 0, 0);
     
-    // 現在時刻が今日の通知時刻より前なら「今日」、後なら「明日」
-    return now < todayNotificationTime ? "今日" : "明日";
+    if (now < todayNotification) {
+      return "今日";
+    } else {
+      return "明日";
+    }
   };
 
   // 性別に基づいて敬称を取得
@@ -246,46 +249,46 @@ export function DashboardPage() {
       {/* 初回プラン選択モーダル（内部でサブスクリプション状態を確認） */}
       <InitialPlanSelection />
       
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
       {/* 期限切れ警告 */}
       {isExpired && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-red-100 rounded-full p-3">
-              <XCircle className="w-8 h-8 text-red-600" />
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl md:rounded-2xl p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="bg-red-100 rounded-full p-2 md:p-3 flex-shrink-0">
+              <XCircle className="w-6 md:w-8 h-6 md:h-8 text-red-600" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-red-900 mb-2">
+              <h2 className="text-lg md:text-xl font-bold text-red-900 mb-2">
                 サービスの利用期限が終了しました
               </h2>
-              <p className="text-red-800 mb-4">
+              <p className="text-sm md:text-base text-red-800 mb-4">
                 現在、見守りサービスは停止されています。大切なご家族の安否確認を再開するには、プランを選択してください。
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="bg-white/50 rounded-lg p-3 text-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600 mx-auto mb-1" />
-                  <p className="text-sm font-semibold text-red-900">見守り機能</p>
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4">
+                <div className="bg-white/50 rounded-lg p-2 md:p-3 text-center">
+                  <AlertTriangle className="w-5 md:w-6 h-5 md:h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-xs md:text-sm font-semibold text-red-900">見守り機能</p>
                   <p className="text-xs text-red-700">停止中</p>
                 </div>
-                <div className="bg-white/50 rounded-lg p-3 text-center">
-                  <MessageSquare className="w-6 h-6 text-red-600 mx-auto mb-1" />
-                  <p className="text-sm font-semibold text-red-900">LINE通知</p>
+                <div className="bg-white/50 rounded-lg p-2 md:p-3 text-center">
+                  <MessageSquare className="w-5 md:w-6 h-5 md:h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-xs md:text-sm font-semibold text-red-900">LINE通知</p>
                   <p className="text-xs text-red-700">送信停止</p>
                 </div>
-                <div className="bg-white/50 rounded-lg p-3 text-center">
-                  <Phone className="w-6 h-6 text-red-600 mx-auto mb-1" />
-                  <p className="text-sm font-semibold text-red-900">電話確認</p>
+                <div className="bg-white/50 rounded-lg p-2 md:p-3 text-center">
+                  <Phone className="w-5 md:w-6 h-5 md:h-6 text-red-600 mx-auto mb-1" />
+                  <p className="text-xs md:text-sm font-semibold text-red-900">電話確認</p>
                   <p className="text-xs text-red-700">利用不可</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Link href="/user/billing">
-                  <Button size="lg" className="bg-red-600 hover:bg-red-700">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Link href="/user/billing" className="w-full sm:w-auto">
+                  <Button size="lg" className="bg-red-600 hover:bg-red-700 w-full sm:w-auto">
                     プランを選択して再開
                   </Button>
                 </Link>
-                <Link href="/user/history">
-                  <Button size="lg" variant="outline">
+                <Link href="/user/history" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
                     過去の履歴を確認
                   </Button>
                 </Link>
@@ -296,25 +299,25 @@ export function DashboardPage() {
       )}
       
       {/* ウェルカムメッセージ */}
-      <div className={`bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-200 gentle-shadow ${isExpired ? 'opacity-50' : ''}`}>
-        <div className="flex items-center gap-4">
+      <div className={`bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-4 md:p-6 border border-orange-200 gentle-shadow ${isExpired ? 'opacity-50' : ''}`}>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           <img 
             src="/logo.svg" 
             alt="あんぴーちゃんロゴ"
             width="64"
             height="64"
-            className="block"
+            className="block flex-shrink-0"
           />
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
-            <p className="text-orange-600 mt-1">
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-lg md:text-xl font-semibold text-orange-800 heart-accent">おはようございます！</h2>
+            <p className="text-sm md:text-base text-orange-600 mt-1">
               {formatDate(currentTime)} {formatTime(currentTime)}
             </p>
-            <p className="text-orange-700 mt-2">
+            <p className="text-sm md:text-base text-orange-700 mt-2">
               大切なご家族の安否確認を続けています。LINEと電話で毎日の元気をチェックしています。
             </p>
           </div>
-          <div className="text-right">
+          <div className="hidden lg:block text-right">
             <div className="flex items-center gap-2 text-green-600">
               <Activity className="w-5 h-5" />
               <span className="text-sm font-medium">見守りサービス稼働中</span>
@@ -324,18 +327,18 @@ export function DashboardPage() {
       </div>
 
       {/* 見守り対象者カード */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isExpired ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 ${isExpired ? 'opacity-50 pointer-events-none' : ''}`}>
         {elderlyPeople.map((person) => (
           <Card key={person.id} className="cute-card hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <img 
                     src={person.avatar === "👴" ? "/grandpas_face_2.png" : "/grandmas_face_v2.png"}
                     alt={person.name}
                     width="48"
                     height="48"
-                    className="block rounded-full"
+                    className="block rounded-full flex-shrink-0"
                   />
                   <div>
                     <h3 className="font-semibold text-orange-800">{person.name}</h3>
@@ -356,16 +359,18 @@ export function DashboardPage() {
                   </div>
                   <div className="text-right">
                     {person.todayLineResponse ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-green-600 inline mr-1" />
-                        <span className="text-sm text-green-700">応答済み</span>
-                        <p className="text-xs text-green-600">{person.lastLineResponse}</p>
-                      </>
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm text-green-700">応答済み</span>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">{person.lastLineResponse}</p>
+                      </div>
                     ) : (
-                      <>
-                        <AlertTriangle className="w-4 h-4 text-orange-600 inline mr-1" />
+                      <div className="flex items-center gap-1">
+                        <AlertTriangle className="w-4 h-4 text-orange-600" />
                         <span className="text-sm text-orange-700">未応答</span>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -377,22 +382,22 @@ export function DashboardPage() {
       </div>
 
       {/* 統計カード */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index} className="cute-card hover:shadow-lg transition-shadow duration-200">
-              <CardContent className="p-6">
+              <CardContent className="p-3 md:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-orange-600 font-medium">{stat.title}</p>
-                    <p className="text-2xl font-bold text-orange-800 mt-1">{stat.value}</p>
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm text-orange-600 font-medium">{stat.title}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-800 mt-1">{stat.value}</p>
                     <p className={`text-xs mt-1 ${stat.changeColor}`}>
                       {stat.change}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-full ${stat.color}`}>
-                    <Icon className="w-6 h-6" />
+                  <div className={`p-2 sm:p-3 rounded-full ${stat.color}`}>
+                    <Icon className="w-5 sm:w-6 h-5 sm:h-6" />
                   </div>
                 </div>
               </CardContent>
@@ -403,16 +408,16 @@ export function DashboardPage() {
 
       {/* 今週の応答状況 */}
       <Card className="cute-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-800">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="flex items-center gap-2 text-orange-800 text-base md:text-lg">
             <Calendar className="w-5 h-5 watching-icon" />
             今週の応答状況
           </CardTitle>
-          <CardDescription className="text-orange-600">
+          <CardDescription className="text-orange-600 text-sm">
             応答があった日は「済」マークが付きます
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {weeklyResponseData.map((data, index) => {
               const hasResponse = data.line > 0 || data.phone > 0;
@@ -430,7 +435,7 @@ export function DashboardPage() {
                     {data.day}
                   </div>
                   <div className={`
-                    relative w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-lg border-2
+                    relative w-10 h-10 sm:w-16 sm:h-16 mx-auto rounded-lg border-2
                     ${hasResponse 
                       ? 'bg-green-50 border-green-300' 
                       : isToday 
@@ -443,14 +448,14 @@ export function DashboardPage() {
                   `}>
                     {hasResponse ? (
                       <div className="text-green-600">
-                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
+                        <CheckCircle className="w-5 h-5 sm:w-8 sm:h-8" />
                         <span className="absolute -bottom-5 sm:-bottom-6 left-0 right-0 text-xs font-bold text-green-600">
                           済
                         </span>
                       </div>
                     ) : (
                       <div className="text-gray-400">
-                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300" />
+                        <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300" />
                       </div>
                     )}
                   </div>
@@ -466,41 +471,41 @@ export function DashboardPage() {
 
       {/* 最新の応答記録 */}
       <Card className="cute-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-800">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="flex items-center gap-2 text-orange-800 text-base md:text-lg">
             <Clock className="w-5 h-5 watching-icon" />
             最新の応答記録
           </CardTitle>
-          <CardDescription className="text-orange-600">
+          <CardDescription className="text-orange-600 text-sm">
             LINEの安否確認履歴
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-4 md:p-6">
+          <div className="space-y-3 md:space-y-4">
             {recentResponses.map((response) => {
               const Icon = response.icon;
               return (
-                <div key={response.id} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-100">
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${response.color}`} />
-                    <div>
-                      <div className="flex items-center gap-2">
+                <div key={response.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 md:p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  <div className="flex items-start sm:items-center gap-3">
+                    <Icon className={`w-5 h-5 ${response.color} flex-shrink-0 mt-0.5 sm:mt-0`} />
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-orange-800">{response.person}</span>
                         <Badge variant="outline" className="text-xs">
                           {response.type}
                         </Badge>
                       </div>
-                      <p className="text-sm text-orange-600">{response.action}</p>
+                      <p className="text-sm text-orange-600 mt-1">{response.action}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-8 sm:ml-0">
                     <Badge 
                       variant={response.status === "応答" ? "default" : "secondary"}
                       className={response.status === "応答" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}
                     >
                       {response.status}
                     </Badge>
-                    <p className="text-sm text-orange-500 mt-1">{response.time}</p>
+                    <p className="text-xs sm:text-sm text-orange-500 mt-1">{response.time}</p>
                   </div>
                 </div>
               );
