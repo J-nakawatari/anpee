@@ -401,18 +401,22 @@ export function NotificationSettingsPage() {
       {/* 現在のプラン表示 */}
       <Card className="border-blue-200 bg-blue-50/50">
         <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Crown className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium">現在のプラン:</span>
-              <Badge className={getPlanBadgeColor(currentPlan.id)}>
-                {currentPlan.displayName}
-              </Badge>
-              <span className="text-sm text-gray-600">
-                月額 ¥{currentPlan.price.toLocaleString()}
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium">現在のプラン:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getPlanBadgeColor(currentPlan.id)}>
+                  {currentPlan.displayName}
+                </Badge>
+                <span className="text-sm text-gray-600">
+                  月額 ¥{currentPlan.price.toLocaleString()}
+                </span>
+              </div>
             </div>
-            <span className="text-xs text-gray-500 sm:ml-auto">
+            <span className="text-xs text-gray-500 text-center sm:text-right">
               プラン変更は<a href="/user/billing" className="text-blue-600 underline">こちら</a>
             </span>
           </div>
@@ -434,7 +438,7 @@ export function NotificationSettingsPage() {
           {/* 通知時間設定 */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700">通知時間</h3>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="space-y-1">
                 <Label className="text-sm font-medium">毎日の通知時間</Label>
                 <p className="text-sm text-gray-500">家族に元気確認メッセージを送信</p>
@@ -467,8 +471,8 @@ export function NotificationSettingsPage() {
           {/* 再通知設定 */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700">再通知設定</h3>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="space-y-1 flex-1">
               <Label className="text-sm font-medium">再通知を有効にする</Label>
               <p className="text-sm text-gray-500">応答がない場合に自動で再通知します</p>
             </div>
@@ -482,8 +486,8 @@ export function NotificationSettingsPage() {
             <>
               {/* 再通知回数設定 */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="space-y-1 flex-1">
                     <Label className="text-sm font-medium">再通知回数</Label>
                     <p className="text-sm text-gray-500">
                       最大 {currentPlan.features.maxRetryCount} 回まで設定可能
@@ -514,8 +518,8 @@ export function NotificationSettingsPage() {
 
               {/* 再通知間隔設定 */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="space-y-1 flex-1">
                     <Label className="text-sm font-medium">再通知間隔</Label>
                     <p className="text-sm text-gray-500">
                       応答がない場合の次回通知までの間隔
@@ -685,8 +689,8 @@ export function NotificationSettingsPage() {
                     key={person._id}
                     className="bg-gray-50 p-4 rounded-lg space-y-3"
                   >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <div className="font-medium text-gray-900">{person.name}さん</div>
                         {person.lineUserId ? (
                           <div className="flex items-center gap-1 text-green-600 text-sm">
@@ -705,15 +709,15 @@ export function NotificationSettingsPage() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleUnlinkLine(person._id || '', person.name)}
-                          className="h-8 px-3 text-xs font-medium"
+                          className="h-8 px-3 text-xs font-medium w-full sm:w-auto"
                         >
                           <XCircle className="w-3 h-3 mr-1" />
                           LINE連携解除
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <code className="bg-white px-3 py-1 rounded text-sm font-mono">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <code className="bg-white px-3 py-1 rounded text-sm font-mono flex-1 sm:flex-initial text-center sm:text-left">
                         登録:{person.registrationCode || '未生成'}
                       </code>
                       {person.registrationCode ? (
@@ -724,14 +728,14 @@ export function NotificationSettingsPage() {
                             await navigator.clipboard.writeText(`登録:${person.registrationCode}`);
                               toast.success('登録コードをコピーしました');
                             }}
-                            className="h-8 px-3 text-xs font-medium"
+                            className="h-8 px-3 text-xs font-medium w-full sm:w-auto"
                             title="登録コードをコピー"
                           >
                             <Copy className="w-3 h-3 mr-1" />
                             コピー
                           </Button>
                         ) : (
-                          <span className="text-xs text-amber-600 ml-2">
+                          <span className="text-xs text-amber-600 text-center sm:text-left">
                             家族管理画面で再保存してください
                           </span>
                         )}
