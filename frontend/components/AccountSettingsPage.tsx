@@ -367,19 +367,20 @@ export function AccountSettingsPage() {
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">メールアドレス</Label>
-              <div className="flex items-center justify-between mt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-gray-900 font-medium">{userAccount.email}</p>
+                  <p className="text-gray-900 font-medium break-all">{userAccount.email}</p>
                   {userAccount.emailVerified ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
+                    <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
                   )}
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowEmailDialog(true)}
+                  className="w-full sm:w-auto"
                 >
                   編集
                 </Button>
@@ -387,12 +388,13 @@ export function AccountSettingsPage() {
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <Label className="text-sm font-medium text-gray-500">電話番号</Label>
-              <div className="flex items-center justify-between mt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-1">
                 <p className="text-gray-900 font-medium">{userAccount.phone || '未設定'}</p>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowPhoneDialog(true)}
+                  className="w-full sm:w-auto"
                 >
                   編集
                 </Button>
