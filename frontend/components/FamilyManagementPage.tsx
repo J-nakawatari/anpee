@@ -490,7 +490,7 @@ export function FamilyManagementPage() {
                 新規登録
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>新規登録</DialogTitle>
               </DialogHeader>
@@ -780,7 +780,7 @@ export function FamilyManagementPage() {
 
       {/* 編集ダイアログ */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>登録情報の編集</DialogTitle>
           </DialogHeader>
