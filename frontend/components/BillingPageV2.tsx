@@ -417,7 +417,7 @@ export function BillingPageV2() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* 現在のプラン */}
       <Card>
         <CardHeader>
@@ -471,7 +471,7 @@ export function BillingPageV2() {
               </div>
 
               {/* 3列レイアウト */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 {/* 契約情報 */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -858,7 +858,7 @@ export function BillingPageV2() {
 
       {/* キャンセル確認ダイアログ */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent>
+        <DialogContent className="mx-2 sm:mx-4">
           <DialogHeader>
             <DialogTitle>契約をキャンセルしますか？</DialogTitle>
             <DialogDescription>
@@ -906,7 +906,7 @@ export function BillingPageV2() {
         console.log('ダイアログ状態変更:', open);
         setShowPlanDetailDialog(open);
       }}>
-        <DialogContent className="max-w-2xl bg-white">
+        <DialogContent className="max-w-2xl mx-2 sm:mx-4 bg-white w-[calc(100vw-1rem)] sm:w-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedPlanData && (
