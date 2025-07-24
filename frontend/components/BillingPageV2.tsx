@@ -417,9 +417,9 @@ export function BillingPageV2() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 overflow-x-hidden max-w-7xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 w-full overflow-x-hidden">
       {/* 現在のプラン */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-blue-600" />
@@ -595,7 +595,7 @@ export function BillingPageV2() {
       </Card>
 
       {/* 請求履歴 */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
@@ -754,7 +754,7 @@ export function BillingPageV2() {
               より多くの機能をご利用いただけます
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-4">
             {subscription?.cancelAtPeriodEnd && (
               <Alert className="border-orange-200 bg-orange-50">
                 <AlertCircle className="h-4 w-4 text-orange-600" />
@@ -767,21 +767,21 @@ export function BillingPageV2() {
               const isCurrentPlan = currentPlan && plan.id === currentPlan.id;
               const isCancelPending = subscription?.cancelAtPeriodEnd;
               return (
-                <div key={plan.id} className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg ${isCancelPending ? 'opacity-60' : ''}`}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="font-medium text-gray-900 text-sm sm:text-base truncate">{plan.displayName}</h4>
+                <div key={plan.id} className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg ${isCancelPending ? 'opacity-60' : ''}`}>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h4 className="font-medium text-gray-900">{plan.displayName}</h4>
                       {plan.id === 'family' && <Badge variant="secondary" className="text-xs">人気</Badge>}
                       {isCurrentPlan && <Badge className="text-xs">現在のプラン</Badge>}
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
+                    <p className="text-sm text-gray-500">¥{plan.price.toLocaleString()}/月</p>
                   </div>
                   <Button 
                     variant={isCurrentPlan ? "secondary" : "default"}
                     size="sm"
                     disabled={!!isCurrentPlan || !!isCancelPending}
                     onClick={() => handlePlanChange(plan.id)}
-                    className="w-full sm:w-auto whitespace-nowrap"
+                    className="w-full sm:w-auto"
                   >
                     {isCurrentPlan ? "現在のプラン" : isCancelPending ? "変更不可" : "詳細を見る"}
                   </Button>
@@ -801,7 +801,7 @@ export function BillingPageV2() {
               契約の一時停止やキャンセル
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-4">
             {subscription?.cancelAtPeriodEnd ? (
               <Alert className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4 text-red-600" />
@@ -861,7 +861,7 @@ export function BillingPageV2() {
 
       {/* キャンセル確認ダイアログ */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent className="mx-2 sm:mx-4">
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>契約をキャンセルしますか？</DialogTitle>
             <DialogDescription>
@@ -909,9 +909,9 @@ export function BillingPageV2() {
         console.log('ダイアログ状態変更:', open);
         setShowPlanDetailDialog(open);
       }}>
-        <DialogContent className="max-w-2xl mx-2 sm:mx-4 bg-white">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl bg-white">
           <DialogHeader>
-            <DialogTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
+            <DialogTitle className="flex flex-wrap items-center gap-2">
               {selectedPlanData && (
                 <>
                   <Badge className={getPlanBadgeColor(selectedPlanData.id)}>
@@ -939,21 +939,21 @@ export function BillingPageV2() {
           {selectedPlanDetails && (
             <div className="space-y-6">
               {/* 最適な用途 */}
-              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+              <div className="bg-blue-50 p-4 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">こんな方におすすめ</h4>
                 <p className="text-blue-800 text-sm">{selectedPlanDetails.bestFor}</p>
               </div>
 
               {/* 機能一覧 */}
-              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+              <div className="bg-green-50 p-4 rounded-lg">
                 <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
-                  <Check className="w-5 h-5" />
+                  <Check className="w-5 h-5 flex-shrink-0" />
                   含まれる機能
                 </h4>
                 <div className="space-y-2">
                   {selectedPlanDetails.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                      <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{feature}</span>
                     </div>
                   ))}
@@ -962,15 +962,15 @@ export function BillingPageV2() {
 
               {/* 制限事項 */}
               {selectedPlanDetails.limitations.length > 0 && (
-                <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
-                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2 text-sm sm:text-base">
-                    <X className="w-4 sm:w-5 h-4 sm:h-5" />
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-3 flex items-center gap-2">
+                    <X className="w-5 h-5 flex-shrink-0" />
                     制限事項
                   </h4>
                   <div className="space-y-2">
                     {selectedPlanDetails.limitations.map((limitation, index) => (
                       <div key={index} className="flex items-start gap-2">
-                        <X className="w-4 h-4 text-red-500 mt-0.5" />
+                        <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                         <span className="text-sm text-gray-600">{limitation}</span>
                       </div>
                     ))}
