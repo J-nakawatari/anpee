@@ -681,34 +681,38 @@ export function BillingPageV2() {
               <div className="md:hidden space-y-4">
                 {invoices.map((invoice) => (
                   <div key={invoice.id} className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
-                    <div className="flex justify-between items-start">
+                    {/* 請求書番号とステータス */}
+                    <div className="space-y-2">
                       <div>
                         <p className="text-sm text-gray-600">請求書番号</p>
                         <p className="font-medium">{invoice.invoiceNumber || '-'}</p>
                       </div>
-                      <Badge 
-                        variant={invoice.status === 'paid' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {invoice.status === 'paid' ? '支払済' : '未払い'}
-                      </Badge>
+                      <div>
+                        <Badge 
+                          variant={invoice.status === 'paid' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {invoice.status === 'paid' ? '支払済' : '未払い'}
+                        </Badge>
+                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    {/* その他の情報を縦並び */}
+                    <div className="space-y-3">
                       <div>
-                        <p className="text-gray-600">日付</p>
+                        <p className="text-sm text-gray-600">日付</p>
                         <p className="font-medium">{formatDateJP(invoice.date)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-600">金額</p>
-                        <p className="font-medium">¥{invoice.amount.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">金額</p>
+                        <p className="font-medium text-lg">¥{invoice.amount.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-gray-600">プラン</p>
-                        <p className="font-medium">{invoice.planName || '-'}</p>
+                        <p className="text-sm text-gray-600">プラン</p>
+                        <p className="font-medium text-sm">{invoice.planName || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-gray-600">支払い方法</p>
+                        <p className="text-sm text-gray-600">支払い方法</p>
                         <p className="font-medium">
                           {invoice.paymentMethod?.type === 'card' && invoice.paymentMethod.last4 ? (
                             `${invoice.paymentMethod.brand} ****${invoice.paymentMethod.last4}`
@@ -723,8 +727,9 @@ export function BillingPageV2() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full"
+                        className="w-full h-10"
                         onClick={() => handleDownloadInvoice(invoice.downloadUrl)}
+                        disabled={!invoice.downloadUrl}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         請求書をダウンロード
