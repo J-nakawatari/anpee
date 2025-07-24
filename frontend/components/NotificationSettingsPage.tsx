@@ -586,7 +586,7 @@ export function NotificationSettingsPage() {
               </div>
 
               {/* URL */}
-              <div className="flex-1 space-y-3">
+              <div className="w-full md:flex-1 space-y-3">
                 <div>
                   <Label className="text-sm font-medium text-gray-700">友だち追加URL</Label>
                   <div className="flex flex-col sm:flex-row gap-2 mt-1">
