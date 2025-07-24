@@ -582,6 +582,7 @@ export function AccountSettingsPage() {
             <Button 
               variant="destructive"
               onClick={() => setShowDeleteDialog(true)}
+              className="w-full sm:w-auto"
             >
               アカウントを削除
             </Button>
