@@ -395,9 +395,9 @@ export function HistoryPage() {
   return (
     <>
       {/* 家族選択と統計セクション */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">履歴を表示する家族を選択</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-6">
+        <h2 className="text-base sm:text-lg font-semibold mb-4">履歴を表示する家族を選択</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* 家族選択 */}
           <div className="lg:col-span-1">
             <Label htmlFor="family-select" className="mb-2">
@@ -485,43 +485,45 @@ export function HistoryPage() {
 
       {/* 履歴テーブル */}
       {selectedFamilyId ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
           {/* フィルタ */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="date-filter">期間:</Label>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">すべて</SelectItem>
-                  <SelectItem value="today">今日</SelectItem>
-                  <SelectItem value="week">過去7日</SelectItem>
-                  <SelectItem value="month">過去30日</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Label htmlFor="date-filter" className="whitespace-nowrap">期間:</Label>
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-full sm:w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">すべて</SelectItem>
+                    <SelectItem value="today">今日</SelectItem>
+                    <SelectItem value="week">過去7日</SelectItem>
+                    <SelectItem value="month">過去30日</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Label htmlFor="type-filter" className="whitespace-nowrap">種類:</Label>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-full sm:w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">すべて</SelectItem>
+                    <SelectItem value="genki_button">元気ボタン</SelectItem>
+                    <SelectItem value="phone_call">電話確認</SelectItem>
+                    <SelectItem value="auto_call">自動架電</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="type-filter">種類:</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-32 !border-gray-300 !outline-none !ring-0 focus:!border-orange-400 focus:!ring-0 focus:!outline-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">すべて</SelectItem>
-                  <SelectItem value="genki_button">元気ボタン</SelectItem>
-                  <SelectItem value="phone_call">電話確認</SelectItem>
-                  <SelectItem value="auto_call">自動架電</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="ml-auto">
+            <div className="w-full sm:w-auto">
               <Button
                 onClick={handleRefresh}
                 variant="outline"
                 size="sm"
-                className="h-9 px-3 border-gray-300 hover:bg-gray-50"
+                className="h-9 px-3 border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
                 disabled={isRefreshing}
               >
                 <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -534,8 +536,8 @@ export function HistoryPage() {
             {filteredHistory.length} 件の履歴
           </div>
 
-          {/* テーブル */}
-          <div className="overflow-x-auto">
+          {/* テーブル（PC用） */}
+          <div className="hidden sm:block overflow-x-auto">
             {isLoading ? (
               <div className="py-12 text-center">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
@@ -685,6 +687,121 @@ export function HistoryPage() {
                   )}
                 </tbody>
               </table>
+            )}
+          </div>
+
+          {/* モバイル用カードビュー */}
+          <div className="sm:hidden">
+            {isLoading ? (
+              <div className="py-12 text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+                <p className="mt-2 text-gray-600">履歴を読み込んでいます...</p>
+              </div>
+            ) : filteredHistory.length > 0 ? (
+              <div className="space-y-4">
+                {filteredHistory.map((record) => {
+                  const statusInfo = getStatusInfo(record.status);
+                  const isEditing = isEditingNote[record._id];
+                  const isSavingNote = isSaving[record._id];
+                  const TypeIcon = typeIcons[record.type];
+                  
+                  return (
+                    <div key={record._id} className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
+                      {/* ヘッダー: 日付と種類 */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {safeDate(record.createdAt) ? format(safeDate(record.createdAt)!, 'M月d日', { locale: ja }) : '-'}
+                            <span className="text-sm text-gray-500 ml-2">
+                              {safeDate(record.createdAt) ? format(safeDate(record.createdAt)!, 'HH:mm', { locale: ja }) : '-'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <TypeIcon className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm text-gray-700">{typeLabels[record.type]}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {statusInfo.icon}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color}`}>
+                            {statusInfo.text}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* 応答時刻 */}
+                      {record.respondedAt && (
+                        <div className="text-sm text-gray-600">
+                          応答時刻: {format(new Date(record.respondedAt), 'HH:mm', { locale: ja })}
+                        </div>
+                      )}
+                      
+                      {/* メモ */}
+                      <div className="border-t pt-3">
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editingNotes[record._id] || ''}
+                              onChange={(e) => setEditingNotes(prev => ({...prev, [record._id]: e.target.value}))}
+                              onBlur={() => handleNoteBlur(record._id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Escape') {
+                                  cancelEditingNote(record._id);
+                                }
+                              }}
+                              placeholder="メモを入力..."
+                              className="min-h-[60px] resize-none w-full"
+                              autoFocus
+                              disabled={isSavingNote}
+                            />
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => cancelEditingNote(record._id)}
+                                disabled={isSavingNote}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                キャンセル
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => saveNote(record._id)}
+                                disabled={isSavingNote}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                保存
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            className="group flex items-start gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded -m-2"
+                            onClick={() => startEditingNote(record._id, record.notes || '')}
+                          >
+                            <div className="flex-1 min-w-0">
+                              {record.notes ? (
+                                <p className="text-sm whitespace-pre-wrap break-words">
+                                  {record.notes}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-gray-400 italic">
+                                  タップしてメモを追加...
+                                </p>
+                              )}
+                            </div>
+                            <Edit3 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                履歴データがありません
+              </div>
             )}
           </div>
 

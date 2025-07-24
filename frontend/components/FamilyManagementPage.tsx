@@ -61,7 +61,7 @@ interface PersonFormProps {
 
 const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormProps) => (
   <div className="space-y-4">
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <Label htmlFor="name" className="mb-2">お名前 *</Label>
         <Input
@@ -81,7 +81,7 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
           placeholder="75"
         />
       </div>
-      <div>
+      <div className="sm:col-span-2 sm:w-1/2">
         <Label htmlFor="gender" className="mb-2">性別</Label>
         <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
           <SelectTrigger id="gender" className="bg-white">
@@ -116,7 +116,7 @@ const PersonForm = ({ formData, handleInputChange, isEdit = false }: PersonFormP
       />
     </div>
 
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <Label htmlFor="emergencyContact" className="mb-2">緊急連絡先（人）</Label>
         <Input
@@ -469,8 +469,8 @@ export function FamilyManagementPage() {
       </div>
 
       {/* 検索・フィルタセクション */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -485,7 +485,7 @@ export function FamilyManagementPage() {
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700" style={{ height: '48px', fontSize: '16px' }}>
+              <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" style={{ height: '48px', fontSize: '16px' }}>
                 <Plus className="w-4 h-4 mr-2" />
                 新規登録
               </Button>
@@ -521,8 +521,8 @@ export function FamilyManagementPage() {
           </div>
         </div>
 
-        {/* テーブル */}
-        <div className="overflow-x-auto">
+        {/* テーブル（PC用） */}
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -641,6 +641,79 @@ export function FamilyManagementPage() {
               })}
             </TableBody>
           </Table>
+        </div>
+
+        {/* モバイル用カードビュー */}
+        <div className="md:hidden space-y-4">
+          {currentData.map((person) => (
+            <div key={person._id} className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg text-gray-900">{person.name}</h3>
+                  <p className="text-sm text-gray-600">{person.age}歳</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(person)}
+                    className="text-blue-600 hover:text-blue-700 p-2"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(person._id!)}
+                    className="text-red-600 hover:text-red-700 p-2"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-700">{person.phone}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                  <span className="text-gray-700 break-all">{person.address}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">最終連絡: {formatDateJP(person.lastResponseAt)}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  {person.lineUserId ? (
+                    <>
+                      <MessageCircle className="w-5 h-5 text-green-600" />
+                      <span className="text-sm text-green-600">LINE連携済み</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="w-5 h-5 text-gray-400" />
+                      <span className="text-sm text-gray-500">LINE未連携</span>
+                    </>
+                  )}
+                </div>
+                {!person.lineUserId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/user/notifications')}
+                    className="text-xs"
+                  >
+                    連携設定へ
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* ページネーション */}
