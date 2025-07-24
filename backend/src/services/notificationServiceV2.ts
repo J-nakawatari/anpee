@@ -397,24 +397,26 @@ export class NotificationServiceV2 {
     const history = records.flatMap(record => {
       const elderly = record.elderlyId as any
       
-      return record.notifications.map(notification => {
-        const isResponded = record.response?.respondedToken === notification.token
-        const status = isResponded ? 'success' : 
-                      notification.tokenExpiresAt < new Date() ? 'expired' : 'pending'
-        
-        // 応答時間を計算（応答があった場合のみ）
-        let duration = undefined
-        if (isResponded && record.response?.respondedAt) {
-          duration = Math.floor((new Date(record.response.respondedAt).getTime() - 
-                                new Date(notification.sentAt).getTime()) / 1000) // 秒単位
-        }
-        
-        return {
-          _id: `${record._id}-${notification.token}`,
-          elderlyId: elderly,
-          type: 'genki_button' as const,
-          status,
-          token: notification.token,
+      return record.notifications
+        .filter(notification => notification.type !== 'test') // テスト通知を除外
+        .map(notification => {
+          const isResponded = record.response?.respondedToken === notification.token
+          const status = isResponded ? 'success' : 
+                        notification.tokenExpiresAt < new Date() ? 'expired' : 'pending'
+          
+          // 応答時間を計算（応答があった場合のみ）
+          let duration = undefined
+          if (isResponded && record.response?.respondedAt) {
+            duration = Math.floor((new Date(record.response.respondedAt).getTime() - 
+                                  new Date(notification.sentAt).getTime()) / 1000) // 秒単位
+          }
+          
+          return {
+            _id: `${record._id}-${notification.token}`,
+            elderlyId: elderly,
+            type: 'genki_button' as const,
+            status,
+            token: notification.token,
           createdAt: notification.sentAt,
           respondedAt: isResponded ? record.response?.respondedAt : undefined,
           duration,

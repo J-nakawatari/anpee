@@ -6,6 +6,7 @@ interface INotificationRecord {
   type: 'scheduled' | 'retry1' | 'retry2' | 'retry3' | 'test'
   token: string
   tokenExpiresAt: Date
+  isTest?: boolean  // テスト通知かどうか
 }
 
 // 応答記録

@@ -313,7 +313,9 @@ export class NotificationServiceV2 {
         // 履歴形式に変換（後方互換性のため）
         const history = records.flatMap(record => {
             const elderly = record.elderlyId;
-            return record.notifications.map(notification => {
+            return record.notifications
+                .filter(notification => notification.type !== 'test') // テスト通知を除外
+                .map(notification => {
                 const isResponded = record.response?.respondedToken === notification.token;
                 const status = isResponded ? 'success' :
                     notification.tokenExpiresAt < new Date() ? 'expired' : 'pending';
