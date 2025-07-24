@@ -681,47 +681,52 @@ export function NotificationSettingsPage() {
                 {familyList.map((person) => (
                   <div
                     key={person._id}
-                    className="bg-gray-50 p-4 rounded-lg flex items-center justify-between"
+                    className="bg-gray-50 p-4 rounded-lg space-y-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="font-medium text-gray-900">{person.name}さん</div>
-                      {person.lineUserId ? (
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="font-medium text-gray-900">{person.name}さん</div>
+                        {person.lineUserId ? (
                           <div className="flex items-center gap-1 text-green-600 text-sm">
                             <CheckCircle className="w-4 h-4" />
                             <span>LINE連携済み</span>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleUnlinkLine(person._id || '', person.name)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs"
-                          >
-                            解除
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-gray-500 text-sm">
-                          <XCircle className="w-4 h-4" />
-                          <span>LINE未連携</span>
-                        </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-gray-500 text-sm">
+                            <XCircle className="w-4 h-4" />
+                            <span>LINE未連携</span>
+                          </div>
+                        )}
+                      </div>
+                      {person.lineUserId && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleUnlinkLine(person._id || '', person.name)}
+                          className="h-8 px-3 text-xs font-medium"
+                        >
+                          <XCircle className="w-3 h-3 mr-1" />
+                          LINE連携解除
+                        </Button>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <code className="bg-white px-3 py-1 rounded text-sm font-mono">
                         登録:{person.registrationCode || '未生成'}
                       </code>
                       {person.registrationCode ? (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={async () => {
                             await navigator.clipboard.writeText(`登録:${person.registrationCode}`);
                               toast.success('登録コードをコピーしました');
                             }}
-                            className="h-7 px-2"
+                            className="h-8 px-3 text-xs font-medium"
+                            title="登録コードをコピー"
                           >
-                            <Copy className="w-3 h-3" />
+                            <Copy className="w-3 h-3 mr-1" />
+                            コピー
                           </Button>
                         ) : (
                           <span className="text-xs text-amber-600 ml-2">
