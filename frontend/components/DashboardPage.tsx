@@ -449,7 +449,7 @@ export function DashboardPage() {
                     {hasResponse ? (
                       <div className="text-green-600">
                         <CheckCircle className="w-5 h-5 sm:w-8 sm:h-8" />
-                        <span className="absolute -bottom-7 sm:-bottom-6 left-0 right-0 text-xs font-bold text-green-600">
+                        <span className="absolute -bottom-7 sm:-bottom-8 left-0 right-0 text-xs font-bold text-green-600">
                           済
                         </span>
                       </div>
