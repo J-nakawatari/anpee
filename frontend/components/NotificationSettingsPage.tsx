@@ -821,7 +821,7 @@ export function NotificationSettingsPage() {
           onClick={handleSaveSettings} 
           size="lg"
           disabled={isSaving}
-          className="px-8"
+          className="w-full sm:w-auto px-8"
         >
           {isSaving ? '保存中...' : '設定を保存'}
         </Button>
