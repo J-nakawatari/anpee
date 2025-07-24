@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   Calendar,
-  MapPin,
   Monitor,
   Smartphone,
   CheckCircle,
@@ -552,11 +551,6 @@ export function AccountSettingsPage() {
                       {log.userAgent.includes('iPhone') ? 'iPhone' : 
                        log.userAgent.includes('Android') ? 'Android' : 'Desktop'}
                     </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-3 h-3" />
-                    <span>{log.ipAddress}</span>
                   </div>
                 </div>
               </div>
