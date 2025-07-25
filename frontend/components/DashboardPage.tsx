@@ -328,57 +328,79 @@ export function DashboardPage() {
 
       {/* 見守り対象者カード */}
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 ${isExpired ? 'opacity-50 pointer-events-none' : ''}`}>
-        {elderlyPeople.map((person) => (
-          <Card key={person.id} className="cute-card hover:shadow-lg transition-all duration-200">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={person.avatar === "👴" ? "/grandpas_face_2.png" : "/grandmas_face_v2.png"}
-                    alt={person.name}
-                    width="48"
-                    height="48"
-                    className="block rounded-full flex-shrink-0"
-                  />
-                  <div>
-                    <h3 className="font-semibold text-orange-800">{person.name}</h3>
-                    <p className="text-sm text-orange-600">{person.realName} ({person.age}歳)</p>
+        {elderlyPeople.map((person) => {
+          const isUnresponsive = !person.todayLineResponse;
+          
+          return (
+            <Card key={person.id} className={`hover:shadow-lg transition-all duration-200 ${
+              isUnresponsive ? 'border-2 border-red-400 bg-red-50' : 'cute-card'
+            }`}>
+              <CardContent className="p-4 md:p-6">
+                {/* 未応答時の警告バナー */}
+                {isUnresponsive && (
+                  <div className="bg-red-600 text-white p-3 rounded-lg mb-4 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold text-sm">緊急: 本日の応答がありません</p>
+                      <p className="text-xs mt-1">再通知を送信済み。応答がない場合は管理者にメール通知されます。</p>
+                    </div>
                   </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={person.avatar === "👴" ? "/grandpas_face_2.png" : "/grandmas_face_v2.png"}
+                      alt={person.name}
+                      width="48"
+                      height="48"
+                      className="block rounded-full flex-shrink-0"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-orange-800">{person.name}</h3>
+                      <p className="text-sm text-orange-600">{person.realName} ({person.age}歳)</p>
+                    </div>
+                  </div>
+                  <Badge className={isUnresponsive ? 'bg-red-100 text-red-700' : person.statusColor}>
+                    {isUnresponsive ? '要確認' : person.status}
+                  </Badge>
                 </div>
-                <Badge className={person.statusColor}>
-                  {person.status}
-                </Badge>
-              </div>
-              
-              <div className="space-y-3">
-                {/* LINE応答状況 */}
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-700">LINE</span>
-                  </div>
-                  <div className="text-right">
-                    {person.todayLineResponse ? (
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          <span className="text-sm text-green-700">応答済み</span>
+                
+                <div className="space-y-3">
+                  {/* LINE応答状況 */}
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    isUnresponsive ? 'bg-red-100' : 'bg-green-50'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className={`w-4 h-4 ${isUnresponsive ? 'text-red-600' : 'text-green-600'}`} />
+                      <span className={`text-sm font-medium ${isUnresponsive ? 'text-red-700' : 'text-green-700'}`}>LINE</span>
+                    </div>
+                    <div className="text-right">
+                      {person.todayLineResponse ? (
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-sm text-green-700">応答済み</span>
+                          </div>
+                          <p className="text-xs text-green-600 mt-1">{person.lastLineResponse}</p>
                         </div>
-                        <p className="text-xs text-green-600 mt-1">{person.lastLineResponse}</p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4 text-orange-600" />
-                        <span className="text-sm text-orange-700">未応答</span>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-center gap-1">
+                            <AlertTriangle className="w-4 h-4 text-red-600" />
+                            <span className="text-sm font-bold text-red-700">未応答</span>
+                          </div>
+                          <p className="text-xs text-red-600 mt-1">最終通知から経過中</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* 統計カード */}

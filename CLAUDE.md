@@ -1,137 +1,149 @@
-# CLAUDE.md - Anpee プロジェクト設定
+# CLAUDE.md
 
-このファイルはAnpeeプロジェクト固有の設定とルールを記載しています。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-最終更新: 2025-07-22
+## Project Overview
 
-## プロジェクト概要
+**Anpee (あんぴーちゃん)** is a family monitoring service that performs daily safety checks via LINE and phone calls. The service sends "元気ですボタン" (I'm fine button) notifications and alerts administrators when family members don't respond.
 
-**Anpee（あんぴーちゃん）** - 家族見守りサービス
-- 家族の安否確認を毎日自動で行うサービス
-- LINEと電話で「元気ですボタン」による確認
-- 家族が応答しない場合は管理者に通知
+## Key Commands
 
-## URL構造と設計意図
+### Frontend Development
+```bash
+cd frontend
+npm install                    # Install dependencies
+npm run dev                    # Start dev server (http://localhost:3003)
+npm run build                  # Build for production
+npm run lint                   # Run ESLint
+npm run type-check             # Run TypeScript type checking
+```
 
-### ユーザー用ページ（/user/*）
-すべてのユーザー向けページは `/user/` プレフィックスを使用します。
+### Backend Development
+```bash
+cd backend
+npm install                    # Install dependencies
+npm run dev                    # Start dev server (http://localhost:4003)
+npm run build                  # Build TypeScript to JavaScript
+npm run start                  # Start production server
+npm run lint                   # Run ESLint
+npm run typecheck              # Run TypeScript type checking
+```
 
-- `/user/dashboard` - ダッシュボード（見守り状況の概要）
-- `/user/family` - 家族管理（登録対象者の編集・削除）
-- `/user/history` - 通話＆ボタン応答履歴
-- `/user/notifications` - 通知設定（LINE/メール・再通知の設定）
-- `/user/billing` - プラン・支払い管理
-- `/user/account` - アカウント設定
+### Deployment
+```bash
+# On production server
+cd /var/www/anpee
+bash deploy.sh                 # Automated deployment script
+```
 
-### 管理者用ページ（/admin/*）※今後実装予定
-管理者向けページは `/admin/` プレフィックスを使用します。
+### PM2 Process Management
+```bash
+pm2 list                       # List all processes
+pm2 logs anpee                 # Frontend logs
+pm2 logs anpee-backend         # Backend logs
+pm2 restart anpee anpee-backend # Restart both services
+```
 
-- `/admin/dashboard` - 管理者ダッシュボード
-- `/admin/users` - ユーザー管理
-- `/admin/alerts` - アラート管理
-- など
+## Architecture Overview
 
-### その他のページ
-- `/` - ルートページ（/user/dashboardへリダイレクト）
-- `/login` - ログインページ
-- `/register` - 新規登録ページ
-- `/terms` - 利用規約
-- `/privacy` - プライバシーポリシー
-- `/commercial-law` - 特定商取引法に基づく表記
+### Frontend Structure
+- **Framework**: Next.js 15 with App Router
+- **Entry Points**: All user pages under `/user/*` prefix
+- **Authentication**: JWT tokens stored in localStorage/sessionStorage
+- **API Communication**: Uses `apiClient` service with CSRF protection
+- **State Management**: React hooks and context (no external state library)
+- **UI Components**: shadcn/ui components with custom styling
+- **Styling**: Tailwind CSS with custom "cute" theme (orange/warm colors)
 
-## 用語の統一
+### Backend Structure
+- **Framework**: Express.js with TypeScript
+- **Authentication**: JWT with refresh tokens, stored in httpOnly cookies
+- **Database**: MongoDB Atlas with Mongoose ODM
+- **API Routes**: RESTful under `/api/v1/*`
+- **Middleware Stack**: CORS, CSRF protection, rate limiting, helmet
+- **External Services**:
+  - SendGrid for email notifications
+  - LINE Messaging API for LINE notifications
+  - Twilio for phone calls (currently disabled)
+  - Stripe for subscription billing
 
-### 使用する用語
-- **家族** - 見守り対象者を指す（「高齢者」という表現は使用しない）
-- **家族管理** - 見守り対象者の管理機能
-- **元気ですボタン** - LINEで送信される安否確認ボタン
+### Key Business Logic
 
-### 使用しない用語
-- ❌ 高齢者、elderly
+1. **Daily Notifications**:
+   - Cron job runs at configured times
+   - Sends LINE messages to registered family members
+   - Tracks responses and triggers re-notifications
+   - Sends summary emails to administrators
+
+2. **Subscription Plans**:
+   - Standard Plan: 1 family member monitoring
+   - Family Plan: Up to 3 family members
+   - Managed through Stripe subscriptions
+
+3. **LINE Integration**:
+   - Each family member gets a unique registration code
+   - Users add the official LINE account and send their code
+   - System links LINE User ID to family member record
+
+## Important Terminology
+
+### Use These Terms:
+- **家族** (family) - The monitored persons (never use "高齢者/elderly")
+- **家族管理** - Family member management
+- **元気ですボタン** - The "I'm fine" button in LINE
+- **見守り** - Monitoring/watching over
+
+### Avoid These Terms:
+- ❌ 高齢者, elderly, senior citizens
 - ❌ お年寄り
 - ❌ シニア
 
-## 技術スタック
+## Current Status Notes
 
-### フロントエンド
-- **フレームワーク**: Next.js 15 (App Router)
-- **スタイリング**: Tailwind CSS v3.4.1
-- **UIコンポーネント**: shadcn/ui
-- **言語**: TypeScript
-- **ポート**: 3003
+### Phone Notification Feature (Temporarily Disabled)
+- Technical implementation exists but UI is hidden
+- Requires corporate entity for phone services in Japan
+- To re-enable: Uncomment sections in `NotificationSettingsPage.tsx`
+- Backend endpoints remain functional at `/notifications/test/phone`
 
-### バックエンド
-- **フレームワーク**: Express.js
-- **言語**: TypeScript
-- **データベース**: MongoDB Atlas
-- **認証**: JWT
-- **ポート**: 4003
+### Environment Configuration
+- Frontend runs on port 3003
+- Backend runs on port 4003
+- Production uses Nginx reverse proxy with IPv6 support
+- API paths `/api/*` are proxied to backend
 
-### インフラ
-- **Webサーバー**: Nginx
-- **プロセス管理**: PM2
-- **SSL証明書**: Let's Encrypt
+### Critical Workflows
 
-## デプロイ手順
+1. **User Registration Flow**:
+   - Email verification required
+   - Sends verification email via SendGrid
+   - JWT tokens issued on successful verification
 
-1. ローカルでの変更をGitHubにプッシュ
-2. VPSサーバーにSSH接続
-3. `/var/www/anpee` ディレクトリで `bash deploy.sh` を実行
+2. **Family Member Registration**:
+   - Add family member details
+   - System generates unique LINE registration code
+   - Family member adds LINE bot and sends code
+   - System links LINE account to family member
 
-## PM2プロセス名
-- `anpee` - フロントエンド（Next.js）
-- `anpee-backend` - バックエンド（Express）
+3. **Notification Flow**:
+   - Check notification settings and timing
+   - Send LINE messages to all active family members
+   - Wait for responses (button clicks)
+   - Trigger re-notifications based on settings
+   - Send admin notifications for non-responses
 
-## 環境変数
+## Database Schema Highlights
 
-### フロントエンド（.env.local）
-```
-NEXT_PUBLIC_API_URL=https://anpee.jp/api/v1
-```
+- **User**: Main account holder with subscription info
+- **Elderly**: Family members being monitored (linked to User)
+- **NotificationLog**: Records of all notifications sent
+- **ResponseLog**: Records of family member responses
+- **Subscription**: Stripe subscription details
 
-### バックエンド（.env）
-```
-NODE_ENV=production
-PORT=4003
-MONGODB_URI=mongodb+srv://...
-JWT_SECRET=...
-```
+## Security Considerations
 
-## 電話通知機能の一時停止について（2025-07-22）
-
-### 背景
-電話通知機能は技術的には実装済みですが、法的要件により一時的に提供を停止しています。
-- **理由**: 電話を使った自動通知サービスの提供には法人化が必要
-- **現状**: 運営者が個人事業主のため、法人化完了まで機能を非表示
-- **対応**: UIから電話通知設定を非表示にしたが、バックエンドのAPIと機能は保持
-
-### 技術的な対応
-1. **フロントエンド**
-   - `NotificationSettingsPage.tsx`から電話通知設定UIをコメントアウト
-   - 電話通知テストボタンも非表示
-   - 注意事項から電話通知に関する記述を非表示
-
-2. **バックエンド**
-   - APIエンドポイントは残したまま（将来の復活に備えて）
-   - `/notifications/test/phone` - 電話テスト
-   - 電話通知のロジックも保持
-
-### 復活時の手順
-1. 法人化完了後、`NotificationSettingsPage.tsx`のコメントアウトを解除
-2. 必要に応じてTwilio等の電話APIサービスと契約
-3. 環境変数にTwilioの認証情報を設定
-4. 機能テストを実施して本番リリース
-
-## 注意事項
-
-1. **ポート番号**
-   - フロントエンド: 3003（他のプロジェクトと重複しないよう注意）
-   - バックエンド: 4003
-
-2. **Nginxプロキシ設定**
-   - IPv6対応のため `[::1]` を使用
-   - `/api/` パスはバックエンド（4003）へプロキシ
-
-3. **ビルド時の注意**
-   - 環境変数変更後は必ず再ビルドが必要
-   - `.next` ディレクトリの削除が必要な場合あり
+- CSRF tokens required for all non-GET requests
+- JWT tokens expire in 15 minutes (refresh token in 7 days)
+- Rate limiting on all API endpoints
+- Input validation using express-validator
+- XSS protection via helmet and input sanitization
